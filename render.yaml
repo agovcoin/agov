@@ -1,0 +1,44 @@
+services:
+  # Backend Flask API
+  - type: web
+    name: agov-backend
+    runtime: python
+    region: oregon
+    plan: free
+    rootDir: backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app:app --bind 0.0.0.0:$PORT
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.11.0"
+      - key: HELIUS_API_KEY
+        sync: false
+      - key: RUGCHECK_API_KEY
+        sync: false
+      - key: JUPITER_API_KEY
+        sync: false
+      - key: GROQ_API_KEY
+        sync: false
+      - key: DEEPSEEK_API_KEY
+        sync: false
+      - key: FRONTEND_URL
+        sync: false
+
+  # Frontend Static Site
+  - type: web
+    name: agov-portal
+    runtime: static
+    region: oregon
+    plan: free
+    rootDir: frontend
+    buildCommand: echo "No build needed"
+    staticPublishPath: .
+    headers:
+      - path: /*
+        name: Cache-Control
+        value: public, max-age=300
+
+databases:
+  - name: agov-db
+    plan: free
+    region: oregon
