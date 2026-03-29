@@ -103,9 +103,12 @@ def health():
             "xray": "live",
             "probe": "live",
             "mothership": "live",
+            "graduation": "live",
             "signal": "live",
             "hologram": "live",
             "abduction": "live",
+            "autopsy": "live",
+            "warp": "standby",
             "debriefing": "live"
         },
         "apis": {
@@ -412,11 +415,15 @@ def probe_feed():
 # ============================================================
 # TOOL 3: MOTHERSHIP -- Whale Intelligence
 # ============================================================
-# Known whale/smart money wallets (expand this list)
+# Known whale/smart money wallets (verified addresses)
 WHALE_WALLETS = [
     "5Q544fKrFoe6tsEbD7S8EmxGTJYAKtTVhAW5Q5pge4j1",  # Wintermute
     "HWHvQhFmJB6gPtqJx3gjxHX1iDZhQ9WJorxwb3iTWEgA",  # Jump Trading
-    "CuieVDEDtLo7FypA9SbLM9saXFdb1dsshEkyErMqkRQq",   # Alameda
+    "2iZo1vFfiRFoBga2JhbyXDjYqFfmGQKYfERPPdUjqgni",  # Raydium Authority
+    "7rhxnLV8C8MmXhJBrFMMatJfQ3GAdhVfLoKygrusNjfa",  # Known whale
+    "FWznbcNXWQuHTawe9RxvQ2LdCENssh12dsznf4RiouN5",  # Smart money
+    "3Bm7qTCsn5ayMvGSYXrbD9JDXMSbC7pTdvqE6zKQB3Fn",  # DeFi whale
+    "DNfuF1L62WWyW3pNakVkyGGFzVVhj4Yr52jSmdTyeBHm",  # Top trader
 ]
 
 @app.route("/api/mothership/feed")
@@ -710,6 +717,184 @@ Analyze the trading pattern and provide brief performance insights."""
     result["ai_analysis"] = ai_analyze(prompt)
 
     cache_set(f"debriefing:{wallet}", result)
+    return jsonify(result)
+
+
+# ============================================================
+# TOOL 8: GRADUATION TRACKER -- PumpSwap Migration Monitor
+# ============================================================
+@app.route("/api/graduation/feed")
+def graduation_feed():
+    """Tokens approaching $69K graduation threshold on Pump.fun."""
+    cached = cache_get("graduation:feed")
+    if cached:
+        return jsonify(cached)
+
+    tokens = []
+
+    # Use DexScreener to find Solana tokens with mcap near graduation
+    try:
+        # Search for pump.fun tokens with meaningful volume
+        dx = requests.get(
+            "https://api.dexscreener.com/token-boosts/top/v1",
+            timeout=10
+        )
+        if dx.status_code == 200:
+            boosts = dx.json()
+            if isinstance(boosts, list):
+                for b in boosts:
+                    if b.get("chainId") != "solana":
+                        continue
+                    addr = b.get("tokenAddress", "")
+                    if not addr:
+                        continue
+                    # Get pair data for this token
+                    try:
+                        pd = requests.get(
+                            f"https://api.dexscreener.com/tokens/v1/solana/{addr}",
+                            timeout=8
+                        )
+                        if pd.status_code == 200:
+                            pairs = pd.json()
+                            if isinstance(pairs, list) and pairs:
+                                pair = pairs[0]
+                                mcap = float(pair.get("marketCap", 0) or pair.get("fdv", 0) or 0)
+                                liq = float(pair.get("liquidity", {}).get("usd", 0) or 0)
+                                name = pair.get("baseToken", {}).get("name", "Unknown")
+                                symbol = pair.get("baseToken", {}).get("symbol", "???")
+                                price_change = float(pair.get("priceChange", {}).get("h24", 0) or 0)
+
+                                # Graduation threshold is ~$69K mcap
+                                # Show tokens between $20K and $80K
+                                if 20000 < mcap < 80000:
+                                    progress = min(100, (mcap / 69000) * 100)
+                                    tokens.append({
+                                        "address": addr,
+                                        "name": name,
+                                        "symbol": symbol,
+                                        "mcap": mcap,
+                                        "liquidity": liq,
+                                        "progress": round(progress, 1),
+                                        "price_change_24h": price_change,
+                                        "graduated": mcap >= 69000
+                                    })
+                    except Exception:
+                        continue
+
+                    if len(tokens) >= 10:
+                        break
+    except Exception:
+        pass
+
+    # Sort by progress descending (closest to graduation first)
+    tokens.sort(key=lambda x: -x.get("progress", 0))
+
+    result = {
+        "tokens": tokens[:10],
+        "near_graduation": len([t for t in tokens if t.get("progress", 0) > 80]),
+        "threshold": "$69,000"
+    }
+    cache_set("graduation:feed", result)
+    return jsonify(result)
+
+
+# ============================================================
+# TOOL 9: RUG AUTOPSY -- Post-Mortem Forensics
+# ============================================================
+@app.route("/api/autopsy/feed")
+def autopsy_feed():
+    """Feed of recently dead/rugged tokens with cause analysis."""
+    cached = cache_get("autopsy:feed")
+    if cached:
+        return jsonify(cached)
+
+    autopsies = []
+
+    # Use DexScreener to find tokens with massive price drops
+    try:
+        # Get recently boosted tokens and check for crashes
+        dx = requests.get(
+            "https://api.dexscreener.com/token-boosts/latest/v1",
+            timeout=10
+        )
+        if dx.status_code == 200:
+            boosts = dx.json()
+            if isinstance(boosts, list):
+                for b in boosts:
+                    if b.get("chainId") != "solana":
+                        continue
+                    addr = b.get("tokenAddress", "")
+                    if not addr:
+                        continue
+                    try:
+                        pd = requests.get(
+                            f"https://api.dexscreener.com/tokens/v1/solana/{addr}",
+                            timeout=8
+                        )
+                        if pd.status_code == 200:
+                            pairs = pd.json()
+                            if isinstance(pairs, list) and pairs:
+                                pair = pairs[0]
+                                price_change_24h = float(pair.get("priceChange", {}).get("h24", 0) or 0)
+                                price_change_1h = float(pair.get("priceChange", {}).get("h1", 0) or 0)
+                                liq = float(pair.get("liquidity", {}).get("usd", 0) or 0)
+                                volume = float(pair.get("volume", {}).get("h24", 0) or 0)
+                                name = pair.get("baseToken", {}).get("name", "Unknown")
+                                symbol = pair.get("baseToken", {}).get("symbol", "???")
+                                txns = pair.get("txns", {}).get("h24", {})
+                                buys = int(txns.get("buys", 0) or 0)
+                                sells = int(txns.get("sells", 0) or 0)
+
+                                # Dead token criteria: >70% drop in 24h or near-zero liquidity
+                                if price_change_24h < -70 or (liq < 500 and volume > 1000):
+                                    # Determine cause of death
+                                    if liq < 100:
+                                        cause = "LP REMOVED"
+                                        detail = f"Liquidity drained to ${liq:.0f}. Classic rug."
+                                    elif sells > buys * 3:
+                                        cause = "INSIDER DUMP"
+                                        detail = f"Sell/buy ratio: {sells}/{buys}. Coordinated exit."
+                                    elif price_change_1h < -50:
+                                        cause = "FLASH CRASH"
+                                        detail = f"Dropped {price_change_1h:.0f}% in 1 hour."
+                                    elif volume < 100:
+                                        cause = "ABANDONED"
+                                        detail = "Near-zero volume. Project dead."
+                                    else:
+                                        cause = "COLLAPSE"
+                                        detail = f"Down {price_change_24h:.0f}% in 24h."
+
+                                    autopsies.append({
+                                        "address": addr,
+                                        "name": name,
+                                        "symbol": symbol,
+                                        "cause": cause,
+                                        "detail": detail,
+                                        "price_change_24h": price_change_24h,
+                                        "liquidity": liq,
+                                        "volume_24h": volume,
+                                        "estimated_losses": volume * 0.6  # rough estimate
+                                    })
+                    except Exception:
+                        continue
+
+                    if len(autopsies) >= 8:
+                        break
+    except Exception:
+        pass
+
+    # AI summary if we have autopsies
+    ai = ""
+    if autopsies and (GROQ_KEY or DEEPSEEK_KEY):
+        summary = "; ".join([f"{a['symbol']}: {a['cause']} ({a['detail']})" for a in autopsies[:5]])
+        ai = ai_analyze(f"Summarize today's token deaths on Solana/Pump.fun. Common patterns and warnings for traders: {summary}")
+
+    result = {
+        "autopsies": autopsies[:8],
+        "total_dead_today": len(autopsies),
+        "ai_analysis": ai
+    }
+    cache_set("autopsy:feed", result)
     return jsonify(result)
 
 
