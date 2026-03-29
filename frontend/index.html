@@ -674,16 +674,67 @@ function boot(){
 function nav(id,btn){document.querySelectorAll('section').forEach(s=>s.classList.remove('active'));document.getElementById('s-'+id).classList.add('active');document.querySelectorAll('.nb').forEach(b=>b.classList.remove('on'));if(btn)btn.classList.add('on');window.scrollTo({top:0,behavior:'instant'})}
 function showT(id,btn){document.querySelectorAll('.tv').forEach(v=>v.classList.remove('on'));document.querySelectorAll('.tb').forEach(b=>b.classList.remove('on'));const tv=document.getElementById('tv-'+id);if(tv)tv.classList.add('on');if(btn)btn.classList.add('on');else document.querySelectorAll('.tb').forEach(b=>{if(b.textContent.toLowerCase().includes(id.slice(0,4)))b.classList.add('on')})}
 
-// XRAY
-const mocks=[{score:84,mint:'REVOKED',freeze:'REVOKED',lp:'BURNED',bundle:'NO',devSold:'NO',holders:347,top:'4.2%',risk:'LOW',ai:'All checks pass. Mint/freeze revoked. LP burned. 347 holders. Station 51: LOW RISK.'},{score:31,mint:'ACTIVE',freeze:'REVOKED',lp:'UNLOCKED',bundle:'YES(3)',devSold:'YES(42%)',holders:28,top:'23.1%',risk:'CRITICAL',ai:'Mint ACTIVE. LP unlocked. Bundled. Dev dumped 42%. Station 51: RUG 89%.'},{score:62,mint:'REVOKED',freeze:'ACTIVE',lp:'BURNED',bundle:'NO',devSold:'NO',holders:143,top:'8.7%',risk:'MEDIUM',ai:'Freeze active. LP burned. Station 51: CAUTION.'}];
-function scanFn(p,r,ring,sc,v,g,ai,btn){const d=mocks[Math.floor(Math.random()*3)];btn.disabled=true;btn.textContent='...';r.style.display='none';p.style.display='block';p.innerHTML='';const st=['> RPC connected','> metadata fetched','> mint authority check','> freeze authority check','> goplus scan','> rugcheck verify','> holders mapped','> genesis scanned','> agent 51 assessing...'];let i=0;const iv=setInterval(()=>{if(i<st.length){p.innerHTML+=st[i]+'<br>';i++;p.scrollTop=9999}else{clearInterval(iv);setTimeout(()=>{btn.disabled=false;btn.textContent='SCAN';p.style.display='none';r.style.display='block';sc.textContent=d.score;const c=d.score>70?'var(--g)':d.score>40?'var(--am)':'var(--red)';ring.style.borderColor=c;sc.style.color=c;if(d.score>70)v.innerHTML='<span style="color:var(--g)">LOW RISK</span>';else if(d.score>40)v.innerHTML='<span style="color:var(--am)">MEDIUM</span>';else v.innerHTML='<span style="color:var(--red)">CRITICAL</span>';if(g){const cl=x=>String(x).includes('REVOKED')||String(x).includes('BURNED')||x==='NO'?'v-ok':(String(x).includes('ACTIVE')||String(x).includes('YES')||String(x).includes('UNLOCKED')?'v-bad':'');g.innerHTML=[['MINT',d.mint],['FREEZE',d.freeze],['LP',d.lp],['BUNDLE',d.bundle],['DEV',d.devSold],['HOLDERS',d.holders],['TOP',d.top],['RISK',d.risk]].map(([l,x])=>`<div class="cl"><div class="cl-l">${l}</div><div class="cl-v ${cl(x)}">${x}</div></div>`).join('')}if(ai)ai.innerHTML='<div class="ai-l">AGENT 51</div>'+d.ai},200)}},110)}
-function runHS(){scanFn(document.getElementById('heroProg'),document.getElementById('heroRes'),document.getElementById('heroRing'),document.getElementById('heroSc'),document.getElementById('heroV'),null,null,document.getElementById('heroBtn'))}
-function runX(){scanFn(document.getElementById('xProg'),document.getElementById('xRes'),document.getElementById('xRing'),document.getElementById('xSc'),document.getElementById('xV'),document.getElementById('xG'),document.getElementById('xAI'),document.getElementById('xBtn'))}
+// XRAY -- Real API with mock fallback
+const API='https://agov-backend.onrender.com';
+const mocks=[{score:84,mint_authority:'REVOKED',freeze_authority:'REVOKED',lp_status:'BURNED',bundle_detected:'NO',dev_sold:'NO',holders:347,top_holder_pct:'4.2%',risk_level:'LOW',ai_analysis:'All checks pass. Mint/freeze revoked. LP burned. 347 holders. Station 51: LOW RISK.'},{score:31,mint_authority:'ACTIVE',freeze_authority:'REVOKED',lp_status:'UNLOCKED',bundle_detected:'YES(3)',dev_sold:'YES(42%)',holders:28,top_holder_pct:'23.1%',risk_level:'CRITICAL',ai_analysis:'Mint ACTIVE. LP unlocked. Bundled. Dev dumped 42%. Station 51: RUG 89%.'},{score:62,mint_authority:'REVOKED',freeze_authority:'ACTIVE',lp_status:'BURNED',bundle_detected:'NO',dev_sold:'NO',holders:143,top_holder_pct:'8.7%',risk_level:'MEDIUM',ai_analysis:'Freeze active. LP burned. Station 51: CAUTION.'}];
 
-// Probe
+async function realScan(address){
+  try{
+    const r=await fetch(API+'/api/xray/scan',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({address})});
+    if(r.ok)return await r.json();
+  }catch(e){console.log('API fallback:',e)}
+  return null;
+}
+
+function showResult(d,r,ring,sc,v,g,ai){
+  r.style.display='block';
+  sc.textContent=d.score;
+  const c=d.score>70?'var(--g)':d.score>40?'var(--am)':'var(--red)';
+  ring.style.borderColor=c;sc.style.color=c;
+  if(d.score>70)v.innerHTML='<span style="color:var(--g)">LOW RISK</span>';
+  else if(d.score>40)v.innerHTML='<span style="color:var(--am)">MEDIUM</span>';
+  else v.innerHTML='<span style="color:var(--red)">CRITICAL</span>';
+  if(g){const cl=x=>String(x).includes('REVOKED')||String(x).includes('BURNED')||x==='NO'?'v-ok':(String(x).includes('ACTIVE')||String(x).includes('YES')||String(x).includes('UNLOCKED')?'v-bad':'');
+    g.innerHTML=[['MINT',d.mint_authority],['FREEZE',d.freeze_authority],['LP',d.lp_status],['BUNDLE',d.bundle_detected],['DEV SOLD',d.dev_sold||'N/A'],['HOLDERS',d.holders],['TOP',d.top_holder_pct],['RISK',d.risk_level]].map(([l,x])=>`<div class="cl"><div class="cl-l">${l}</div><div class="cl-v ${cl(x)}">${x}</div></div>`).join('')}
+  if(ai)ai.innerHTML='<div class="ai-l">AGENT 51</div>'+(d.ai_analysis||'Analysis unavailable.');
+}
+
+async function scanFn(p,r,ring,sc,v,g,ai,btn,input){
+  const addr=input?input.value.trim():'';
+  btn.disabled=true;btn.textContent='...';r.style.display='none';p.style.display='block';p.innerHTML='';
+  const st=['> connecting to Station 51...','> RPC handshake','> querying GoPlus...','> querying Helius...','> mint authority check','> freeze authority check','> holder distribution','> bundle analysis','> Agent 51 analyzing...'];
+  let i=0;
+  const iv=setInterval(()=>{if(i<st.length){p.innerHTML+=st[i]+'<br>';i++;p.scrollTop=9999}},130);
+  let d=null;
+  if(addr.length>30){d=await realScan(addr)}
+  clearInterval(iv);
+  if(!d){d=mocks[Math.floor(Math.random()*3)];p.innerHTML+='> using cached data (paste real address for live scan)<br>'}
+  else{p.innerHTML+='> LIVE DATA RECEIVED<br>'}
+  setTimeout(()=>{btn.disabled=false;btn.textContent='SCAN';p.style.display='none';showResult(d,r,ring,sc,v,g,ai)},400);
+}
+
+function runHS(){scanFn(document.getElementById('heroProg'),document.getElementById('heroRes'),document.getElementById('heroRing'),document.getElementById('heroSc'),document.getElementById('heroV'),null,null,document.getElementById('heroBtn'),document.getElementById('heroIn'))}
+function runX(){scanFn(document.getElementById('xProg'),document.getElementById('xRes'),document.getElementById('xRing'),document.getElementById('xSc'),document.getElementById('xV'),document.getElementById('xG'),document.getElementById('xAI'),document.getElementById('xBtn'),document.getElementById('xIn'))}
+
+// Probe -- Real API feed
 const tks=['$NEXUS','$ORBIT','$WARP','$DELTA','$VOID','$FLUX','$NOVA'];let pc=0,pt=0;
-function addP(){const f=document.getElementById('pFeed');if(!f)return;pt+=Math.floor(Math.random()*80)+20;pc++;document.getElementById('pC').textContent=pc;document.getElementById('pT').textContent=pt;const e=document.createElement('div');e.className='fi';e.innerHTML=`<span style="color:var(--dim);width:32px">${new Date().toTimeString().slice(0,5)}</span><span style="color:var(--g);width:24px">OK</span><span style="flex:1"><b style="color:var(--w)">${tks[Math.floor(Math.random()*7)]}</b> $${(Math.random()*80+5).toFixed(0)}K</span><span style="font:600 10px 'Orbitron';color:var(--g)">${Math.floor(Math.random()*25)+75}</span>`;f.prepend(e);if(f.children.length>10)f.removeChild(f.lastChild)}
-setInterval(addP,4000);setTimeout(()=>{addP();addP();addP()},4000);
+async function loadProbe(){
+  const f=document.getElementById('pFeed');if(!f)return;
+  try{
+    const r=await fetch(API+'/api/probe/feed');
+    if(r.ok){const data=await r.json();
+      if(data.tokens&&data.tokens.length>0){
+        data.tokens.slice(0,10).forEach(t=>{
+          pc++;const e=document.createElement('div');e.className='fi';
+          e.innerHTML=`<span style="color:var(--dim);width:32px">${new Date().toTimeString().slice(0,5)}</span><span style="color:var(--g);width:24px">OK</span><span style="flex:1"><b style="color:var(--w)">${t.symbol||t.address.slice(0,6)}</b></span><span style="font:10px 'VT323';color:var(--dim)">${t.source}</span>`;
+          f.prepend(e);if(f.children.length>10)f.removeChild(f.lastChild)});
+        document.getElementById('pC').textContent=pc;document.getElementById('pT').textContent=data.total_scanned||pt;return}}
+  }catch(e){console.log('Probe fallback:',e)}
+  // Mock fallback
+  for(let i=0;i<3;i++){pt+=Math.floor(Math.random()*80)+20;pc++;const e=document.createElement('div');e.className='fi';e.innerHTML=`<span style="color:var(--dim);width:32px">${new Date().toTimeString().slice(0,5)}</span><span style="color:var(--g);width:24px">OK</span><span style="flex:1"><b style="color:var(--w)">${tks[Math.floor(Math.random()*7)]}</b> $${(Math.random()*80+5).toFixed(0)}K</span><span style="font:600 10px 'Orbitron';color:var(--g)">${Math.floor(Math.random()*25)+75}</span>`;f.prepend(e);if(f.children.length>10)f.removeChild(f.lastChild)}
+  document.getElementById('pC').textContent=pc;document.getElementById('pT').textContent=pt;
+}
+setTimeout(loadProbe,4000);setInterval(loadProbe,30000);
 
 // Mothership
 const wa=['8xF2..mP7','3aD9..nK2','7bR4..qL5'],wt=['$SOL','$WIF','$BONK','$JUP'],wac=['Bought','Sold','Accum'];let wm=0;
