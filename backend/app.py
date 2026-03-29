@@ -110,10 +110,11 @@ def health():
         },
         "apis": {
             "goplus": "no key needed",
-            "rugcheck": "connected" if RUGCHECK_KEY else "no key",
+            "dexscreener": "no key needed",
             "helius": "connected" if HELIUS_KEY else "no key",
             "groq": "connected" if GROQ_KEY else "no key",
-            "deepseek": "connected" if DEEPSEEK_KEY else "no key"
+            "deepseek": "connected" if DEEPSEEK_KEY else "no key",
+            "jupiter": "connected" if JUPITER_KEY else "no key"
         }
     })
 
@@ -135,6 +136,11 @@ def xray_scan():
 
     result = {
         "address": address,
+        "name": "UNKNOWN",
+        "symbol": "UNKNOWN",
+        "price_usd": 0,
+        "liquidity_usd": 0,
+        "volume_24h": 0,
         "score": 0,
         "mint_authority": "UNKNOWN",
         "freeze_authority": "UNKNOWN",
@@ -151,6 +157,40 @@ def xray_scan():
 
     score = 50  # Start neutral
 
+    # --- DexScreener (no key, 300 req/min) -- Get token name, price, liquidity ---
+    try:
+        dx = requests.get(
+            f"https://api.dexscreener.com/tokens/v1/solana/{address}",
+            timeout=10
+        )
+        if dx.status_code == 200:
+            pairs = dx.json()
+            if isinstance(pairs, list) and pairs:
+                pair = pairs[0]
+                result["sources"].append("dexscreener")
+                result["name"] = pair.get("baseToken", {}).get("name", "UNKNOWN")
+                result["symbol"] = pair.get("baseToken", {}).get("symbol", "UNKNOWN")
+                result["price_usd"] = float(pair.get("priceUsd", 0) or 0)
+                result["liquidity_usd"] = float(pair.get("liquidity", {}).get("usd", 0) or 0)
+                result["volume_24h"] = float(pair.get("volume", {}).get("h24", 0) or 0)
+
+                # LP check from liquidity
+                liq = result["liquidity_usd"]
+                if liq > 50000:
+                    result["lp_status"] = "DEEP"
+                    score += 10
+                elif liq > 10000:
+                    result["lp_status"] = "OK"
+                    score += 5
+                elif liq > 0:
+                    result["lp_status"] = "LOW"
+                    score -= 10
+                else:
+                    result["lp_status"] = "NONE"
+                    score -= 20
+    except Exception as e:
+        result["sources"].append(f"dexscreener:error:{str(e)[:50]}")
+
     # --- GoPlus Security API (no key needed, 30 req/min) ---
     try:
         gp = requests.get(
@@ -158,7 +198,12 @@ def xray_scan():
             timeout=10
         )
         if gp.status_code == 200:
-            gp_data = gp.json().get("result", {}).get(address.lower(), {})
+            gp_result = gp.json().get("result", {})
+            # Try original address first, then try any key in result (GoPlus may transform case)
+            gp_data = gp_result.get(address) or gp_result.get(address.lower()) or gp_result.get(address.upper())
+            if not gp_data and gp_result:
+                # Fallback: just grab the first result
+                gp_data = next(iter(gp_result.values()), {})
             if gp_data:
                 result["sources"].append("goplus")
 
@@ -195,52 +240,17 @@ def xray_scan():
                     result["top_holder_pct"] = f"{float(top)*100:.1f}%"
                     if float(top) > 0.5:
                         score -= 15
+
+                # Token name from GoPlus if DexScreener didn't have it
+                if result["name"] == "UNKNOWN":
+                    gp_name = gp_data.get("token_name", "")
+                    gp_symbol = gp_data.get("token_symbol", "")
+                    if gp_name:
+                        result["name"] = gp_name
+                    if gp_symbol:
+                        result["symbol"] = gp_symbol
     except Exception as e:
         result["sources"].append(f"goplus:error:{str(e)[:50]}")
-
-    # --- RugCheck API ---
-    try:
-        headers = {}
-        if RUGCHECK_KEY:
-            headers["X-API-KEY"] = RUGCHECK_KEY
-        rc = requests.get(
-            f"https://api.rugcheck.xyz/v1/tokens/{address}/report/summary",
-            headers=headers,
-            timeout=10
-        )
-        if rc.status_code == 200:
-            rc_data = rc.json()
-            result["sources"].append("rugcheck")
-
-            # Risk level from RugCheck
-            risk = rc_data.get("score", rc_data.get("riskLevel", ""))
-            if risk:
-                result["risk_level"] = str(risk).upper()
-
-            # LP status
-            lp = rc_data.get("markets", [])
-            if lp:
-                lp_locked = any(m.get("lp", {}).get("lpLockedPct", 0) > 90 for m in lp if isinstance(m, dict))
-                result["lp_status"] = "LOCKED" if lp_locked else "UNLOCKED"
-                if lp_locked:
-                    score += 10
-                else:
-                    score -= 15
-
-            # Freeze authority
-            freeze = rc_data.get("freezeAuthority")
-            if freeze is not None:
-                result["freeze_authority"] = "REVOKED" if freeze is None or freeze == "" else "ACTIVE"
-            
-            # Mint authority (cross-check)
-            mint_rc = rc_data.get("mintAuthority")
-            if mint_rc is not None:
-                if mint_rc is None or mint_rc == "":
-                    if result["mint_authority"] == "UNKNOWN":
-                        result["mint_authority"] = "REVOKED"
-                        score += 10
-    except Exception as e:
-        result["sources"].append(f"rugcheck:error:{str(e)[:50]}")
 
     # --- Helius DAS (if key available) ---
     if HELIUS_KEY:
@@ -259,12 +269,43 @@ def xray_scan():
                 hel_data = hel.json().get("result", {})
                 if hel_data:
                     result["sources"].append("helius")
-                    
-                    # Check authorities from on-chain data
+
+                    # Token name from Helius if still unknown
+                    content = hel_data.get("content", {})
+                    metadata = content.get("metadata", {})
+                    if result["name"] == "UNKNOWN" and metadata.get("name"):
+                        result["name"] = metadata["name"]
+                    if result["symbol"] == "UNKNOWN" and metadata.get("symbol"):
+                        result["symbol"] = metadata["symbol"]
+
+                    # Authorities from on-chain data
                     authorities = hel_data.get("authorities", [])
-                    ownership = hel_data.get("ownership", {})
-                    
-                    supply = hel_data.get("token_info", {}).get("supply", 0)
+                    for auth in authorities:
+                        scopes = auth.get("scopes", [])
+                        if "full" in scopes or "mint" in scopes:
+                            # If there's a mint authority, it's active
+                            if result["mint_authority"] == "UNKNOWN":
+                                result["mint_authority"] = "ACTIVE"
+                                score -= 15
+
+                    # Freeze authority from token_info
+                    token_info = hel_data.get("token_info", {})
+                    freeze = token_info.get("freeze_authority")
+                    if freeze:
+                        result["freeze_authority"] = "ACTIVE"
+                        score -= 10
+                    elif result["freeze_authority"] == "UNKNOWN":
+                        result["freeze_authority"] = "REVOKED"
+                        score += 5
+
+                    # Mint authority from token_info
+                    mint_auth = token_info.get("mint_authority")
+                    if not mint_auth and result["mint_authority"] == "UNKNOWN":
+                        result["mint_authority"] = "REVOKED"
+                        score += 10
+
+                    # Supply
+                    supply = token_info.get("supply", 0)
                     if supply:
                         result["supply"] = supply
         except Exception as e:
@@ -284,17 +325,20 @@ def xray_scan():
 
     # AI Analysis
     prompt = f"""Analyze this Solana token security scan:
+Token: {result['name']} ({result['symbol']})
 Address: {address}
 Score: {result['score']}/100
 Mint Authority: {result['mint_authority']}
 Freeze Authority: {result['freeze_authority']}
-LP Status: {result['lp_status']}
+LP/Liquidity: {result['lp_status']} (${result['liquidity_usd']:,.0f})
 Honeypot: {result['is_honeypot']}
 Holders: {result['holders']}
-Top Holder: {result['top_holder_pct']}
+Top 10 Holders: {result['top_holder_pct']}
 Risk: {result['risk_level']}
+Price: ${result['price_usd']}
+24h Volume: ${result['volume_24h']:,.0f}
 
-Give a brief, direct risk assessment. What should a trader know before buying?"""
+Give a brief, direct risk assessment in 2-3 sentences. Include the token name. What should a trader know?"""
 
     result["ai_analysis"] = ai_analyze(prompt)
 
