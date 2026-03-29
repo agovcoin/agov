@@ -737,36 +737,148 @@ async function loadProbe(){
 }
 setTimeout(loadProbe,4000);setInterval(loadProbe,30000);
 
-// Mothership
-const wa=['8xF2..mP7','3aD9..nK2','7bR4..qL5'],wt=['$SOL','$WIF','$BONK','$JUP'],wac=['Bought','Sold','Accum'];let wm=0;
-function addW(){const f=document.getElementById('wFeed');if(!f)return;wm++;document.getElementById('wM').textContent=wm;const e=document.createElement('div');e.className='fi';e.innerHTML=`<span style="color:var(--cy);width:52px">${wa[Math.floor(Math.random()*3)]}</span><span style="flex:1">${wac[Math.floor(Math.random()*3)]} <b style="color:var(--w)">${wt[Math.floor(Math.random()*4)]}</b></span><span style="color:var(--w)">${Number((Math.random()*9000+500).toFixed(0)).toLocaleString()}</span>`;f.prepend(e);if(f.children.length>10)f.removeChild(f.lastChild)}
-setInterval(addW,3500);setTimeout(()=>{for(let i=0;i<4;i++)addW()},4000);
+// Mothership -- Real API
+async function loadMothership(){
+  const f=document.getElementById('wFeed');if(!f)return;
+  try{
+    const r=await fetch(API+'/api/mothership/feed');
+    if(r.ok){const data=await r.json();
+      if(data.movements&&data.movements.length>0){
+        f.innerHTML='';
+        data.movements.forEach(m=>{
+          const e=document.createElement('div');e.className='fi';
+          e.innerHTML=`<span style="color:var(--cy);width:52px">${m.wallet}</span><span style="flex:1">${m.type} <b style="color:var(--w)">${m.description?.slice(0,40)||''}</b></span>`;
+          f.appendChild(e);if(f.children.length>10)f.removeChild(f.lastChild)});
+        document.getElementById('wM').textContent=data.movements.length;return}}
+  }catch(e){console.log('Mothership fallback:',e)}
+  // Mock fallback
+  const wa=['8xF2..mP7','3aD9..nK2','7bR4..qL5'],wt=['$SOL','$WIF','$BONK','$JUP'],wac=['Bought','Sold','Accum'];
+  for(let i=0;i<4;i++){const e=document.createElement('div');e.className='fi';e.innerHTML=`<span style="color:var(--cy);width:52px">${wa[Math.floor(Math.random()*3)]}</span><span style="flex:1">${wac[Math.floor(Math.random()*3)]} <b style="color:var(--w)">${wt[Math.floor(Math.random()*4)]}</b></span><span style="color:var(--w)">${Number((Math.random()*9000+500).toFixed(0)).toLocaleString()}</span>`;f.prepend(e)}
+  document.getElementById('wM').textContent='4';
+}
+setTimeout(loadMothership,4500);setInterval(loadMothership,60000);
 
-// Grad
-const gT=['$QUANTUM','$NEBULA','$PHOTON','$VORTEX','$ECLIPSE'];let gI=[];
-function initG(){const f=document.getElementById('gFeed');if(!f)return;for(let i=0;i<5;i++){const p=Math.floor(Math.random()*25)+70;const it={p,el:null};const d=document.createElement('div');d.className='grad-r';d.innerHTML=`<span style="font:600 10px 'Orbitron';color:var(--w);width:56px">${gT[i]}</span><span style="font:12px 'VT323';color:var(--dim);width:32px">$${(p/100*69).toFixed(0)}K</span><div class="grad-b"><div class="grad-f" style="width:${p}%"></div></div><span style="font:700 10px 'Orbitron';color:var(--g);width:30px;text-align:right">${p}%</span>`;f.appendChild(d);it.el=d;gI.push(it)}document.getElementById('gN').textContent=gI.length;document.getElementById('sG').textContent=gI.length;document.getElementById('mG').textContent=gI.length}
-setInterval(()=>{gI.forEach(g=>{if(g.p<100){g.p=Math.min(100,g.p+Math.random()*1);if(g.el){g.el.querySelector('.grad-f').style.width=g.p+'%';const s=g.el.querySelectorAll('span');s[2].textContent=g.p>=100?'GRAD!':Math.floor(g.p)+'%';if(g.p>=100)s[2].style.color='var(--g)'}}})},3000);
+// Grad -- Real API
+async function initG(){
+  const f=document.getElementById('gFeed');if(!f)return;
+  try{
+    const r=await fetch(API+'/api/graduation/feed');
+    if(r.ok){const data=await r.json();
+      if(data.tokens&&data.tokens.length>0){
+        data.tokens.forEach(t=>{
+          const d=document.createElement('div');d.className='grad-r';
+          const p=t.progress||0;
+          d.innerHTML=`<span style="font:600 10px 'Orbitron';color:var(--w);width:56px">${t.symbol||'???'}</span><span style="font:12px 'VT323';color:var(--dim);width:32px">$${(t.mcap/1000).toFixed(0)}K</span><div class="grad-b"><div class="grad-f" style="width:${p}%"></div></div><span style="font:700 10px 'Orbitron';color:${p>=95?'var(--g)':'var(--am)'};width:30px;text-align:right">${p>=100?'GRAD!':Math.floor(p)+'%'}</span>`;
+          f.appendChild(d)});
+        document.getElementById('gN').textContent=data.tokens.length;
+        document.getElementById('sG').textContent=data.near_graduation||0;
+        document.getElementById('mG').textContent=data.tokens.length;return}}
+  }catch(e){console.log('Grad fallback:',e)}
+  // Mock fallback
+  const gT=['$QUANTUM','$NEBULA','$PHOTON','$VORTEX','$ECLIPSE'];
+  for(let i=0;i<5;i++){const p=Math.floor(Math.random()*25)+70;const d=document.createElement('div');d.className='grad-r';d.innerHTML=`<span style="font:600 10px 'Orbitron';color:var(--w);width:56px">${gT[i]}</span><span style="font:12px 'VT323';color:var(--dim);width:32px">$${(p/100*69).toFixed(0)}K</span><div class="grad-b"><div class="grad-f" style="width:${p}%"></div></div><span style="font:700 10px 'Orbitron';color:var(--g);width:30px;text-align:right">${p}%</span>`;f.appendChild(d)}
+  document.getElementById('gN').textContent='5';document.getElementById('sG').textContent='5';document.getElementById('mG').textContent='5';
+}
 setTimeout(initG,4000);
 
-// Autopsy
-const causes=[{c:'INSIDER DUMP',d:'Dev sold 67% in 4m.'},{c:'LP REMOVED',d:'LP drained. $18K gone.'},{c:'ABANDONED',d:'No activity 72h.'},{c:'SNIPED',d:'5 bots captured 94%.'}];
-const dTk=['$PHANTOM_D','$MOONBASE','$ELONAI','$MEGAPUMP','$YOLOSWAP'];let aC=0;
-function addA(){const f=document.getElementById('aFeed');if(!f)return;aC++;document.getElementById('aT').textContent=aC;const c=causes[Math.floor(Math.random()*4)];const d=document.createElement('div');d.className='c-rug';d.innerHTML=`<div style="display:flex;justify-content:space-between;margin-bottom:2px"><span style="font:15px 'VT323';color:var(--red)">${dTk[Math.floor(Math.random()*5)]}</span><span class="ctag" style="color:var(--red);border:1px solid rgba(255,51,68,.1)">${c.c}</span></div><div style="font:13px 'VT323';color:var(--t)">${c.d}</div><div style="font:11px 'VT323';color:var(--dim);margin-top:2px">Lost: <span style="color:var(--red)">$${Number((Math.random()*50000+1000).toFixed(0)).toLocaleString()}</span> · XRAY: <span style="color:var(--red)">${Math.floor(Math.random()*30)+10}</span></div>`;f.prepend(d);if(f.children.length>4)f.removeChild(f.lastChild)}
-setInterval(addA,7000);setTimeout(()=>{addA();addA();addA()},4000);
+// Autopsy -- Real API
+async function loadAutopsy(){
+  const f=document.getElementById('aFeed');if(!f)return;
+  try{
+    const r=await fetch(API+'/api/autopsy/feed');
+    if(r.ok){const data=await r.json();
+      if(data.autopsies&&data.autopsies.length>0){
+        f.innerHTML='';
+        data.autopsies.forEach(a=>{
+          const d=document.createElement('div');d.className='c-rug';
+          d.innerHTML=`<div style="display:flex;justify-content:space-between;margin-bottom:2px"><span style="font:15px 'VT323';color:var(--red)">${a.symbol||'???'}</span><span class="ctag" style="color:var(--red);border:1px solid rgba(255,51,68,.1)">${a.cause}</span></div><div style="font:13px 'VT323';color:var(--t)">${a.detail}</div><div style="font:11px 'VT323';color:var(--dim);margin-top:2px">Lost: <span style="color:var(--red)">$${Number((a.estimated_losses||0).toFixed(0)).toLocaleString()}</span> · ${a.price_change_24h?.toFixed(0)||0}% 24h</div>`;
+          f.appendChild(d)});
+        document.getElementById('aT').textContent=data.total_dead_today;return}}
+  }catch(e){console.log('Autopsy fallback:',e)}
+  // Mock fallback
+  const causes=[{c:'INSIDER DUMP',d:'Dev sold 67% in 4m.'},{c:'LP REMOVED',d:'LP drained. $18K gone.'},{c:'ABANDONED',d:'No activity 72h.'}];
+  const dTk=['$PHANTOM_D','$MOONBASE','$ELONAI'];
+  for(let i=0;i<3;i++){const c=causes[i];const d=document.createElement('div');d.className='c-rug';d.innerHTML=`<div style="display:flex;justify-content:space-between;margin-bottom:2px"><span style="font:15px 'VT323';color:var(--red)">${dTk[i]}</span><span class="ctag" style="color:var(--red);border:1px solid rgba(255,51,68,.1)">${c.c}</span></div><div style="font:13px 'VT323';color:var(--t)">${c.d}</div>`;f.appendChild(d)}
+  document.getElementById('aT').textContent='3';
+}
+setTimeout(loadAutopsy,5000);
 
 // Warp — COMING ONLINE (no mock data)
 
-// Signal
-setTimeout(()=>{const s=document.getElementById('sigB');if(!s)return;[{n:'AI GAMING',c:'var(--g)',p:68},{n:'RWA',c:'var(--cy)',p:55},{n:'DEPIN',c:'var(--am)',p:82},{n:'RESTAKING',c:'var(--pu)',p:15},{n:'MEME UTILITY',c:'var(--red)',p:42}].forEach(n=>{s.innerHTML+=`<div style="display:flex;align-items:center;gap:6px;padding:5px 0;border-bottom:1px solid rgba(0,255,65,.03)"><span style="font:600 9px 'Orbitron';color:${n.c};width:75px">${n.n}</span><div class="hg" style="flex:1"><div class="hg-f" style="width:${n.p}%;background:${n.c}"></div></div><span style="font:12px 'VT323';color:var(--dim);width:24px;text-align:right">${n.p}%</span></div>`})},100);
+// Signal -- Real API
+async function loadSignal(){
+  const s=document.getElementById('sigB');if(!s)return;
+  try{
+    const r=await fetch(API+'/api/signal/narratives');
+    if(r.ok){const data=await r.json();
+      if(data.narratives&&data.narratives.length>0){
+        s.innerHTML='';
+        const colors=['var(--g)','var(--cy)','var(--am)','var(--pu)','var(--red)','var(--g2)'];
+        data.narratives.forEach((n,i)=>{
+          const c=colors[i%colors.length];
+          s.innerHTML+=`<div style="display:flex;align-items:center;gap:6px;padding:5px 0;border-bottom:1px solid rgba(0,255,65,.03)"><span style="font:600 9px 'Orbitron';color:${c};width:75px">${n.name}</span><div class="hg" style="flex:1"><div class="hg-f" style="width:${Math.min(100,n.mentions*10)}%;background:${c}"></div></div><span style="font:12px 'VT323';color:var(--dim);width:24px;text-align:right">${n.mentions}</span></div>`});
+        if(data.ai_analysis)s.innerHTML+=`<div class="ai" style="margin-top:6px"><div class="ai-l">AGENT 51</div>${data.ai_analysis}</div>`;
+        return}}
+  }catch(e){console.log('Signal fallback:',e)}
+  // Mock fallback
+  [{n:'AI GAMING',c:'var(--g)',p:68},{n:'RWA',c:'var(--cy)',p:55},{n:'DEPIN',c:'var(--am)',p:82},{n:'RESTAKING',c:'var(--pu)',p:15},{n:'MEME UTILITY',c:'var(--red)',p:42}].forEach(n=>{s.innerHTML+=`<div style="display:flex;align-items:center;gap:6px;padding:5px 0;border-bottom:1px solid rgba(0,255,65,.03)"><span style="font:600 9px 'Orbitron';color:${n.c};width:75px">${n.n}</span><div class="hg" style="flex:1"><div class="hg-f" style="width:${n.p}%;background:${n.c}"></div></div><span style="font:12px 'VT323';color:var(--dim);width:24px;text-align:right">${n.p}%</span></div>`});
+}
+setTimeout(loadSignal,100);
 
-// Hologram
-function runH(){const r=document.getElementById('hRes'),a=Math.floor(Math.random()*60)+20,c=a>60?'var(--g)':a>35?'var(--am)':'var(--red)';r.style.display='block';r.innerHTML=`<div style="display:flex;align-items:center;gap:8px;margin:8px 0"><div class="sc-ring" style="border-color:${c}"><div class="sc-n" style="color:${c}">${a}</div><div class="sc-l">AUTH</div></div><div style="font:15px 'VT323'">${a>60?'Organic.':a>35?'Mixed.':'Artificial.'}</div></div><div class="cells" style="grid-template-columns:repeat(4,1fr)"><div class="cl"><div class="cl-l">ORGANIC</div><div class="cl-v" style="color:${c}">${a}%</div></div><div class="cl"><div class="cl-l">WASH</div><div class="cl-v v-bad">${100-a}%</div></div><div class="cl"><div class="cl-l">UNIQUE</div><div class="cl-v" style="color:var(--w)">${Math.floor(Math.random()*200)+30}</div></div><div class="cl"><div class="cl-l">RECYCLED</div><div class="cl-v v-mid">${Math.floor(Math.random()*50)+5}</div></div></div>`}
+// Hologram -- Real API
+async function runH(){
+  const r=document.getElementById('hRes');
+  const input=document.querySelector('#tv-holo .s-in');
+  const addr=input?input.value.trim():'';
+  if(addr.length>30){
+    try{
+      const res=await fetch(API+'/api/hologram/analyze',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({address:addr})});
+      if(res.ok){const d=await res.json();
+        const a=d.authenticity_score||50,c=a>60?'var(--g)':a>35?'var(--am)':'var(--red)';
+        r.style.display='block';r.innerHTML=`<div style="display:flex;align-items:center;gap:8px;margin:8px 0"><div class="sc-ring" style="border-color:${c}"><div class="sc-n" style="color:${c}">${a}</div><div class="sc-l">AUTH</div></div><div style="font:15px 'VT323'">${a>60?'Organic.':a>35?'Mixed.':'Artificial.'}</div></div><div class="cells" style="grid-template-columns:repeat(4,1fr)"><div class="cl"><div class="cl-l">ORGANIC</div><div class="cl-v" style="color:${c}">${d.organic_pct||a}%</div></div><div class="cl"><div class="cl-l">WASH</div><div class="cl-v v-bad">${d.wash_pct||(100-a)}%</div></div><div class="cl"><div class="cl-l">WALLETS</div><div class="cl-v" style="color:var(--w)">${d.unique_wallets||0}</div></div><div class="cl"><div class="cl-l">VOLUME</div><div class="cl-v" style="color:var(--cy)">$${Number((d.volume_24h||0).toFixed(0)).toLocaleString()}</div></div></div>${d.ai_analysis?'<div class="ai"><div class="ai-l">AGENT 51</div>'+d.ai_analysis+'</div>':''}`;return}
+    }catch(e){console.log('Hologram fallback:',e)}
+  }
+  // Mock fallback
+  const a=Math.floor(Math.random()*60)+20,c=a>60?'var(--g)':a>35?'var(--am)':'var(--red)';r.style.display='block';r.innerHTML=`<div style="display:flex;align-items:center;gap:8px;margin:8px 0"><div class="sc-ring" style="border-color:${c}"><div class="sc-n" style="color:${c}">${a}</div><div class="sc-l">AUTH</div></div><div style="font:15px 'VT323'">${a>60?'Organic.':a>35?'Mixed.':'Artificial.'} (paste address for live data)</div></div><div class="cells" style="grid-template-columns:repeat(4,1fr)"><div class="cl"><div class="cl-l">ORGANIC</div><div class="cl-v" style="color:${c}">${a}%</div></div><div class="cl"><div class="cl-l">WASH</div><div class="cl-v v-bad">${100-a}%</div></div><div class="cl"><div class="cl-l">UNIQUE</div><div class="cl-v" style="color:var(--w)">${Math.floor(Math.random()*200)+30}</div></div><div class="cl"><div class="cl-l">RECYCLED</div><div class="cl-v v-mid">${Math.floor(Math.random()*50)+5}</div></div></div>`;
+}
 
-// Dev
-function runD(){const r=document.getElementById('dRes'),s=Math.floor(Math.random()*80)+15,l=Math.floor(Math.random()*15)+1,g=Math.floor(l*.3),ru=Math.floor(l*.4),c=s>65?'var(--g)':s>35?'var(--am)':'var(--red)';document.getElementById('dRing').style.borderColor=c;document.getElementById('dSc').style.color=c;document.getElementById('dSc').textContent=s;document.getElementById('dAddr').textContent='7xK9m..dFp2';document.getElementById('dAddr').style.color=c;document.getElementById('dLbl').textContent=s>65?'TRUSTED':s>35?'MIXED':'AVOID';document.getElementById('dSt').innerHTML=[['LAUNCHED',l,'var(--w)'],['GRADUATED',g,'var(--g)'],['RUGGED',ru,'var(--red)']].map(([a,b,co])=>`<div style="display:flex;gap:8px;padding:3px 0;border-bottom:1px solid rgba(0,255,65,.03);font:14px 'VT323'"><span style="color:var(--dim);width:56px">${a}</span><span style="color:${co}">${b}</span></div>`).join('');document.getElementById('dAI').innerHTML=`<div class="ai-l">AGENT 51</div>${l} tokens. ${g} grad. ${ru} rugged. ${s>65?'Trusted.':'Caution.'}`;r.style.display='block'}
+// Dev (Abduction) -- Real API
+async function runD(){
+  const r=document.getElementById('dRes');
+  const input=document.getElementById('dIn');
+  const addr=input?input.value.trim():'';
+  if(addr.length>30){
+    try{
+      const res=await fetch(API+'/api/abduction/check',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({address:addr})});
+      if(res.ok){const d=await res.json();
+        const s=d.reputation_score||50,c=s>65?'var(--g)':s>35?'var(--am)':'var(--red)';
+        document.getElementById('dRing').style.borderColor=c;document.getElementById('dSc').style.color=c;document.getElementById('dSc').textContent=s;
+        document.getElementById('dAddr').textContent=addr.slice(0,8)+'..'+addr.slice(-4);document.getElementById('dAddr').style.color=c;
+        document.getElementById('dLbl').textContent=s>65?'TRUSTED':s>35?'MIXED':'AVOID';
+        document.getElementById('dSt').innerHTML=[['LAUNCHED',d.tokens_launched||0,'var(--w)'],['GRADUATED',d.tokens_graduated||0,'var(--g)'],['RUGGED',d.tokens_rugged||0,'var(--red)']].map(([a,b,co])=>`<div style="display:flex;gap:8px;padding:3px 0;border-bottom:1px solid rgba(0,255,65,.03);font:14px 'VT323'"><span style="color:var(--dim);width:56px">${a}</span><span style="color:${co}">${b}</span></div>`).join('');
+        document.getElementById('dAI').innerHTML=`<div class="ai-l">AGENT 51</div>${d.ai_analysis||'Analysis unavailable.'}`;r.style.display='block';return}
+    }catch(e){console.log('Abduction fallback:',e)}
+  }
+  // Mock fallback
+  const s=Math.floor(Math.random()*80)+15,l=Math.floor(Math.random()*15)+1,g=Math.floor(l*.3),ru=Math.floor(l*.4),c=s>65?'var(--g)':s>35?'var(--am)':'var(--red)';document.getElementById('dRing').style.borderColor=c;document.getElementById('dSc').style.color=c;document.getElementById('dSc').textContent=s;document.getElementById('dAddr').textContent='paste address for live data';document.getElementById('dAddr').style.color='var(--dim)';document.getElementById('dLbl').textContent=s>65?'TRUSTED':s>35?'MIXED':'AVOID';document.getElementById('dSt').innerHTML=[['LAUNCHED',l,'var(--w)'],['GRADUATED',g,'var(--g)'],['RUGGED',ru,'var(--red)']].map(([a,b,co])=>`<div style="display:flex;gap:8px;padding:3px 0;border-bottom:1px solid rgba(0,255,65,.03);font:14px 'VT323'"><span style="color:var(--dim);width:56px">${a}</span><span style="color:${co}">${b}</span></div>`).join('');document.getElementById('dAI').innerHTML=`<div class="ai-l">AGENT 51</div>${l} tokens. ${g} grad. ${ru} rugged. ${s>65?'Trusted.':'Caution.'}`;r.style.display='block';
+}
 
-// PnL
-function runPL(){const r=document.getElementById('plRes'),t=(Math.random()*6000-2000).toFixed(2),c=parseFloat(t)>0?'var(--g)':'var(--red)';r.style.display='block';r.innerHTML=`<div class="cells" style="grid-template-columns:repeat(3,1fr);margin-top:6px"><div class="cl" style="text-align:center;padding:10px"><div style="font:700 14px 'Orbitron';color:${c}">${parseFloat(t)>0?'+':''}$${Number(Math.abs(t)).toLocaleString()}</div><div class="cl-l" style="margin-top:3px">PNL 30D</div></div><div class="cl" style="text-align:center;padding:10px"><div style="font:700 14px 'Orbitron';color:var(--w)">${Math.floor(Math.random()*300)+50}</div><div class="cl-l" style="margin-top:3px">TRADES</div></div><div class="cl" style="text-align:center;padding:10px"><div style="font:700 14px 'Orbitron';color:var(--cy)">${Math.floor(Math.random()*30)+35}%</div><div class="cl-l" style="margin-top:3px">WIN RATE</div></div></div>`}
+// PnL (Debriefing) -- Real API
+async function runPL(){
+  const r=document.getElementById('plRes');
+  const input=document.querySelector('#tv-debrief .s-in');
+  const addr=input?input.value.trim():'';
+  if(addr.length>30){
+    try{
+      const res=await fetch(API+'/api/debriefing/report',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({wallet:addr})});
+      if(res.ok){const d=await res.json();
+        const pnl=d.total_pnl||0,c=pnl>=0?'var(--g)':'var(--red)';
+        r.style.display='block';r.innerHTML=`<div class="cells" style="grid-template-columns:repeat(3,1fr);margin-top:6px"><div class="cl" style="text-align:center;padding:10px"><div style="font:700 14px 'Orbitron';color:var(--w)">${d.total_trades||0}</div><div class="cl-l" style="margin-top:3px">TRADES</div></div><div class="cl" style="text-align:center;padding:10px"><div style="font:700 14px 'Orbitron';color:var(--w)">${d.recent_trades?.length||0}</div><div class="cl-l" style="margin-top:3px">RECENT</div></div><div class="cl" style="text-align:center;padding:10px"><div style="font:700 14px 'Orbitron';color:var(--cy)">SWAP</div><div class="cl-l" style="margin-top:3px">TYPE</div></div></div>${d.ai_analysis?'<div class="ai"><div class="ai-l">AGENT 51</div>'+d.ai_analysis+'</div>':''}`;return}
+    }catch(e){console.log('Debriefing fallback:',e)}
+  }
+  // Mock fallback
+  const t=(Math.random()*6000-2000).toFixed(2),c=parseFloat(t)>0?'var(--g)':'var(--red)';r.style.display='block';r.innerHTML=`<div class="cells" style="grid-template-columns:repeat(3,1fr);margin-top:6px"><div class="cl" style="text-align:center;padding:10px"><div style="font:700 14px 'Orbitron';color:${c}">${parseFloat(t)>0?'+':''}$${Number(Math.abs(t)).toLocaleString()}</div><div class="cl-l" style="margin-top:3px">PNL 30D</div></div><div class="cl" style="text-align:center;padding:10px"><div style="font:700 14px 'Orbitron';color:var(--w)">${Math.floor(Math.random()*300)+50}</div><div class="cl-l" style="margin-top:3px">TRADES</div></div><div class="cl" style="text-align:center;padding:10px"><div style="font:700 14px 'Orbitron';color:var(--cy)">${Math.floor(Math.random()*30)+35}%</div><div class="cl-l" style="margin-top:3px">WIN RATE</div></div></div><div style="font:12px 'VT323';color:var(--dim);margin-top:4px">Paste wallet address for live data</div>`;
+}
 
 // Redacted
 document.querySelectorAll('.red').forEach(el=>{el.addEventListener('mouseenter',()=>el.style.filter='blur(0)');el.addEventListener('mouseleave',()=>el.style.filter='blur(4px)')});
