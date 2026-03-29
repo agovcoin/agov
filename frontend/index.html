@@ -3,666 +3,721 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>$AGOV -- aliens.gov returned 404</title>
-<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Share+Tech+Mono&family=Special+Elite&family=Courier+Prime:wght@400;700&family=Merriweather:wght@400;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<title>$AGOV — Station 51</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Share+Tech+Mono&family=JetBrains+Mono:wght@400;500&family=Silkscreen&family=VT323&display=swap" rel="stylesheet">
 <style>
-/* GOV OVERLAY */
-#gov{position:fixed;top:0;left:0;width:100%;height:100%;z-index:99999;background:#fff;display:flex;flex-direction:column}
-#gov.hidden{display:none}
-.gh{background:linear-gradient(180deg,#112e51,#1a4480);padding:16px 48px;display:flex;align-items:center;gap:16px;border-bottom:3px solid #dce4ef}
-.gs{width:48px;height:48px;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center;font:700 18px 'Merriweather',serif;color:#112e51;border:2px solid #c8d8e8}
-.gh h1{font:700 16px/1.2 'Merriweather',serif;color:#fff}
-.gh p{font:400 12px/1 'Merriweather',serif;color:#97b4d0;margin-top:3px}
-.gn{background:#1a4480;padding:10px 48px;display:flex;gap:24px}
-.gn a{color:#97d4ea;font:400 13px 'Merriweather',serif;text-decoration:none}
-.gb{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:60px;background:#fafcfe;text-align:center}
-.gb .gu{font:400 18px 'Courier Prime',monospace;color:#1a4480;padding:12px 30px;background:#edf2f7;border:1px solid #d0dae5;border-radius:4px;display:inline-block;margin-bottom:24px}
-.gb h2{font:700 80px/1 'Merriweather',serif;color:#1a4480}
-.gb h3{font:400 22px/1.3 'Merriweather',serif;color:#333;margin-top:8px}
-.gb p{font:400 15px/1.7 'Merriweather',serif;color:#555;margin-top:20px;max-width:500px}
-.gq{font:italic 15px/1.4 'Merriweather',serif;color:#1a4480;margin-top:28px}
-.gf{background:#edf2f7;padding:14px 48px;text-align:center;border-top:1px solid #d0dae5}
-.gf p{font:400 11px 'Merriweather',serif;color:#888}
-@keyframes glitchHard{0%{transform:translate(0);filter:none;opacity:1}5%{transform:translate(-5px,3px)skewX(2deg);filter:hue-rotate(90deg)brightness(1.3)}10%{transform:translate(4px,-2px)skewX(-3deg);filter:hue-rotate(180deg)saturate(3)contrast(1.5)}15%{transform:translate(-3px,4px);filter:invert(1)}25%{transform:translate(-2px,1px);filter:hue-rotate(45deg)saturate(5)}35%{transform:translate(-4px,2px);filter:none;opacity:.6}50%{transform:translate(-6px,3px)skewX(-5deg);filter:invert(1);opacity:.3}65%{transform:translate(4px,-2px);opacity:.15}80%{transform:translate(0);filter:brightness(5);opacity:.05}100%{opacity:0}}
-#gov.glitching{animation:glitchHard 2s steps(3) forwards}
-#gov.glitching::before{content:'';position:absolute;top:0;left:0;right:0;bottom:0;z-index:1;background:repeating-linear-gradient(0deg,transparent 0px,transparent 2px,rgba(0,255,65,.15) 2px,rgba(0,255,65,.15) 4px);mix-blend-mode:overlay;pointer-events:none}
-#gov.glitching .gb *{color:#00ff41!important}
-#gov.glitching .gh,#gov.glitching .gn,#gov.glitching .gb,#gov.glitching .gf{background:#000!important}
-#ptc{position:fixed;top:0;left:0;width:100%;height:100%;z-index:99998;pointer-events:none;display:none}
+/* ALIEN FONT - CSS generated glyphs */
+@font-face{font-family:'Alien';src:url(data:font/woff2;base64,) format('woff2')}
+.alien{font-family:'Share Tech Mono';letter-spacing:6px;color:rgba(0,255,65,.15);user-select:none;pointer-events:none;font-size:11px;line-height:1.2;overflow:hidden}
+.alien-bright{color:rgba(0,255,65,.25)}
 
-/* MAIN */
-:root{--g:#00ff41;--gd:#0a3a1a;--r:#ff3333;--a:#ffaa00;--cy:#00ccff;--bg:#030806;--bgc:rgba(0,255,65,0.025);--bdr:rgba(0,255,65,0.12);--t:#a0c8b0;--td:#5a7a6a;--tb:#d0f0d8;--w:#e0f0e4}
+:root{
+  --g:#00ff41;--g2:#00cc33;--gd:#0a3a1a;--gl:rgba(0,255,65,.08);--gb:rgba(0,255,65,.03);
+  --am:#ffaa00;--red:#ff3344;--cy:#00ddcc;--pu:#7c6cfc;
+  --w:#c0e8c8;--t:#6a9a78;--dim:#3a6a4a;--bg:#020a04;--hull:#041208;--panel:#061410;
+  --bz:#0a2a14;--bz2:#071a0c;--bz3:#143a20;--rim:#1a4a28;
+}
 *{margin:0;padding:0;box-sizing:border-box}
-body{background:var(--bg);color:var(--t);font-family:'Courier Prime',monospace;overflow-x:hidden}
-::selection{background:rgba(0,255,65,.2);color:var(--g)}
-::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:var(--gd);border-radius:3px}
-a{color:var(--g);text-decoration:none}a:hover{text-decoration:underline}
-.scanlines{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:9999;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,255,65,.01) 2px,rgba(0,255,65,.01) 4px)}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
-@keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+body{background:var(--bg);color:var(--t);font-family:'VT323',monospace;overflow-x:hidden;font-size:16px}
+::selection{background:rgba(0,255,65,.2);color:#fff}
+::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:var(--g2);border-radius:3px}
+
+/* Stars */
+#stars{position:fixed;inset:0;z-index:0}
+.st{position:absolute;border-radius:50%;background:rgba(0,255,65,.3)}
+
+/* Scanline overlay */
+body::after{content:'';position:fixed;inset:0;z-index:9999;pointer-events:none;
+  background:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,.04) 3px,rgba(0,0,0,.04) 4px)}
+
+/* Ambient top glow */
+body::before{content:'';position:fixed;top:0;left:0;right:0;height:300px;z-index:0;pointer-events:none;
+  background:radial-gradient(ellipse at 50% 0%,rgba(0,255,65,.02),transparent 70%)}
+
+/* GOV OVERLAY */
+#gov{position:fixed;inset:0;z-index:9999;background:#fff;display:flex;flex-direction:column;cursor:pointer}
+#gov.off{display:none}
+.g-h{background:linear-gradient(180deg,#112e51,#1a4480);padding:12px 36px;display:flex;align-items:center;gap:12px;border-bottom:3px solid #dce4ef}
+.g-seal{width:36px;height:36px;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center;font:700 14px serif;color:#112e51}
+.g-h h1{font:700 14px/1.2 serif;color:#fff}.g-h p{font:10px serif;color:#97b4d0;margin-top:2px}
+.g-b{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#fafcfe;text-align:center}
+.g-b h2{font:700 64px/1 serif;color:#1a4480}.g-b h3{font:400 18px serif;color:#333;margin-top:4px}
+.g-b p{font:13px/1.6 serif;color:#666;margin-top:14px;max-width:400px}
+.g-f{background:#edf2f7;padding:8px;text-align:center}.g-f p{font:9px serif;color:#999}
+@keyframes govDie{0%{filter:none}10%{filter:hue-rotate(90deg)}25%{filter:invert(1)}50%{filter:saturate(5)hue-rotate(120deg)}75%{opacity:.3}100%{opacity:0}}
+#gov.die{animation:govDie 1.6s ease forwards}
+#gov.die *{color:#00ff41!important}
+#gov.die .g-h,#gov.die .g-b,#gov.die .g-f{background:#020a04!important}
+
+/* KEYFRAMES */
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.25}}
+@keyframes sweep{from{transform:rotate(0)}to{transform:rotate(360deg)}}
+@keyframes scanDown{from{top:0}to{top:100%}}
+@keyframes glow{0%,100%{opacity:.4}50%{opacity:1}}
+@keyframes countPulse{0%,100%{text-shadow:0 0 6px rgba(255,51,68,.2)}50%{text-shadow:0 0 16px rgba(255,51,68,.4)}}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+@keyframes typeIn{from{width:0}to{width:100%}}
 @keyframes blink{50%{opacity:0}}
-@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
-@keyframes flicker{0%,100%{opacity:1}93%{opacity:.4}94%{opacity:1}96%{opacity:.3}97%{opacity:1}}
-@keyframes glitch1{0%,100%{clip-path:inset(40% 0 61% 0)}20%{clip-path:inset(92% 0 1% 0)}40%{clip-path:inset(43% 0 1% 0)}60%{clip-path:inset(25% 0 58% 0)}80%{clip-path:inset(54% 0 7% 0)}}
-@keyframes glitch2{0%,100%{clip-path:inset(25% 0 58% 0)}20%{clip-path:inset(54% 0 7% 0)}40%{clip-path:inset(40% 0 61% 0)}60%{clip-path:inset(92% 0 1% 0)}80%{clip-path:inset(43% 0 1% 0)}}
-.glitch{position:relative}.glitch::before,.glitch::after{content:attr(data-text);position:absolute;top:0;left:0;width:100%;height:100%}.glitch::before{color:var(--r);animation:glitch1 3s infinite linear alternate-reverse;left:2px;text-shadow:-2px 0 var(--r);opacity:.5}.glitch::after{color:var(--g);animation:glitch2 3s infinite linear alternate-reverse;left:-2px;text-shadow:2px 0 var(--g);opacity:.3}
-.mx{max-width:1100px;margin:0 auto;padding:0 32px}
+@keyframes alienScroll{from{transform:translateX(0)}to{transform:translateX(-50%)}}
 
-/* SECTION SWITCHING (not scroll) */
-section{display:none;animation:fadeIn .4s ease}
-section.active{display:block}
+/* LAYOUT */
+#site{position:relative;z-index:1;opacity:0;transition:opacity .6s}
+.mx{max-width:1080px;margin:0 auto;padding:0 18px}
+section{display:none;animation:fadeIn .4s}section.active{display:block}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:14px}
 
-.tag{font:13px/1 'Share Tech Mono',monospace;color:var(--td);letter-spacing:4px}
-.ttl{font:700 22px/1.2 'Orbitron',sans-serif;color:var(--tb);letter-spacing:2px;margin-top:5px}
+/* ============ SCREEN COMPONENT ============ */
+.scr{
+  position:relative;overflow:hidden;
+  background:var(--panel);
+  border-radius:8px;
+  border:1px solid var(--bz);
+  box-shadow:0 0 0 2px var(--bz2),0 4px 14px rgba(0,0,0,.5),inset 0 0 30px rgba(0,0,0,.25),inset 0 1px 0 rgba(0,255,65,.02);
+}
+.scr::before{content:'';position:absolute;inset:0;z-index:2;pointer-events:none;
+  background:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,.025) 3px,rgba(0,0,0,.025) 4px)}
+.scr::after{content:'';position:absolute;left:0;right:0;height:1px;z-index:3;pointer-events:none;
+  background:linear-gradient(90deg,transparent 10%,rgba(0,255,65,.06) 50%,transparent 90%);
+  animation:scanDown 5s linear infinite}
+.scr-lbl{position:absolute;top:5px;left:10px;z-index:4;font:11px/1 'Silkscreen';letter-spacing:3px;color:var(--dim)}
+.scr-body{padding:16px;position:relative;z-index:1}
+.scr-led{position:absolute;top:7px;right:9px;width:5px;height:5px;border-radius:50%;z-index:4}
+.led-g{background:var(--g);box-shadow:0 0 4px var(--g)}
+.led-a{background:var(--am);box-shadow:0 0 4px var(--am)}
+.led-r{background:var(--red);box-shadow:0 0 4px var(--red)}
 
-/* NAV */
-nav{display:flex;justify-content:space-between;align-items:center;padding:10px 24px;border-bottom:1px solid var(--bdr);background:rgba(3,8,6,.94);backdrop-filter:blur(12px);position:sticky;top:0;z-index:100}
-.nl{display:flex;align-items:center;gap:10px}
-.nl h1{font:800 20px/1 'Orbitron',sans-serif;color:var(--g);letter-spacing:3px}
-.nl small{display:block;font:11px/1 'Share Tech Mono',monospace;color:var(--td);letter-spacing:2px;margin-top:2px}
-.nv{display:flex;gap:3px;flex-wrap:wrap}
-.nv button{background:transparent;border:none;border-bottom:2px solid transparent;color:var(--td);padding:8px 14px;font:13px/1 'Share Tech Mono',monospace;letter-spacing:1px;cursor:pointer;transition:all .2s}
-.nv button:hover{color:var(--g);border-bottom-color:rgba(0,255,65,.3)}
-.nv button.on{color:var(--g);border-bottom-color:var(--g)}
+/* ============ 3D BUTTONS ============ */
+.b3{display:inline-flex;align-items:center;justify-content:center;padding:10px 24px;font:700 14px/1 'VT323';letter-spacing:3px;border:none;border-radius:4px;cursor:pointer;transition:all .1s;text-transform:uppercase}
+.b3:active{transform:translateY(2px)}.b3:disabled{opacity:.25;cursor:default;transform:none!important}
+.b3-g{background:linear-gradient(180deg,#00ee44,#00aa22);color:#003300;box-shadow:0 3px 0 #007718,0 4px 8px rgba(0,0,0,.4),0 0 10px rgba(0,255,65,.15),inset 0 1px 0 rgba(255,255,255,.2)}
+.b3-g:hover{box-shadow:0 3px 0 #007718,0 4px 8px rgba(0,0,0,.4),0 0 20px rgba(0,255,65,.25),inset 0 1px 0 rgba(255,255,255,.3)}
+.b3-g:active{box-shadow:0 1px 0 #007718,0 2px 4px rgba(0,0,0,.4)}
+.b3-o{background:linear-gradient(180deg,#0a2a14,#061208);color:var(--g);box-shadow:0 3px 0 rgba(0,0,0,.3),inset 0 1px 0 rgba(0,255,65,.03);border:1px solid var(--bz)}
+.b3-o:hover{border-color:var(--bz3);box-shadow:0 3px 0 rgba(0,0,0,.3),0 0 10px var(--gl)}
+.b3-am{background:linear-gradient(180deg,#5a3a00,#3a2400);color:var(--am);box-shadow:0 3px 0 #1a1000,0 4px 8px rgba(0,0,0,.4);border:1px solid rgba(255,170,0,.15)}
 
-/* STATUS STRIP */
-.strip{display:flex;gap:16px;padding:7px 32px;background:rgba(0,0,0,.3);border-bottom:1px solid rgba(0,255,65,.06);flex-wrap:wrap;justify-content:center}
-.strip-item{font:10px/1 'Share Tech Mono',monospace;color:var(--td);display:flex;align-items:center;gap:5px;letter-spacing:1px}
-.strip-dot{width:5px;height:5px;border-radius:50%;background:var(--g);box-shadow:0 0 4px var(--g);animation:pulse 2s infinite}
+/* ============ RADAR ============ */
+.radar{width:150px;height:150px;border-radius:50%;position:relative;flex-shrink:0;
+  background:radial-gradient(circle,rgba(0,255,65,.03) 0%,transparent 60%);
+  border:2px solid var(--bz);box-shadow:0 0 0 3px var(--bz2),inset 0 0 25px rgba(0,0,0,.4),0 0 15px var(--gl)}
+.radar::before{content:'';position:absolute;inset:0;border-radius:50%;
+  background:repeating-radial-gradient(circle at center,transparent 0,transparent 22px,rgba(0,255,65,.02) 22px,rgba(0,255,65,.02) 23px)}
+.radar::after{content:'';position:absolute;inset:0;border-radius:50%;
+  background:linear-gradient(0deg,transparent 49.5%,rgba(0,255,65,.03) 49.5%,rgba(0,255,65,.03) 50.5%,transparent 50.5%),
+  linear-gradient(90deg,transparent 49.5%,rgba(0,255,65,.03) 49.5%,rgba(0,255,65,.03) 50.5%,transparent 50.5%)}
+.radar-sw{position:absolute;top:50%;left:50%;width:50%;height:2px;transform-origin:left center;
+  background:linear-gradient(90deg,rgba(0,255,65,.4),transparent);animation:sweep 3s linear infinite;box-shadow:0 0 6px rgba(0,255,65,.2)}
+.blip{position:absolute;width:3px;height:3px;border-radius:50%;animation:glow 2s ease-in-out infinite}
+.blip-g{background:var(--g);box-shadow:0 0 4px var(--g)}
+.blip-a{background:var(--am);box-shadow:0 0 4px var(--am)}
+.blip-r{background:var(--red);box-shadow:0 0 4px var(--red)}
 
-/* Buttons */
-.bp{background:var(--g);color:#000;border:0;padding:12px 30px;font:700 14px/1 'Orbitron',sans-serif;letter-spacing:3px;cursor:pointer;border-radius:3px;box-shadow:0 0 20px rgba(0,255,65,.2);transition:all .2s}
-.bp:hover{box-shadow:0 0 35px rgba(0,255,65,.4);transform:translateY(-1px)}
-.bp:disabled{background:#333;color:#666;cursor:wait;box-shadow:none;transform:none}
-.bg{background:rgba(0,255,65,.05);color:var(--g);border:1px solid rgba(0,255,65,.3);padding:12px 30px;font:700 14px/1 'Orbitron',sans-serif;letter-spacing:3px;cursor:pointer;border-radius:3px;transition:all .2s}
-.bg:hover{border-color:var(--g);background:rgba(0,255,65,.1)}
-.bc{background:rgba(0,204,255,.05);color:var(--cy);border:1px solid rgba(0,204,255,.3);padding:12px 30px;font:700 14px/1 'Orbitron',sans-serif;letter-spacing:3px;cursor:pointer;border-radius:3px;transition:all .2s}
-.bc:hover{border-color:var(--cy);background:rgba(0,204,255,.1)}
+/* Gauges */
+.hg{height:4px;background:rgba(0,0,0,.4);border-radius:2px;border:1px solid var(--bz);overflow:hidden}
+.hg-f{height:100%;border-radius:1px;transition:width .6s}
+.vg{width:5px;height:45px;background:rgba(0,0,0,.4);border-radius:2px;border:1px solid var(--bz);position:relative;overflow:hidden}
+.vg-f{position:absolute;bottom:0;left:0;right:0;border-radius:0 0 1px 1px;transition:height .6s}
 
-/* Panels & cards */
-.pnl{background:var(--bgc);border:1px solid var(--bdr);border-radius:4px;padding:24px}
-.two{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+/* ============ NAV ============ */
+nav{display:flex;align-items:center;justify-content:space-between;padding:7px 16px;
+  background:linear-gradient(180deg,#061410,var(--hull));border-bottom:1px solid var(--bz);
+  box-shadow:0 1px 0 var(--bz2),0 3px 10px rgba(0,0,0,.3);position:sticky;top:0;z-index:100}
+.n-logo{font:800 18px/1 'Orbitron';color:var(--g);letter-spacing:3px;text-shadow:0 0 8px rgba(0,255,65,.2)}
+.n-sub{font:9px/1 'Silkscreen';color:var(--dim);letter-spacing:3px;margin-top:2px}
+.n-btns{display:flex;gap:2px;flex-wrap:wrap}
+.nb{background:linear-gradient(180deg,#0a1a0e,#061208);border:1px solid var(--bz2);border-radius:3px;
+  color:var(--dim);font:13px/1 'VT323';padding:6px 11px;cursor:pointer;letter-spacing:2px;transition:all .1s;
+  box-shadow:0 2px 0 rgba(0,0,0,.3),inset 0 1px 0 rgba(0,255,65,.02)}
+.nb:hover{color:var(--g);border-color:var(--bz)}
+.nb:active{transform:translateY(1px);box-shadow:0 1px 0 rgba(0,0,0,.3)}
+.nb.on{color:var(--g);border-color:rgba(0,255,65,.15);background:linear-gradient(180deg,#041a08,#020e04);
+  box-shadow:0 2px 0 rgba(0,0,0,.3),0 0 6px var(--gl)}
 
-/* Scanner input */
-.si{display:flex;gap:8px}
-.si input{flex:1;background:rgba(0,0,0,.4);border:1px solid rgba(0,255,65,.2);border-radius:4px;padding:12px 16px;color:var(--g);font:15px/1 'JetBrains Mono',monospace;outline:none}
-.si input:focus{border-color:rgba(0,255,65,.5)}
-.si input::placeholder{color:rgba(0,255,65,.25)}
+/* Dot */
+.dot{width:4px;height:4px;border-radius:50%}
+.dot-g{background:var(--g);box-shadow:0 0 4px var(--g)}
 
-/* Result grid */
-.rg{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:14px 0}
-.rc{background:rgba(0,0,0,.3);border:1px solid rgba(0,255,65,.08);border-radius:4px;padding:10px 12px}
-.rc .rl{font:11px/1 'Share Tech Mono',monospace;color:var(--td);letter-spacing:2px;margin-bottom:3px}
-.rc .rv{font:14px/1 'JetBrains Mono',monospace}
-.rs{color:var(--g)}.rw{color:var(--a)}.rd{color:var(--r)}
+/* Strip */
+.strip{display:flex;gap:14px;padding:4px 16px;background:rgba(0,0,0,.25);border-bottom:1px solid rgba(0,255,65,.04);justify-content:center;flex-wrap:wrap}
+.s-i{display:flex;align-items:center;gap:3px;font:12px/1 'VT323';color:var(--dim);letter-spacing:1px}
+
+/* Scanner */
+.scan-wrap{background:rgba(0,0,0,.25);border:1px solid var(--bz);border-radius:4px;padding:8px}
+.s-in{flex:1;background:rgba(0,5,2,.7);border:1px solid var(--bz);border-radius:3px;padding:10px 12px;color:var(--g);font:16px/1 'VT323';outline:none;transition:all .2s}
+.s-in:focus{border-color:rgba(0,255,65,.25);box-shadow:0 0 8px var(--gl)}
+.s-in::placeholder{color:rgba(0,255,65,.12)}
+
+/* Cells */
+.cells{display:grid;gap:4px;margin:8px 0}
+.cl{background:rgba(0,0,0,.2);border:1px solid var(--bz);border-radius:3px;padding:8px}
+.cl-l{font:10px/1 'Silkscreen';color:var(--dim);letter-spacing:2px;margin-bottom:3px}
+.cl-v{font:16px/1 'VT323'}
+.v-ok{color:var(--g)}.v-mid{color:var(--am)}.v-bad{color:var(--red)}
 
 /* Score ring */
-.sr{width:70px;height:70px;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0}
-.sr .sn{font:800 22px/1 'Orbitron',sans-serif}
-.sr .sl{font:9px/1 'Share Tech Mono',monospace;color:var(--td);margin-top:3px;letter-spacing:2px}
+.sc-ring{width:48px;height:48px;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0;border:2px solid var(--bz);box-shadow:inset 0 1px 3px rgba(0,0,0,.4),0 0 8px var(--gl)}
+.sc-n{font:800 16px/1 'Orbitron'}.sc-l{font:6px/1 'Silkscreen';color:var(--dim);margin-top:2px;letter-spacing:2px}
 
 /* AI box */
-.ai{background:rgba(0,255,65,.03);border:1px solid rgba(0,255,65,.1);border-radius:4px;padding:14px 16px;font:13px/1.7 'Share Tech Mono',monospace;color:var(--t);margin-top:12px}
-.ai .at{color:var(--g);font:11px/1 'Orbitron',sans-serif;letter-spacing:2px;margin-bottom:6px}
+.ai{background:var(--gb);border:1px solid rgba(0,255,65,.06);border-radius:3px;padding:10px;font:15px/1.6 'VT323';color:var(--t);margin-top:8px}
+.ai-l{font:9px/1 'Silkscreen';color:var(--g);letter-spacing:2px;margin-bottom:4px}
 
-/* Feed items */
-.fi{display:flex;align-items:flex-start;gap:12px;padding:10px 12px;border-bottom:1px solid rgba(0,255,65,.05);font:13px/1.5 'Share Tech Mono',monospace}
-.fi:hover{background:rgba(0,255,65,.02)}
+/* Badge */
+.bdg{font:10px/1 'VT323';letter-spacing:2px;padding:2px 6px;border-radius:2px}
+.bdg-on{color:var(--g);border:1px solid rgba(0,255,65,.15);background:rgba(0,255,65,.04)}
+.bdg-new{color:var(--am);border:1px solid rgba(255,170,0,.15);background:rgba(255,170,0,.04)}
 
-/* Badges */
-.badge{font:11px/1 'Orbitron',sans-serif;letter-spacing:1px;padding:3px 10px;border-radius:3px;font-weight:600}
-.badge-live{color:var(--g);border:1px solid rgba(0,255,65,.3);background:rgba(0,255,65,.08)}
+/* Feed */
+.feed{max-height:300px;overflow-y:auto;background:rgba(0,0,0,.15);border:1px solid var(--bz);border-radius:3px}
+.fi{display:flex;align-items:center;gap:6px;padding:6px 8px;border-bottom:1px solid rgba(0,255,65,.03);font:14px/1.3 'VT323';color:var(--t);transition:background .1s}
+.fi:hover{background:rgba(0,255,65,.01)}
 
-/* Tier cards */
-.tier{border:1px solid rgba(0,255,65,.1);border-radius:4px;padding:20px;transition:all .3s}
-.tier:hover{border-color:rgba(0,255,65,.25);background:rgba(0,255,65,.02)}
-.tier-name{font:700 16px/1 'Orbitron',sans-serif;letter-spacing:2px;margin-bottom:4px}
-.tier-req{font:13px/1 'Share Tech Mono',monospace;color:var(--td);letter-spacing:2px;margin-bottom:12px}
-.tier-list{font:14px/1.8 'Courier Prime',monospace;color:#7a9a8a}
-.tier-list b{color:var(--g);font-weight:400;margin-right:4px}
+/* Countdown */
+.countdown{display:flex;align-items:center;gap:8px;padding:8px 14px;background:rgba(255,51,68,.02);border:1px solid rgba(255,51,68,.08);border-radius:4px;margin-bottom:12px}
+.cd-v{font:800 16px/1 'Orbitron';color:var(--red);animation:countPulse 3s infinite}
+.cd-l{font:8px/1 'VT323';color:var(--dim);margin-top:2px;letter-spacing:2px}
+.cd-sep{font:14px 'Orbitron';color:rgba(255,51,68,.2)}
 
-/* Stat rows */
-.srow{display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid rgba(0,255,65,.04);font:14px/1 'Share Tech Mono',monospace}
-.srow:last-child{border:0}
-.sk{color:var(--td)}.sv{font-weight:700;font-family:'Orbitron',sans-serif;font-size:13px}
+/* Tools layout */
+.t-wrap{display:grid;grid-template-columns:170px 1fr;border:1px solid var(--bz);border-radius:6px;overflow:hidden;min-height:460px;background:var(--hull);box-shadow:0 0 0 2px var(--bz2),0 3px 12px rgba(0,0,0,.4)}
+.t-side{border-right:1px solid var(--bz);background:linear-gradient(180deg,#061410,#040e08);padding:4px 0;overflow-y:auto}
+.tg{font:9px/1 'Silkscreen';color:var(--dim);letter-spacing:3px;padding:8px 10px 2px}
+.tb{display:flex;align-items:center;gap:5px;width:100%;padding:6px 10px;background:none;border:none;border-left:2px solid transparent;color:var(--dim);font:14px/1 'VT323';cursor:pointer;transition:all .1s;text-align:left;letter-spacing:1px}
+.tb:hover{color:var(--w);background:rgba(0,255,65,.015)}
+.tb.on{color:var(--g);border-left-color:var(--g);background:rgba(0,255,65,.02)}
+.tb .num{font:500 7px/1 'Orbitron';width:14px;opacity:.3}
+.tb .tag{margin-left:auto;font:10px/1 'VT323';padding:1px 4px;border-radius:2px}
+.t-main{overflow-y:auto;background:var(--panel)}
+.tv{display:none;animation:fadeIn .3s}.tv.on{display:block}
+.tv-h{padding:12px 14px;border-bottom:1px solid rgba(0,255,65,.06)}
+.tv-h h2{font:600 14px/1 'Orbitron';color:var(--w);letter-spacing:2px}
+.tv-h p{font:14px/1.5 'VT323';color:var(--dim);margin-top:3px}
+.tv-b{padding:12px 14px}
 
-/* Transparency rows */
-.tr-row{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:1px solid rgba(0,255,65,.05);font:13px/1 'Share Tech Mono',monospace}
-.tr-status{display:flex;align-items:center;gap:8px}
+/* Tiers */
+.tiers{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.tier{border:1px solid var(--bz);border-radius:6px;padding:14px;background:linear-gradient(180deg,rgba(6,20,16,.5),rgba(4,14,8,.7));transition:all .2s;box-shadow:0 0 0 2px var(--bz2),0 2px 8px rgba(0,0,0,.3)}
+.tier:hover{transform:translateY(-2px);box-shadow:0 0 0 2px var(--bz2),0 4px 14px rgba(0,0,0,.4)}
+.tier-bar{height:2px;margin:-14px -14px 10px;width:calc(100% + 28px)}
+.tier h4{font:600 12px/1 'Orbitron';letter-spacing:2px;margin-bottom:3px}
+.tier .rq{font:12px/1 'VT323';color:var(--dim);letter-spacing:2px;margin-bottom:8px}
+.tier ul{list-style:none;font:14px/1.8 'VT323';color:var(--t)}
 
-/* Steps */
-.step{display:flex;gap:16px;margin-bottom:24px}
-.step-n{width:40px;height:40px;border-radius:50%;border:2px solid var(--g);display:flex;align-items:center;justify-content:center;font:700 16px/1 'Orbitron',sans-serif;color:var(--g);flex-shrink:0}
-.step h4{font:700 15px/1 'Orbitron',sans-serif;color:var(--tb);letter-spacing:1px;margin-bottom:5px}
-.step p{font:14px/1.7 'Courier Prime',monospace;color:#7a9a8a}
+/* Autopsy/warp/grad cards */
+.c-rug{border:1px solid rgba(255,51,68,.05);border-radius:3px;padding:8px;margin-bottom:5px;background:rgba(255,51,68,.01)}
+.c-warp{border:1px solid rgba(0,255,65,.05);border-radius:3px;padding:8px;margin-bottom:5px;background:var(--gb)}
+.grad-r{display:flex;align-items:center;gap:6px;padding:6px 8px;border-bottom:1px solid rgba(0,255,65,.03)}
+.grad-b{flex:1;height:4px;background:rgba(0,0,0,.3);border-radius:2px;border:1px solid var(--bz);overflow:hidden}
+.grad-f{height:100%;border-radius:1px;background:linear-gradient(90deg,var(--g2),var(--g));transition:width .5s}
+.ctag{font:10px/1 'VT323';padding:1px 5px;border-radius:2px;letter-spacing:1px}
+
+/* X-files */
+.xf{padding:8px 0;border-bottom:1px solid rgba(0,255,65,.03)}
+.red{filter:blur(4px);transition:filter .3s;cursor:pointer;color:var(--red)}
+.red:hover{filter:blur(0)}
 
 /* FAQ */
-.faq{border:1px solid var(--bdr);border-radius:4px;margin-bottom:8px}
-.faq summary{padding:14px 20px;cursor:pointer;font:15px/1.4 'Courier Prime',monospace;color:var(--tb);background:var(--bgc);list-style:none;display:flex;justify-content:space-between;align-items:center}
-.faq summary:hover{background:rgba(0,255,65,.04)}
-.faq summary::after{content:'>';color:var(--g);font:16px 'Share Tech Mono',monospace;transition:transform .2s}
-.faq[open] summary::after{transform:rotate(90deg)}
-.faq .fa{padding:14px 20px;font:14px/1.8 'Courier Prime',monospace;color:#7a9a8a;border-top:1px solid rgba(0,255,65,.06)}
+details{border:1px solid var(--bz);border-radius:4px;margin-bottom:4px}
+details summary{padding:9px 11px;cursor:pointer;font:15px/1 'VT323';color:var(--w);list-style:none;display:flex;justify-content:space-between;background:var(--gb);border-radius:4px;letter-spacing:1px}
+details[open] summary{border-radius:4px 4px 0 0;border-bottom:1px solid var(--bz)}
+details div{padding:9px 11px;font:14px/1.6 'VT323';color:var(--dim)}
 
-/* Tool app */
-.tapp{display:flex;border:1px solid var(--bdr);border-radius:4px;overflow:hidden;min-height:520px;background:var(--bg)}
-.tsb{width:210px;border-right:1px solid rgba(0,255,65,.1);background:rgba(4,10,7,.9);flex-shrink:0;overflow-y:auto;display:flex;flex-direction:column}
-.tsb-lbl{font:11px/1 'Share Tech Mono',monospace;color:var(--td);letter-spacing:3px;padding:12px 16px 6px}
-.tsb-item{display:flex;align-items:center;gap:10px;padding:10px 16px;cursor:pointer;border-left:3px solid transparent;transition:all .15s;font:13px/1 'Share Tech Mono',monospace;color:var(--td)}
-.tsb-item:hover{background:rgba(0,255,65,.03);color:var(--t)}
-.tsb-item.ta{border-left-color:var(--g);background:rgba(0,255,65,.06);color:var(--g)}
-.tsb-item .tc{font:600 12px/1 'Orbitron',sans-serif;width:30px}
-.tsb-item .tt{font:10px/1 'Share Tech Mono',monospace;margin-left:auto;padding:2px 6px;border-radius:2px;letter-spacing:1px}
-.tt-f{color:var(--g);border:1px solid rgba(0,255,65,.25)}.tt-l{color:var(--a);border:1px solid rgba(255,170,0,.25)}
-.tsb-info{margin-top:auto;padding:14px 16px;border-top:1px solid rgba(0,255,65,.08);font:12px/1.5 'Share Tech Mono',monospace;color:var(--td)}
-.tmain{flex:1;overflow-y:auto}
-.tv{display:none;animation:fadeIn .3s ease}.tv.tva{display:block}
-.tvh{padding:18px 24px;border-bottom:1px solid rgba(0,255,65,.08);background:rgba(8,20,16,.8)}
-.tvh h2{font:700 18px/1 'Orbitron',sans-serif;letter-spacing:3px}
-.tvh .tvs{font:12px/1 'Share Tech Mono',monospace;color:var(--td);letter-spacing:2px;margin-top:4px}
-.tvh .tvd{font:13px/1.6 'Share Tech Mono',monospace;color:var(--td);margin-top:8px;max-width:600px}
-.tvb{padding:18px 24px}
+/* ALIEN TICKER */
+.alien-ticker{overflow:hidden;white-space:nowrap;border-top:1px solid rgba(0,255,65,.04);border-bottom:1px solid rgba(0,255,65,.04);padding:3px 0;background:rgba(0,255,65,.01)}
+.alien-ticker-inner{display:inline-block;animation:alienScroll 40s linear infinite}
 
-/* Narrative */
-.nc{background:rgba(0,0,0,.2);border:1px solid rgba(0,255,65,.08);border-radius:4px;padding:12px;margin-bottom:8px}
+/* ABOUT section special styles */
+.about-block{position:relative;padding:16px;border:1px solid var(--bz);border-radius:6px;background:var(--panel);margin-bottom:12px;overflow:hidden}
+.about-block::before{content:attr(data-alien);position:absolute;top:8px;right:8px;font:9px/1 'Share Tech Mono';color:rgba(0,255,65,.06);letter-spacing:4px;pointer-events:none}
+.about-num{font:800 28px/1 'Orbitron';color:rgba(0,255,65,.08);position:absolute;top:10px;right:14px}
+.timeline-dot{width:8px;height:8px;border-radius:50%;border:2px solid var(--g);flex-shrink:0;box-shadow:0 0 4px var(--g)}
+.timeline-line{width:1px;min-height:20px;background:rgba(0,255,65,.1);margin-left:3px}
 
-/* X-FILES */
-.xf-item{padding:14px 0;border-bottom:1px solid rgba(0,255,65,.05)}
-.xf-item:last-child{border:none}
-.xf-date{font:11px/1 'Share Tech Mono',monospace;color:var(--td);letter-spacing:2px;margin-bottom:4px}
-.xf-headline{font:15px/1.4 'Courier Prime',monospace;color:var(--tb)}
-.xf-source{font:11px/1 'Share Tech Mono',monospace;color:var(--td);letter-spacing:2px;margin-top:4px}
-.xf-cred{color:var(--g)}
-.red{background:var(--r);color:var(--r);padding:0 3px;border-radius:2px;cursor:pointer;transition:all .3s;user-select:none}
-.red:hover{background:transparent;color:var(--g)}
-.xf-priority{display:inline-block;font:10px/1 'Orbitron',sans-serif;letter-spacing:1px;padding:2px 8px;border-radius:2px;margin-left:8px}
-.nc-bar{height:4px;background:rgba(255,255,255,.04);border-radius:2px;margin:8px 0}
-.nc-bar div{height:100%;border-radius:2px}
-
-/* Dashboard */
-.dash{border:1px solid var(--bdr);border-radius:4px;background:var(--bgc);padding:16px 20px;margin-top:14px}
-.s404{background:rgba(255,51,51,.04);border:1px solid rgba(255,51,51,.12);border-radius:4px;padding:10px 16px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center}
-@keyframes redPulse{0%,100%{box-shadow:0 0 5px var(--r)}50%{box-shadow:0 0 20px var(--r),0 0 40px rgba(255,51,51,.2)}}
-.s404{animation:redPulse 4s ease-in-out infinite}
-.cd{text-align:center;padding:12px;background:rgba(0,255,65,.02);border:1px solid rgba(0,255,65,.06);border-radius:4px;margin-bottom:10px}
-.cd-units{display:flex;justify-content:center;gap:8px;align-items:center}
-.cd-u .v{font:800 1.2rem/1 'Orbitron',sans-serif;color:var(--g);text-shadow:0 0 10px rgba(0,255,65,.25)}
-.cd-u .l{font:8px/1 'Share Tech Mono',monospace;color:var(--td);letter-spacing:2px;margin-top:2px}
-.cd-sep{font:.85rem/1 'Orbitron',sans-serif;color:#1a3a2a}
-.mg{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
-.m{background:rgba(0,0,0,.3);border:1px solid rgba(0,255,65,.08);border-radius:4px;padding:6px;text-align:center;transition:border-color .3s}
-.m:hover{border-color:rgba(0,255,65,.2)}
-.m .mv{font:800 .85rem/1 'Orbitron',sans-serif}
-.m .ms{font:9px/1 'Courier Prime',monospace;color:var(--td);margin-top:2px}
-
-.xq{text-align:center;padding:16px;font:italic 16px/1.6 'Special Elite',cursive;color:var(--g);opacity:.5}
-footer{border-top:1px solid var(--bdr);padding:20px 32px;display:flex;justify-content:space-between;align-items:center}
-footer .fl{font:11px/1.6 'Share Tech Mono',monospace;color:#2a4a3a}
-footer .fr{font:12px/1 'Share Tech Mono',monospace;color:var(--td);letter-spacing:2px}
-
-@media(max-width:900px){.two{grid-template-columns:1fr}.rg{grid-template-columns:1fr 1fr}.mg{grid-template-columns:1fr 1fr}nav{flex-direction:column;gap:6px}.nv{justify-content:center}.nv button{padding:6px 10px;font-size:11px}.mx{padding:0 16px}.tapp{flex-direction:column;min-height:400px}.tsb{width:100%;flex-direction:row;overflow-x:auto;border-right:none;border-bottom:1px solid rgba(0,255,65,.08)}.tsb-lbl{display:none}.tsb-info{display:none}.strip{gap:10px;padding:8px 16px}.strip-item{font-size:10px}.tier-name{font-size:14px}.tier-list{font-size:13px}}
+@media(max-width:900px){.tiers,.two{grid-template-columns:1fr}.t-wrap{grid-template-columns:1fr}.t-side{display:flex;overflow-x:auto;border-right:none;border-bottom:1px solid var(--bz);padding:3px}.tg{display:none}.tb{white-space:nowrap;padding:6px 8px;border-left:none;border-bottom:2px solid transparent}.tb.on{border-left:none;border-bottom-color:var(--g)}nav{flex-wrap:wrap;gap:4px}.n-btns{flex-wrap:wrap;justify-content:center}.mx{padding:0 10px}}
 </style>
 </head>
 <body>
 
 <!-- GOV -->
-<div id="gov">
-<div class="gh"><div class="gs">US</div><div><h1>U.S. Department of Homeland Security</h1><p>Cybersecurity and Infrastructure Security Agency</p></div></div>
-<div class="gn"><a>Home</a><a>About</a><a>Topics</a><a>Resources</a><a>News</a><a>Contact</a></div>
-<div class="gb"><div class="gu">https://aliens.gov</div><h2>404</h2><h3>Page Not Found</h3><p>The page you are looking for might have been removed, had its name changed, or is temporarily unavailable.</p><p class="gq">"Stay tuned!" -- White House Press Office, March 19, 2026</p></div>
-<div class="gf"><p>An official website of the United States government | CISA.gov | WhiteHouse.gov | USA.gov</p></div>
+<div id="gov" onclick="skip()">
+<div class="g-h"><div class="g-seal">US</div><div><h1>U.S. Department of Homeland Security</h1><p>Cybersecurity and Infrastructure Security Agency</p></div></div>
+<div class="g-b"><p style="font:15px monospace;color:#1a4480;padding:8px 20px;background:#edf2f7;border:1px solid #d0dae5;border-radius:3px;display:inline-block;margin-bottom:16px">https://aliens.gov</p><h2>404</h2><h3>Page Not Found</h3><p>The page you are looking for might have been removed, had its name changed, or is temporarily unavailable.</p><p style="font:italic 13px serif;color:#1a4480;margin-top:20px">"Stay tuned!" — White House, March 19, 2026</p></div>
+<div class="g-f"><p>An official website of the United States government</p></div>
 </div>
-<canvas id="ptc"></canvas>
 
-<!-- SITE -->
-<div id="site" style="opacity:0;transition:opacity .8s">
-<div class="scanlines"></div>
+<div id="stars"></div>
 
+<div id="site" style="opacity:0;transition:opacity .6s">
+
+<!-- NAV -->
 <nav>
-<div class="nl"><div><h1>$AGOV</h1><small>ALIENS.GOV RESPONSE PROTOCOL</small></div></div>
-<div class="nv">
-<button class="on" onclick="go('home',this)">HOME</button>
-<button onclick="go('why',this)">WHY HOLD</button>
-<button onclick="go('tools',this)">TOOLS</button>
-<button onclick="go('how',this)">HOW IT WORKS</button>
-<button onclick="go('a51',this)">AGENT 51</button>
-<button onclick="go('xfiles',this)">X-FILES</button>
-<button onclick="go('trust',this)">TRANSPARENCY</button>
-<button onclick="go('faq',this)">FAQ</button>
-<button onclick="go('buy',this)">BUY</button>
+<div style="display:flex;align-items:center;gap:10px">
+<div><div class="n-logo">$AGOV</div><div class="n-sub">STATION 51</div></div>
+<div style="display:flex;align-items:center;gap:3px"><div class="dot dot-g"></div><span style="font:10px 'VT323';color:var(--g)">ONLINE</span></div>
+</div>
+<div class="n-btns">
+<button class="nb on" onclick="nav('home',this)">HOME</button>
+<button class="nb" onclick="nav('about',this)">ABOUT</button>
+<button class="nb" onclick="nav('tools',this)">TOOLS</button>
+<button class="nb" onclick="nav('access',this)">ACCESS</button>
+<button class="nb" onclick="nav('a51',this)">AGENT 51</button>
+<button class="nb" onclick="nav('xfiles',this)">X-FILES</button>
+<button class="nb" onclick="nav('verify',this)">VERIFY</button>
+<button class="nb" onclick="nav('faq',this)">FAQ</button>
+<button class="nb" onclick="nav('buy',this)">BUY</button>
 </div>
 </nav>
 
+<!-- ALIEN TICKER -->
+<div class="alien-ticker">
+<div class="alien-ticker-inner" style="font:10px 'Share Tech Mono';color:rgba(0,255,65,.1);letter-spacing:5px">
+⌬ ◊ ⟐ ⧫ ⌘ ◈ ⟡ △ ◇ ⬡ ⌬ ⧫ ◊ ⟐ ⌘ ◈ ⟡ △ ◇ ⬡ ⌬ STATION 51 OPERATIONAL ⌬ ◊ ⟐ ⧫ ⌘ ◈ ⟡ △ ◇ ⬡ ⌬ ⧫ ◊ ⟐ ⌘ ◈ ⟡ △ ◇ ⬡ ⌬ 9 TOOLS ONLINE ⌬ ◊ ⟐ ⧫ ⌘ ◈ ⟡ △ ◇ ⬡ ⌬ ⧫ ◊ ⟐ ⌘ ◈ ⟡ △ ◇ ⬡ ⌬ WARP DRIVE STANDBY ⌬ ◊ ⟐ ⧫ ⌘ ◈ ⟡ △ ◇ ⬡ ⌬ ⧫ ◊ ⟐ ⌘ ◈ ⟡ △ ◇ ⬡ ⌬ aliens.gov: 404 ⌬ ◊ ⟐ ⧫ ⌘ ◈ ⟡ △ ◇ ⬡
+</div>
+</div>
+
+<!-- STRIP -->
 <div class="strip">
-<div class="strip-item"><span class="strip-dot"></span> XRAY.51</div>
-<div class="strip-item"><span class="strip-dot"></span> THE PROBE</div>
-<div class="strip-item"><span class="strip-dot"></span> DEBRIEFING</div>
-<div class="strip-item"><span class="strip-dot"></span> MOTHERSHIP</div>
-<div class="strip-item"><span class="strip-dot"></span> SIGNAL INTERCEPT</div>
-<div class="strip-item"><span class="strip-dot"></span> HOLOGRAM</div>
-<div class="strip-item"><span class="strip-dot"></span> ABDUCTION RPT</div>
-<div class="strip-item"><span class="strip-dot"></span> AGENT 51 ACTIVE</div>
+<div class="s-i"><div class="dot dot-g"></div> 10 TOOLS</div>
+<div class="s-i"><div class="dot dot-g"></div> PUMP.FUN SYNC</div>
+<div class="s-i"><div class="dot" style="background:var(--am);box-shadow:0 0 4px var(--am)"></div> <span id="sG">0</span> NEAR GRAD</div>
+<div class="s-i"><div class="dot" style="background:var(--am);box-shadow:0 0 4px var(--am)"></div> WARP: STANDBY</div>
+<div class="s-i"><div class="dot" style="background:var(--red);box-shadow:0 0 4px var(--red);animation:pulse 2s infinite"></div> aliens.gov: 404</div>
 </div>
 
 <div class="mx">
 
-<!-- HOME -->
-<section id="s-home" class="active" style="padding:20px 0 10px">
+<!-- ============ HOME ============ -->
+<section id="s-home" class="active" style="padding:14px 0">
+
+<!-- Countdown -->
+<div class="countdown">
+<div style="flex:1;font:13px/1 'VT323';color:var(--red);letter-spacing:2px">ALIENS.GOV REGISTERED — NO RESPONSE FOR:</div>
+<div style="display:flex;align-items:center;gap:3px">
+<div style="text-align:center"><div class="cd-v" id="cD">00</div><div class="cd-l">DAYS</div></div><div class="cd-sep">:</div>
+<div style="text-align:center"><div class="cd-v" id="cH">00</div><div class="cd-l">HRS</div></div><div class="cd-sep">:</div>
+<div style="text-align:center"><div class="cd-v" id="cM">00</div><div class="cd-l">MIN</div></div><div class="cd-sep">:</div>
+<div style="text-align:center"><div class="cd-v" id="cS">00</div><div class="cd-l">SEC</div></div>
+</div>
+</div>
 
 <!-- Hero -->
-<div style="text-align:center;margin-bottom:20px">
-<div class="tag" style="letter-spacing:5px;margin-bottom:8px">aliens.gov returned 404. We built what they wouldn't.</div>
-<h2 class="glitch" data-text="$AGOV" style="font:900 2.6rem/1 'Orbitron',sans-serif;color:var(--g);letter-spacing:5px;text-shadow:0 0 40px rgba(0,255,65,.2)">$AGOV</h2>
-<p style="font:15px/1.5 'Courier Prime',monospace;color:#7a9a8a;margin-top:10px;max-width:520px;margin-left:auto;margin-right:auto">Token-gated intelligence tools for Solana traders. Scan tokens for risk, track whales, filter launches, detect fake volume. Hold $AGOV to unlock access.</p>
+<div style="display:flex;align-items:center;justify-content:center;gap:24px;margin-bottom:14px;flex-wrap:wrap">
+
+<div class="radar">
+<div class="radar-sw"></div>
+<div class="blip blip-g" style="top:28%;left:58%"></div>
+<div class="blip blip-g" style="top:52%;left:22%;animation-delay:.5s"></div>
+<div class="blip blip-r" style="top:68%;left:68%;animation-delay:1.2s"></div>
+<div class="blip blip-a" style="top:18%;left:38%;animation-delay:.8s"></div>
 </div>
 
-<!-- XRAY.51 SCANNER with description -->
-<div style="max-width:620px;margin:0 auto">
-<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
-<span style="font:14px/1 'Orbitron',sans-serif;color:var(--g);letter-spacing:2px">XRAY.51</span>
-<span class="badge badge-live">LIVE</span>
+<div style="text-align:center">
+<!-- CSS UFO icon -->
+<div style="width:28px;height:28px;margin:0 auto 6px;border-radius:50%;border:2px solid var(--g);display:flex;align-items:center;justify-content:center;box-shadow:0 0 10px var(--gl);animation:float 3s ease-in-out infinite"><div style="width:10px;height:5px;background:var(--g);border-radius:5px 5px 0 0;box-shadow:0 0 5px var(--g)"></div></div>
+<h1 style="font:900 2rem/1 'Orbitron';color:var(--g);letter-spacing:5px;text-shadow:0 0 15px rgba(0,255,65,.15)">$AGOV</h1>
+<p style="font:11px/1 'Silkscreen';color:var(--g2);letter-spacing:4px;margin-top:6px">PUMP.FUN INTELLIGENCE PLATFORM</p>
+<p style="font:16px/1.5 'VT323';color:var(--dim);margin-top:8px;max-width:340px">10 tools to scan, track, detect.<br>9 live. WARP DRIVE coming online.</p>
+<!-- Alien decorative text -->
+<p style="font:9px 'Share Tech Mono';color:rgba(0,255,65,.08);letter-spacing:6px;margin-top:6px">⌬⟐◈⧫△◇⟡⬡◊⌘⌬⟐◈⧫</p>
 </div>
-<p style="font:13px/1.5 'Share Tech Mono',monospace;color:var(--td);margin-bottom:10px">Paste any Solana token address. Returns a risk score based on honeypot detection, authority status, bundle activity, developer history, and holder distribution.</p>
-<div class="si">
-<input type="text" id="heroIn" placeholder="Paste Solana token address..." spellcheck="false">
-<button class="bp" id="heroBtn" onclick="runHS()">SCAN</button>
-</div>
-<div id="heroProg" style="display:none;font:11px/1.5 'JetBrains Mono',monospace;color:var(--g);padding:8px;background:rgba(0,0,0,.3);border-radius:4px;margin-top:8px;max-height:80px;overflow-y:auto"></div>
-<div id="heroRes" style="display:none;margin-top:10px">
-<div style="display:flex;align-items:center;gap:14px;padding:12px;background:rgba(0,0,0,.2);border:1px solid rgba(0,255,65,.08);border-radius:4px">
-<div class="sr" id="heroRing" style="width:56px;height:56px"><div class="sn" id="heroSc" style="font-size:18px">--</div><div class="sl">SCORE</div></div>
-<div style="flex:1"><div id="heroV" style="font:13px/1.4 'Share Tech Mono',monospace"></div></div>
-</div>
-<div style="text-align:center;margin-top:8px"><button class="bg" onclick="go('tools',document.querySelectorAll('.nv button')[2])" style="font-size:11px;padding:8px 20px">FULL ANALYSIS IN TOOLS</button></div>
+
+<div style="display:flex;gap:5px;align-items:flex-end">
+<div style="text-align:center"><div class="vg"><div class="vg-f" style="height:100%;background:var(--g)"></div></div><div style="font:8px 'VT323';color:var(--dim);margin-top:2px">SYS</div></div>
+<div style="text-align:center"><div class="vg"><div class="vg-f" style="height:90%;background:var(--g2)"></div></div><div style="font:8px 'VT323';color:var(--dim);margin-top:2px">NET</div></div>
+<div style="text-align:center"><div class="vg"><div class="vg-f" style="height:15%;background:var(--am)"></div></div><div style="font:8px 'VT323';color:var(--dim);margin-top:2px">WARP</div></div>
+<div style="text-align:center"><div class="vg"><div class="vg-f" style="height:0%;background:var(--red)"></div></div><div style="font:8px 'VT323';color:var(--dim);margin-top:2px">GOV</div></div>
 </div>
 </div>
 
-<!-- Info bar (replaces full dashboard) -->
-<div style="max-width:620px;margin:18px auto 0;display:flex;align-items:center;justify-content:center;gap:20px;padding:10px 16px;border:1px solid rgba(0,255,65,.08);border-radius:4px;background:rgba(0,0,0,.15);flex-wrap:wrap">
-<div style="display:flex;align-items:center;gap:6px"><span style="font:12px/1 'Share Tech Mono',monospace;color:var(--r)">aliens.gov</span><span style="font:700 13px/1 'Orbitron',sans-serif;color:var(--r)">404</span></div>
-<div style="width:1px;height:14px;background:rgba(0,255,65,.1)"></div>
-<div style="font:12px/1 'Share Tech Mono',monospace;color:var(--td)"><span id="d" style="color:var(--g)">00</span>d <span id="h" style="color:var(--g)">00</span>h <span id="mi" style="color:var(--g)">00</span>m <span id="se" style="color:var(--g)">00</span>s since registration</div>
-<div style="width:1px;height:14px;background:rgba(0,255,65,.1)"></div>
-<div style="font:12px/1 'Share Tech Mono',monospace;color:var(--g)">7 tools live</div>
-<div style="width:1px;height:14px;background:rgba(0,255,65,.1)"></div>
-<div style="font:12px/1 'Share Tech Mono',monospace;color:var(--td)">Pings: <span id="pc" style="color:var(--r)">0</span></div>
+<!-- Scanner -->
+<div class="scr" style="max-width:640px;margin:0 auto 12px">
+<div class="scr-lbl">XRAY.51</div><div class="scr-led led-g"></div>
+<div class="scr-body">
+<div class="scan-wrap"><div style="display:flex;gap:5px">
+<input class="s-in" type="text" id="heroIn" placeholder="> paste solana token address..." spellcheck="false">
+<button class="b3 b3-g" id="heroBtn" onclick="runHS()">SCAN</button>
+</div></div>
+<div id="heroProg" style="display:none;font:14px/1.4 'VT323';color:var(--g);padding:6px;background:rgba(0,0,0,.2);border-radius:3px;margin-top:5px;max-height:60px;overflow-y:auto"></div>
+<div id="heroRes" style="display:none;margin-top:6px">
+<div style="display:flex;align-items:center;gap:10px;padding:8px;background:rgba(0,0,0,.15);border:1px solid var(--bz);border-radius:3px">
+<div class="sc-ring" id="heroRing"><div class="sc-n" id="heroSc">--</div><div class="sc-l">SCORE</div></div>
+<div style="flex:1"><div id="heroV" style="font:15px/1.3 'VT323'"></div></div>
+</div></div>
+<p style="font:12px 'VT323';color:var(--dim);margin-top:6px;text-align:center">FREE: 3 SCANS/DAY — UNLIMITED WITH 10K $AGOV</p>
+</div></div>
+
+<!-- 3 Feature screens -->
+<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px">
+<div class="scr" style="cursor:pointer" onclick="nav('tools',document.querySelectorAll('.nb')[2]);setTimeout(()=>showT('probe'),50)">
+<div class="scr-lbl">SCANNER</div><div class="scr-led led-g"></div>
+<div class="scr-body" style="text-align:center;padding:16px 10px">
+<div style="font:9px 'Share Tech Mono';color:rgba(0,255,65,.1);letter-spacing:4px;margin-bottom:4px">⟐◈⧫△</div>
+<div style="font:600 10px/1 'Orbitron';color:var(--w);letter-spacing:2px;margin-bottom:4px">THE PROBE</div>
+<div style="font:13px/1.3 'VT323';color:var(--dim)">Filters 26K launches to top 1%</div>
+<div class="hg" style="margin-top:5px"><div class="hg-f" style="width:78%;background:var(--g)"></div></div>
+</div></div>
+
+<div class="scr" style="cursor:pointer" onclick="nav('tools',document.querySelectorAll('.nb')[2]);setTimeout(()=>showT('warp'),50)">
+<div class="scr-lbl">REVENUE</div><div class="scr-led led-a"></div>
+<div class="scr-body" style="text-align:center;padding:16px 10px">
+<div style="font:9px 'Share Tech Mono';color:rgba(0,255,65,.1);letter-spacing:4px;margin-bottom:4px">◇⬡◊⌘</div>
+<div style="font:600 10px/1 'Orbitron';color:var(--w);letter-spacing:2px;margin-bottom:4px">WARP DRIVE</div>
+<div style="font:13px/1.3 'VT323';color:var(--dim)">Perp markets. 8% fees. Coming online.</div>
+<div class="hg" style="margin-top:5px"><div class="hg-f" style="width:30%;background:var(--am)"></div></div>
+</div></div>
+
+<div class="scr" style="cursor:pointer" onclick="nav('tools',document.querySelectorAll('.nb')[2]);setTimeout(()=>showT('autopsy'),50)">
+<div class="scr-lbl">FORENSICS</div><div class="scr-led led-r"></div>
+<div class="scr-body" style="text-align:center;padding:16px 10px">
+<div style="font:9px 'Share Tech Mono';color:rgba(0,255,65,.1);letter-spacing:4px;margin-bottom:4px">⌬⟐◈△</div>
+<div style="font:600 10px/1 'Orbitron';color:var(--w);letter-spacing:2px;margin-bottom:4px">RUG AUTOPSY</div>
+<div style="font:13px/1.3 'VT323';color:var(--dim)">Post-mortem on dead tokens</div>
+<div class="hg" style="margin-top:5px"><div class="hg-f" style="width:55%;background:var(--red)"></div></div>
+</div></div>
 </div>
 
-<!-- CTAs -->
-<div style="display:flex;justify-content:center;gap:10px;margin-top:16px;flex-wrap:wrap">
-<button class="bg" onclick="go('why',document.querySelectorAll('.nv button')[1])" style="padding:10px 22px;font-size:12px">WHY HOLD $AGOV</button>
-<button class="bc" onclick="go('tools',document.querySelectorAll('.nv button')[2])" style="padding:10px 22px;font-size:12px">ALL 7 TOOLS</button>
-<button class="bp" onclick="go('buy',document.querySelectorAll('.nv button')[7])" style="padding:10px 22px;font-size:12px">GET $AGOV</button>
+<!-- Metrics -->
+<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:12px">
+<div class="scr"><div class="scr-body" style="text-align:center;padding:10px"><div style="font:700 16px 'Orbitron';color:var(--g)">10</div><div style="font:10px 'VT323';color:var(--dim);margin-top:3px">TOOLS</div></div></div>
+<div class="scr"><div class="scr-body" style="text-align:center;padding:10px"><div style="font:700 16px 'Orbitron';color:var(--cy)" id="mG">12</div><div style="font:10px 'VT323';color:var(--dim);margin-top:3px">NEAR GRAD</div></div></div>
+<div class="scr"><div class="scr-body" style="text-align:center;padding:10px"><div style="font:700 16px 'Orbitron';color:var(--red)" id="mD">847</div><div style="font:10px 'VT323';color:var(--dim);margin-top:3px">DEAD TODAY</div></div></div>
+<div class="scr"><div class="scr-body" style="text-align:center;padding:10px"><div style="font:700 16px 'Orbitron';color:var(--am)" id="mS">--</div><div style="font:10px 'VT323';color:var(--dim);margin-top:3px">SCANS 24H</div></div></div>
+</div>
+
+<div style="display:flex;justify-content:center;gap:6px;flex-wrap:wrap">
+<button class="b3 b3-g" onclick="nav('tools',document.querySelectorAll('.nb')[2])">ALL 10 TOOLS</button>
+<button class="b3 b3-o" onclick="nav('about',document.querySelectorAll('.nb')[1])">THE STORY</button>
+<button class="b3 b3-am" onclick="nav('buy',document.querySelectorAll('.nb')[8])">GET $AGOV</button>
 </div>
 </section>
 
-<!-- WHY HOLD -->
-<section id="s-why" style="padding:40px 0">
-<div class="tag">ACCESS LEVELS</div>
-<div class="ttl" style="margin-bottom:8px">WHY HOLD $AGOV</div>
-<p style="font:15px/1.7 'Courier Prime',monospace;color:#7a9a8a;max-width:650px;margin-bottom:28px">$AGOV is your access key to the intelligence network. Try tools free. Hold tokens for deeper clearance.</p>
-<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px">
-<div class="tier"><div class="tier-name" style="color:var(--td)">CIVILIAN</div><div class="tier-req">No hold required</div><div class="tier-list"><b>></b> XRAY.51 (3 scans/day)<br><b>></b> DEBRIEFING basic<br><b>></b> THE PROBE (5min delay)</div></div>
-<div class="tier" style="border-color:rgba(255,170,0,.2)"><div class="tier-name" style="color:var(--a)">INVESTIGATOR</div><div class="tier-req" style="color:var(--a)">10,000 $AGOV</div><div class="tier-list"><b>></b> All above, unlimited<br><b>></b> XRAY.51 AI analysis<br><b>></b> THE PROBE real-time<br><b>></b> ABDUCTION REPORT</div></div>
-<div class="tier" style="border-color:rgba(0,204,255,.2)"><div class="tier-name" style="color:var(--cy)">FIELD AGENT</div><div class="tier-req" style="color:var(--cy)">100,000 $AGOV</div><div class="tier-list"><b>></b> All above +<br><b>></b> MOTHERSHIP<br><b>></b> SIGNAL INTERCEPT<br><b>></b> HOLOGRAM DETECTOR</div></div>
-<div class="tier" style="border-color:rgba(0,255,65,.2)"><div class="tier-name" style="color:var(--g)">COMMANDER</div><div class="tier-req" style="color:var(--g)">500,000 $AGOV</div><div class="tier-list"><b>></b> Full API access<br><b>></b> Priority alerts<br><b>></b> Situation Room<br><b>></b> Fee distribution</div></div>
+<!-- ============ ABOUT — THE FULL STORY ============ -->
+<section id="s-about" style="padding:16px 0">
+<div style="margin-bottom:14px">
+<div style="font:9px/1 'Silkscreen';color:var(--dim);letter-spacing:4px">DECLASSIFIED</div>
+<h2 style="font:700 18px/1 'Orbitron';color:var(--w);letter-spacing:2px;margin-top:3px">THE AGOV DOSSIER</h2>
+<p style="font:15px/1.5 'VT323';color:var(--dim);margin-top:6px;max-width:600px">Everything you need to understand Station 51, the intelligence tools, the government mystery, and why $AGOV exists.</p>
+<!-- Alien decorative -->
+<p style="font:8px 'Share Tech Mono';color:rgba(0,255,65,.06);letter-spacing:5px;margin-top:4px">⌬◊⟐⧫⌘◈⟡△◇⬡⌬⧫◊⟐⌘◈⟡△◇⬡⌬◊⟐⧫⌘◈⟡△◇⬡</p>
+</div>
+
+<!-- BLOCK 1: The Event -->
+<div class="about-block" data-alien="⌬⟐◈⧫△◇⟡⬡◊⌘">
+<div class="about-num">01</div>
+<div style="font:9px/1 'Silkscreen';color:var(--red);letter-spacing:2px;margin-bottom:6px">THE EVENT</div>
+<h3 style="font:600 14px/1 'Orbitron';color:var(--w);letter-spacing:1px;margin-bottom:8px">On March 18, 2026, the White House registered aliens.gov</h3>
+<p style="font:16px/1.6 'VT323';color:var(--t)">The U.S. government quietly registered the domain aliens.gov. When reporters asked about it, the White House Press Office replied with two words: "Stay tuned." Then the domain went live — with a 404 error. No page. No explanation. No follow-up.</p>
+<p style="font:16px/1.6 'VT323';color:var(--t);margin-top:8px">This happened in the context of an unprecedented wave of UAP disclosure: Trump signed an executive order demanding the Pentagon declassify all alien-related files within 180 days. Obama publicly stated "They're real." Congressional hearings revealed 2,000+ unexplained cases. And then... a government domain called aliens.gov returned a 404.</p>
+<p style="font:16px/1.6 'VT323';color:var(--t);margin-top:8px">We built what they wouldn't.</p>
+</div>
+
+<!-- BLOCK 2: What is $AGOV -->
+<div class="about-block" data-alien="◇⬡◊⌘⌬⟐◈⧫△">
+<div class="about-num">02</div>
+<div style="font:9px/1 'Silkscreen';color:var(--g);letter-spacing:2px;margin-bottom:6px">THE PLATFORM</div>
+<h3 style="font:600 14px/1 'Orbitron';color:var(--w);letter-spacing:1px;margin-bottom:8px">$AGOV is the intelligence portal they never built</h3>
+<p style="font:16px/1.6 'VT323';color:var(--t)">$AGOV is a token-gated intelligence platform for Solana traders, specifically designed for the Pump.fun ecosystem. It provides 10 real tools that scan tokens for risk, filter launches, track whale movements, detect rugs before they happen, monitor graduations in real-time, and create perpetual markets on graduation.</p>
+<p style="font:16px/1.6 'VT323';color:var(--t);margin-top:8px">The UFO disclosure narrative is the brand. The tools are the product. Every government disclosure event — every news headline about aliens, UAPs, congressional hearings — drives organic attention to $AGOV. The tools give people a reason to stay.</p>
+</div>
+
+<!-- BLOCK 3: The Tools -->
+<div class="about-block" data-alien="⟡△◇⬡◊⌘⌬⟐◈⧫">
+<div class="about-num">03</div>
+<div style="font:9px/1 'Silkscreen';color:var(--cy);letter-spacing:2px;margin-bottom:6px">THE ARSENAL</div>
+<h3 style="font:600 14px/1 'Orbitron';color:var(--w);letter-spacing:1px;margin-bottom:10px">10 intelligence tools — real, functional, operational</h3>
+
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+<div style="padding:10px;border:1px solid var(--bz);border-radius:4px">
+<div style="font:9px 'Silkscreen';color:var(--g);letter-spacing:2px;margin-bottom:4px">SCANNERS</div>
+<p style="font:15px/1.5 'VT323';color:var(--t)"><span style="color:var(--g)">XRAY.51</span> — Full token security scan. Honeypot detection, mint/freeze authority, bundle analysis, holder distribution, AI threat assessment by Agent 51.<br><br>
+<span style="color:var(--g)">THE PROBE</span> — Real-time feed of Pump.fun launches filtered to the top 1%. Only tokens that pass safety checks.<br><br>
+<span style="color:var(--g)">HOLOGRAM DETECTOR</span> — Separates real volume from wash trading. Identifies recycled wallets and inflated metrics.</p>
+</div>
+<div style="padding:10px;border:1px solid var(--bz);border-radius:4px">
+<div style="font:9px 'Silkscreen';color:var(--am);letter-spacing:2px;margin-bottom:4px">TRACKERS</div>
+<p style="font:15px/1.5 'VT323';color:var(--t)"><span style="color:var(--am)">MOTHERSHIP</span> — Monitors 247 whale wallets in real-time. AI-predicted intent on every movement.<br><br>
+<span style="color:var(--am)">GRADUATION TRACKER</span> — Dashboard of tokens approaching the ~$69K graduation threshold. When they graduate, WARP DRIVE creates their perp market.<br><br>
+<span style="color:var(--am)">SIGNAL INTERCEPT</span> — Detects emerging narratives before they trend across social platforms.</p>
+</div>
+<div style="padding:10px;border:1px solid var(--bz);border-radius:4px">
+<div style="font:9px 'Silkscreen';color:var(--red);letter-spacing:2px;margin-bottom:4px">FORENSICS</div>
+<p style="font:15px/1.5 'VT323';color:var(--t)"><span style="color:var(--red)">ABDUCTION REPORT</span> — Full deployer history. How many tokens launched, graduated, rugged. Trust score based on track record.<br><br>
+<span style="color:var(--red)">RUG AUTOPSY</span> — Post-mortem forensics on dead tokens. Cause of death, insider movements, losses, warning signs. Free to read. Every autopsy is shareable content.</p>
+</div>
+<div style="padding:10px;border:1px solid var(--bz);border-radius:4px">
+<div style="font:9px 'Silkscreen';color:var(--cy);letter-spacing:2px;margin-bottom:4px">REVENUE + REPORTS</div>
+<p style="font:15px/1.5 'VT323';color:var(--t)"><span style="color:var(--cy)">WARP DRIVE</span> — (COMING ONLINE) Auto-creates perpetual futures markets on Perpolator when tokens graduate. First creator earns 8% of all trading fees on that market — forever. Revenue flows to $AGOV buyback. Activates when Perpolator launches on mainnet.<br><br>
+<span style="color:var(--cy)">DEBRIEFING</span> — Cross-platform PnL aggregator. Real performance across Photon, BullX, GMGN, Trojan.</p>
+</div>
+</div>
+</div>
+
+<!-- BLOCK 4: WARP DRIVE -->
+<div class="about-block" data-alien="⌘◈⟡△◇⬡◊⌬⟐⧫">
+<div class="about-num">04</div>
+<div style="font:9px/1 'Silkscreen';color:var(--cy);letter-spacing:2px;margin-bottom:6px">THE REVENUE ENGINE</div>
+<h3 style="font:600 14px/1 'Orbitron';color:var(--w);letter-spacing:1px;margin-bottom:8px">WARP DRIVE — real income, on-chain, verifiable (COMING ONLINE)</h3>
+<p style="font:16px/1.6 'VT323';color:var(--t)">Most memecoins promise things. $AGOV is building real revenue infrastructure. Here's how WARP DRIVE will work when it activates:</p>
+<div style="margin:10px 0;padding:10px;background:rgba(0,255,65,.02);border:1px solid rgba(0,255,65,.06);border-radius:4px;font:16px/1.8 'VT323';color:var(--t)">
+1. GRADUATION TRACKER detects a token approaching $69K<br>
+2. Token graduates — migrates to PumpSwap<br>
+3. Station 51 creates a perpetual market on Perpolator<br>
+4. Traders can now long or short that token with up to 20x leverage<br>
+5. $AGOV earns 8% of ALL trading fees on that market — forever<br>
+6. Revenue goes to transparent, on-chain buyback of $AGOV
+</div>
+<p style="font:16px/1.6 'VT323';color:var(--t);margin-top:6px">The first creator of a market on Perpolator owns the 8% fee share permanently. WARP DRIVE activates when: (a) Perpolator launches on mainnet, and (b) creator fee revenue funds the seed liquidity. Until then, $AGOV revenue comes from Pump.fun creator fees (0.30-0.95% on PumpSwap trades).</p>
+</div>
+
+<!-- BLOCK 5: The Mystery -->
+<div class="about-block" data-alien="⧫△◇⬡◊⌘⌬⟐◈⟡">
+<div class="about-num">05</div>
+<div style="font:9px/1 'Silkscreen';color:var(--red);letter-spacing:2px;margin-bottom:6px">THE MYSTERY</div>
+<h3 style="font:600 14px/1 'Orbitron';color:var(--w);letter-spacing:1px;margin-bottom:8px">The disclosure timeline</h3>
+
+<!-- Timeline -->
+<div style="display:flex;flex-direction:column;gap:0;margin-top:8px">
+<div style="display:flex;gap:10px;align-items:flex-start"><div style="display:flex;flex-direction:column;align-items:center"><div class="timeline-dot" style="border-color:var(--red)"></div><div class="timeline-line"></div></div><div style="font:15px/1.5 'VT323';color:var(--t);padding-bottom:10px"><span style="color:var(--red)">DEC 2025</span> — Congressional hearing: witnesses describe <span style="color:var(--red)">biologics recovered from non-human craft</span>. Committee demands declassification of Immaculate Constellation files.</div></div>
+<div style="display:flex;gap:10px;align-items:flex-start"><div style="display:flex;flex-direction:column;align-items:center"><div class="timeline-dot"></div><div class="timeline-line"></div></div><div style="font:15px/1.5 'VT323';color:var(--t);padding-bottom:10px"><span style="color:var(--g)">FEB 14, 2026</span> — Obama says "They're real" in interview. Adds he was briefed on programs without congressional oversight.</div></div>
+<div style="display:flex;gap:10px;align-items:flex-start"><div style="display:flex;flex-direction:column;align-items:center"><div class="timeline-dot" style="border-color:var(--am)"></div><div class="timeline-line"></div></div><div style="font:15px/1.5 'VT323';color:var(--t);padding-bottom:10px"><span style="color:var(--am)">FEB 20, 2026</span> — Trump signs executive order: release all files on "aliens, UAPs, and related matters." Pentagon given 180-day deadline.</div></div>
+<div style="display:flex;gap:10px;align-items:flex-start"><div style="display:flex;flex-direction:column;align-items:center"><div class="timeline-dot"></div><div class="timeline-line"></div></div><div style="font:15px/1.5 'VT323';color:var(--t);padding-bottom:10px"><span style="color:var(--g)">FEB 25, 2026</span> — Hegseth confirms AARO caseload exceeds 2,000 reports, including radar data corroborating visual contact.</div></div>
+<div style="display:flex;gap:10px;align-items:flex-start"><div style="display:flex;flex-direction:column;align-items:center"><div class="timeline-dot" style="border-color:var(--red)"></div><div class="timeline-line"></div></div><div style="font:15px/1.5 'VT323';color:var(--t);padding-bottom:10px"><span style="color:var(--red)">MAR 18, 2026</span> — White House registers aliens.gov and alien.gov. Domain returns 404. Press Office says "Stay tuned."</div></div>
+<div style="display:flex;gap:10px;align-items:flex-start"><div style="display:flex;flex-direction:column;align-items:center"><div class="timeline-dot" style="border-color:var(--g);background:rgba(0,255,65,.2)"></div></div><div style="font:15px/1.5 'VT323';color:var(--t)"><span style="color:var(--g)">MAR 18, 2026</span> — Station 51 goes operational. $AGOV launches. We built what they wouldn't.</div></div>
+</div>
+</div>
+
+<!-- BLOCK 6: Agent 51 -->
+<div class="about-block" data-alien="◈⟡△◇⬡◊⌘⌬⟐⧫">
+<div class="about-num">06</div>
+<div style="font:9px/1 'Silkscreen';color:var(--g);letter-spacing:2px;margin-bottom:6px">THE OPERATIVE</div>
+<h3 style="font:600 14px/1 'Orbitron';color:var(--w);letter-spacing:1px;margin-bottom:8px">Agent 51 — autonomous AI intelligence</h3>
+<p style="font:16px/1.6 'VT323';color:var(--t)">Agent 51 is Station 51's AI operative. It powers all 10 tools with real-time analysis. It monitors disclosure sources across government databases, news feeds, and social media. It publishes satirical Field Reports from the perspective of an alien intelligence officer stationed on Earth. It provides threat assessments on every scanned token. It never breaks character.</p>
+<p style="font:16px/1.6 'VT323';color:var(--t);margin-top:6px">Follow Agent 51 on Twitter: <span style="color:var(--g)">@Agent51_AGOV</span></p>
+</div>
+
+<div style="text-align:center;margin-top:8px">
+<p style="font:9px 'Share Tech Mono';color:rgba(0,255,65,.08);letter-spacing:5px">⌬◊⟐⧫⌘◈⟡△◇⬡⌬⧫◊⟐⌘◈⟡△◇⬡⌬◊⟐⧫⌘◈⟡△◇⬡⌬⧫◊⟐⌘◈⟡</p>
+<button class="b3 b3-g" style="margin-top:10px" onclick="nav('tools',document.querySelectorAll('.nb')[2])">ENTER STATION 51</button>
 </div>
 </section>
 
-<!-- TOOLS -->
-<section id="s-tools" style="padding:40px 0">
-<div class="tag">INTELLIGENCE NETWORK</div>
-<div class="ttl" style="margin-bottom:16px">TOOL SUITE</div>
-<div class="tapp">
-<div class="tsb">
-<div class="tsb-lbl">FREE</div>
-<div class="tsb-item ta" onclick="showT('xray',this)"><span class="tc" style="color:var(--g)">X51</span>XRAY.51<span class="tt tt-f">LIVE</span></div>
-<div class="tsb-item" onclick="showT('debrief',this)"><span class="tc" style="color:var(--g)">DBR</span>DEBRIEFING<span class="tt tt-f">LIVE</span></div>
-<div class="tsb-lbl">10K $AGOV</div>
-<div class="tsb-item" onclick="showT('probe',this)"><span class="tc" style="color:var(--a)">PRB</span>THE PROBE<span class="tt tt-l">10K</span></div>
-<div class="tsb-item" onclick="showT('abduct',this)"><span class="tc" style="color:var(--a)">ABD</span>ABDUCTION<span class="tt tt-l">10K</span></div>
-<div class="tsb-lbl">100K $AGOV</div>
-<div class="tsb-item" onclick="showT('mother',this)"><span class="tc" style="color:var(--cy)">MSP</span>MOTHERSHIP<span class="tt tt-l">100K</span></div>
-<div class="tsb-item" onclick="showT('signal',this)"><span class="tc" style="color:var(--cy)">SIG</span>SIGNAL INT<span class="tt tt-l">100K</span></div>
-<div class="tsb-item" onclick="showT('holo',this)"><span class="tc" style="color:var(--cy)">HLG</span>HOLOGRAM<span class="tt tt-l">100K</span></div>
-<div class="tsb-info">CLEARANCE: <b style="color:var(--g)">CIVILIAN</b><br>Hold 10K for Investigator</div>
+<!-- ============ TOOLS ============ -->
+<section id="s-tools" style="padding:10px 0">
+<div class="t-wrap">
+<div class="t-side">
+<div class="tg">SCANNERS</div>
+<button class="tb on" onclick="showT('xray',this)"><span class="num">01</span>XRAY.51<span class="tag" style="color:var(--g);border:1px solid rgba(0,255,65,.1)">FREE</span></button>
+<button class="tb" onclick="showT('probe',this)"><span class="num">02</span>THE PROBE<span class="tag" style="color:var(--am);border:1px solid rgba(255,170,0,.1)">10K</span></button>
+<button class="tb" onclick="showT('holo',this)"><span class="num">03</span>HOLOGRAM<span class="tag" style="color:var(--am);border:1px solid rgba(255,170,0,.1)">100K</span></button>
+<div class="tg">TRACKERS</div>
+<button class="tb" onclick="showT('mother',this)"><span class="num">04</span>MOTHERSHIP<span class="tag" style="color:var(--am);border:1px solid rgba(255,170,0,.1)">100K</span></button>
+<button class="tb" onclick="showT('grad',this)"><span class="num">05</span>GRAD TRACK<span class="tag" style="color:var(--am);border:1px solid rgba(255,170,0,.1)">10K</span></button>
+<button class="tb" onclick="showT('signal',this)"><span class="num">06</span>SIGNAL INT<span class="tag" style="color:var(--am);border:1px solid rgba(255,170,0,.1)">100K</span></button>
+<div class="tg">FORENSICS</div>
+<button class="tb" onclick="showT('dev',this)"><span class="num">07</span>ABDUCTION<span class="tag" style="color:var(--am);border:1px solid rgba(255,170,0,.1)">10K</span></button>
+<button class="tb" onclick="showT('autopsy',this)"><span class="num">08</span>AUTOPSY<span class="tag" style="color:var(--g);border:1px solid rgba(0,255,65,.1)">FREE</span></button>
+<div class="tg">REVENUE</div>
+<button class="tb" onclick="showT('warp',this)"><span class="num">09</span>WARP DRIVE<span class="tag" style="color:var(--am);border:1px solid rgba(255,170,0,.1)">SOON</span></button>
+<div class="tg">REPORTS</div>
+<button class="tb" onclick="showT('debrief',this)"><span class="num">10</span>DEBRIEFING<span class="tag" style="color:var(--g);border:1px solid rgba(0,255,65,.1)">FREE</span></button>
 </div>
-<div class="tmain">
-<div class="tv tva" id="tv-xray"><div class="tvh"><div style="display:flex;align-items:center;gap:10px"><h2 style="color:var(--g)">XRAY.51</h2><span class="badge badge-live">LIVE</span></div><div class="tvs">TOKEN FORENSICS SCANNER -- FREE</div><div class="tvd">Paste any Solana token address. Checks honeypot, authorities, bundles, dev history, holder distribution. AI explains the risk.</div></div>
-<div class="tvb"><div class="si"><input type="text" id="xIn" placeholder="Paste token address..." spellcheck="false"><button class="bp" id="xBtn" onclick="runX()" style="padding:12px 24px">SCAN</button></div><div id="xProg" style="display:none;font:12px/1.5 'JetBrains Mono',monospace;color:var(--g);padding:10px;background:rgba(0,0,0,.3);border-radius:4px;margin-top:10px;max-height:160px;overflow-y:auto"><div id="xLines"></div></div><div id="xRes" style="display:none"><div style="display:flex;align-items:center;margin:14px 0"><div class="sr" id="xRing"><div class="sn" id="xSc">--</div><div class="sl">SCORE</div></div><div id="xV" style="font:14px/1.5 'Share Tech Mono',monospace;margin-left:16px"></div></div><div class="rg" id="xG"></div><div class="ai" id="xAI"></div></div></div></div>
+<div class="t-main">
 
-<div class="tv" id="tv-probe"><div class="tvh"><div style="display:flex;align-items:center;gap:10px"><h2 style="color:var(--a)">THE PROBE</h2><span class="badge badge-live">LIVE</span></div><div class="tvs">LAUNCH FILTER -- 10K $AGOV</div><div class="tvd">Every new Pump.fun token, scored in real-time. Top 1% surfaced.</div></div>
-<div class="tvb"><div style="display:flex;justify-content:space-between;margin-bottom:10px;font:12px/1 'Share Tech Mono',monospace;color:var(--td)"><span>PASSED: <span id="pC">0</span> / <span id="pT">0</span></span><span style="color:var(--g);animation:pulse 1.5s infinite">SCANNING</span></div><div style="max-height:400px;overflow-y:auto" id="pFeed"></div></div></div>
+<!-- All tool views - compact -->
+<div class="tv on" id="tv-xray"><div class="tv-h"><div style="display:flex;align-items:center;gap:6px"><h2 style="color:var(--g)">XRAY.51</h2><span class="bdg bdg-on">LIVE</span></div><p>Full security scan. Honeypot, authority, bundles, holders, AI assessment.</p></div><div class="tv-b"><div class="scan-wrap"><div style="display:flex;gap:4px"><input class="s-in" type="text" id="xIn" placeholder="> token address..." spellcheck="false"><button class="b3 b3-g" id="xBtn" onclick="runX()">SCAN</button></div></div><div id="xProg" style="display:none;font:14px/1.4 'VT323';color:var(--g);padding:5px;background:rgba(0,0,0,.2);border-radius:3px;margin-top:5px;max-height:65px;overflow-y:auto"></div><div id="xRes" style="display:none;margin-top:6px"><div style="display:flex;align-items:center;gap:10px;margin-bottom:6px"><div class="sc-ring" id="xRing"><div class="sc-n" id="xSc">--</div><div class="sc-l">SCORE</div></div><div id="xV" style="font:15px/1.3 'VT323'"></div></div><div class="cells" style="grid-template-columns:repeat(4,1fr)" id="xG"></div><div class="ai" id="xAI"></div></div></div></div>
 
-<div class="tv" id="tv-abduct"><div class="tvh"><div style="display:flex;align-items:center;gap:10px"><h2 style="color:var(--a)">ABDUCTION REPORT</h2><span class="badge badge-live">LIVE</span></div><div class="tvs">DEV REPUTATION -- 10K $AGOV</div><div class="tvd">Background check on any Pump.fun developer.</div></div>
-<div class="tvb"><div class="si"><input type="text" id="dIn" placeholder="Paste developer wallet..." spellcheck="false"><button class="bp" onclick="runD()" style="padding:12px 24px">CHECK</button></div><div id="dRes" style="display:none"><div style="display:flex;align-items:center;gap:16px;margin:14px 0;padding:12px;background:rgba(0,0,0,.2);border:1px solid rgba(0,255,65,.08);border-radius:4px"><div class="sr" id="dRing"><div class="sn" id="dSc">--</div><div class="sl">REP</div></div><div><div id="dAddr" style="font:13px/1 'Orbitron',sans-serif;letter-spacing:2px">--</div><div id="dLbl" style="font:11px/1 'Share Tech Mono',monospace;color:var(--td);margin-top:3px">--</div></div></div><div id="dStats"></div><div class="ai" id="dAI"></div></div></div></div>
+<div class="tv" id="tv-probe"><div class="tv-h"><div style="display:flex;align-items:center;gap:6px"><h2 style="color:var(--am)">THE PROBE</h2><span class="bdg bdg-on">LIVE</span></div><p>Pump.fun launches filtered to top 1%.</p></div><div class="tv-b"><div style="font:12px 'VT323';color:var(--dim);margin-bottom:5px">PASS: <span style="color:var(--g)" id="pC">0</span> · REJECT: <span style="color:var(--red)" id="pT">0</span></div><div class="feed" id="pFeed"></div></div></div>
 
-<div class="tv" id="tv-mother"><div class="tvh"><div style="display:flex;align-items:center;gap:10px"><h2 style="color:var(--cy)">MOTHERSHIP</h2><span class="badge badge-live">LIVE</span></div><div class="tvs">WHALE INTELLIGENCE -- 100K $AGOV</div><div class="tvd">Whale tracking with AI intent prediction.</div></div>
-<div class="tvb"><div style="font:12px/1 'Share Tech Mono',monospace;color:var(--td);margin-bottom:10px">TRACKED: 247 | MOVEMENTS: <span id="wM">0</span></div><div style="max-height:400px;overflow-y:auto" id="wFeed"></div></div></div>
+<div class="tv" id="tv-holo"><div class="tv-h"><div style="display:flex;align-items:center;gap:6px"><h2 style="color:var(--cy)">HOLOGRAM DETECTOR</h2><span class="bdg bdg-on">LIVE</span></div><p>Volume authenticity analysis.</p></div><div class="tv-b"><div class="scan-wrap"><div style="display:flex;gap:4px"><input class="s-in" placeholder="> token address..." spellcheck="false"><button class="b3 b3-g" onclick="runH()">ANALYZE</button></div></div><div id="hRes" style="display:none"></div></div></div>
 
-<div class="tv" id="tv-signal"><div class="tvh"><div style="display:flex;align-items:center;gap:10px"><h2 style="color:var(--cy)">SIGNAL INTERCEPT</h2><span class="badge badge-live">LIVE</span></div><div class="tvs">NARRATIVE RADAR -- 100K $AGOV</div><div class="tvd">Emerging narratives across Reddit, news, and on-chain flows.</div></div>
-<div class="tvb" id="sigB"></div></div>
+<div class="tv" id="tv-mother"><div class="tv-h"><div style="display:flex;align-items:center;gap:6px"><h2 style="color:var(--cy)">MOTHERSHIP</h2><span class="bdg bdg-on">LIVE</span></div><p>247 whale wallets tracked.</p></div><div class="tv-b"><div style="font:12px 'VT323';color:var(--dim);margin-bottom:5px">MOVEMENTS: <span style="color:var(--cy)" id="wM">0</span></div><div class="feed" id="wFeed"></div></div></div>
 
-<div class="tv" id="tv-holo"><div class="tvh"><div style="display:flex;align-items:center;gap:10px"><h2 style="color:var(--cy)">HOLOGRAM DETECTOR</h2><span class="badge badge-live">LIVE</span></div><div class="tvs">VOLUME AUTHENTICITY -- 100K $AGOV</div><div class="tvd">Real volume vs wash trading analysis.</div></div>
-<div class="tvb"><div class="si"><input type="text" id="hIn" placeholder="Paste token address..." spellcheck="false"><button class="bp" onclick="runH()" style="padding:12px 24px">ANALYZE</button></div><div id="hRes" style="display:none"></div></div></div>
+<div class="tv" id="tv-grad"><div class="tv-h"><div style="display:flex;align-items:center;gap:6px"><h2 style="color:var(--cy)">GRADUATION TRACKER</h2><span class="bdg bdg-on">LIVE</span></div><p>Tokens approaching ~$69K graduation threshold on Pump.fun.</p></div><div class="tv-b"><div style="font:12px 'VT323';color:var(--dim);margin-bottom:5px">NEAR: <span style="color:var(--cy)" id="gN">0</span></div><div id="gFeed"></div></div></div>
 
-<div class="tv" id="tv-debrief"><div class="tvh"><div style="display:flex;align-items:center;gap:10px"><h2 style="color:var(--g)">DEBRIEFING</h2><span class="badge badge-live">LIVE</span></div><div class="tvs">PNL TRACKER -- FREE</div><div class="tvd">Cross-platform PnL from Photon, BullX, GMGN, Trojan.</div></div>
-<div class="tvb"><div class="si"><input type="text" id="plIn" placeholder="Paste your wallet address..." spellcheck="false"><button class="bp" onclick="runPL()" style="padding:12px 24px">REPORT</button></div><div id="plRes" style="display:none"></div></div></div>
+<div class="tv" id="tv-signal"><div class="tv-h"><div style="display:flex;align-items:center;gap:6px"><h2 style="color:var(--am)">SIGNAL INTERCEPT</h2><span class="bdg bdg-on">LIVE</span></div><p>Emerging narratives.</p></div><div class="tv-b" id="sigB"></div></div>
+
+<div class="tv" id="tv-dev"><div class="tv-h"><div style="display:flex;align-items:center;gap:6px"><h2 style="color:var(--am)">ABDUCTION REPORT</h2><span class="bdg bdg-on">LIVE</span></div><p>Deployer forensics.</p></div><div class="tv-b"><div class="scan-wrap"><div style="display:flex;gap:4px"><input class="s-in" type="text" id="dIn" placeholder="> deployer wallet..." spellcheck="false"><button class="b3 b3-g" onclick="runD()">CHECK</button></div></div><div id="dRes" style="display:none;margin-top:6px"><div style="display:flex;align-items:center;gap:10px;margin-bottom:5px"><div class="sc-ring" id="dRing"><div class="sc-n" id="dSc">--</div><div class="sc-l">TRUST</div></div><div><div id="dAddr" style="font:15px 'VT323'"></div><div id="dLbl" style="font:10px 'VT323';color:var(--dim);margin-top:2px"></div></div></div><div id="dSt"></div><div class="ai" id="dAI"></div></div></div></div>
+
+<div class="tv" id="tv-autopsy"><div class="tv-h"><div style="display:flex;align-items:center;gap:6px"><h2 style="color:var(--red)">RUG AUTOPSY</h2><span class="bdg bdg-on">LIVE</span></div><p>Token death forensics. Feed free to read. Full details for Investigator+.</p></div><div class="tv-b"><div style="font:12px 'VT323';color:var(--dim);margin-bottom:5px">TODAY: <span style="color:var(--red)" id="aT">0</span></div><div id="aFeed"></div></div></div>
+
+<div class="tv" id="tv-warp"><div class="tv-h"><div style="display:flex;align-items:center;gap:6px"><h2 style="color:var(--cy)">WARP DRIVE</h2><span class="bdg" style="color:var(--am);border:1px solid rgba(255,170,0,.15);background:rgba(255,170,0,.04)">COMING ONLINE</span></div><p>Auto-creates perp markets on Perpolator at graduation. 8% fees forever.</p></div><div class="tv-b"><div style="padding:16px;text-align:center;border:1px dashed rgba(255,170,0,.15);border-radius:4px;margin-bottom:8px"><div style="font:600 12px 'Orbitron';color:var(--am);letter-spacing:2px;margin-bottom:8px">ACTIVATES WHEN</div><div style="font:15px/1.6 'VT323';color:var(--t)">1. Perpolator launches on Solana mainnet<br>2. Creator fee revenue funds seed liquidity</div></div><div class="ai" style="margin-top:6px"><div class="ai-l">PLANNED FLOW</div>GRAD TRACKER &#8594; token graduates &#8594; Station 51 creates perp on Perpolator &#8594; 20x leverage &#8594; 8% fees forever &#8594; buyback $AGOV</div><div style="margin-top:8px;font:13px 'VT323';color:var(--dim)">Current revenue: Pump.fun creator fees (0.30-0.95% on PumpSwap trades)</div></div></div>
+
+<div class="tv" id="tv-debrief"><div class="tv-h"><div style="display:flex;align-items:center;gap:6px"><h2 style="color:var(--g)">DEBRIEFING</h2><span class="bdg bdg-on">LIVE</span></div><p>Cross-platform PnL.</p></div><div class="tv-b"><div class="scan-wrap"><div style="display:flex;gap:4px"><input class="s-in" placeholder="> wallet..." spellcheck="false"><button class="b3 b3-g" onclick="runPL()">REPORT</button></div></div><div id="plRes" style="display:none"></div></div></div>
+
 </div></div>
 </section>
 
-<!-- HOW IT WORKS -->
-<section id="s-how" style="padding:40px 0">
-<div class="tag">HOW IT WORKS</div>
-<div class="ttl" style="margin-bottom:28px">4 STEPS</div>
-<div class="two">
-<div>
-<div class="step"><div class="step-n">1</div><div><h4>SCAN</h4><p>Try XRAY.51 free. Paste any token address. Get security score, authority check, bundle detection, and AI analysis. No wallet needed.</p></div></div>
-<div class="step"><div class="step-n">2</div><div><h4>HOLD</h4><p>Buy $AGOV on Pump.fun. Fair launch, 0% tax, authorities revoked, LP burned on graduation. Your balance is your access key.</p></div></div>
-</div>
-<div>
-<div class="step"><div class="step-n">3</div><div><h4>UNLOCK</h4><p>10K unlocks launch filter and dev reputation. 100K unlocks whale tracking, narrative radar, and volume truth. 500K gets API access and Commander status.</p></div></div>
-<div class="step"><div class="step-n">4</div><div><h4>OPERATE</h4><p>Use the tools daily. Scan before you buy. Filter the noise. Track the whales. Every disclosure event drives new attention to $AGOV.</p></div></div>
-</div>
+<!-- ============ ACCESS ============ -->
+<section id="s-access" style="padding:14px 0">
+<div style="margin-bottom:12px"><div style="font:9px/1 'Silkscreen';color:var(--dim);letter-spacing:4px">CLEARANCE</div><h2 style="font:600 16px/1 'Orbitron';color:var(--w);letter-spacing:2px;margin-top:3px">ACCESS LEVELS</h2></div>
+<div class="tiers">
+<div class="tier"><div class="tier-bar" style="background:var(--dim)"></div><h4 style="color:var(--dim)">CIVILIAN</h4><div class="rq">Free</div><ul><li><span style="color:var(--g)">></span> XRAY.51 (3/day)</li><li><span style="color:var(--g)">></span> DEBRIEFING basic</li><li><span style="color:var(--g)">></span> AUTOPSY (read)</li><li><span style="color:var(--g)">></span> PROBE (delay)</li></ul></div>
+<div class="tier"><div class="tier-bar" style="background:linear-gradient(90deg,var(--am),var(--g2))"></div><h4 style="color:var(--am)">INVESTIGATOR</h4><div class="rq" style="color:var(--am)">10,000 $AGOV</div><ul><li><span style="color:var(--am)">></span> All Civilian +</li><li><span style="color:var(--am)">></span> XRAY AI analysis</li><li><span style="color:var(--am)">></span> PROBE real-time</li><li><span style="color:var(--am)">></span> ABDUCTION RPT</li><li><span style="color:var(--am)">></span> GRAD TRACKER</li></ul></div>
+<div class="tier"><div class="tier-bar" style="background:linear-gradient(90deg,var(--cy),var(--pu))"></div><h4 style="color:var(--cy)">FIELD AGENT</h4><div class="rq" style="color:var(--cy)">100,000 $AGOV</div><ul><li><span style="color:var(--cy)">></span> All Investigator +</li><li><span style="color:var(--cy)">></span> MOTHERSHIP</li><li><span style="color:var(--cy)">></span> SIGNAL INTERCEPT</li><li><span style="color:var(--cy)">></span> HOLOGRAM</li><li><span style="color:var(--cy)">></span> Telegram alerts</li></ul></div>
+<div class="tier" style="border-color:rgba(0,255,65,.1)"><div class="tier-bar" style="background:linear-gradient(90deg,var(--g),var(--cy),var(--pu))"></div><h4 style="color:var(--g)">COMMANDER</h4><div class="rq" style="color:var(--g)">500,000 $AGOV</div><ul><li><span style="color:var(--g)">></span> Everything +</li><li><span style="color:var(--g)">></span> WARP DRIVE rev</li><li><span style="color:var(--g)">></span> API access</li><li><span style="color:var(--g)">></span> Priority alerts</li><li><span style="color:var(--g)">></span> Watchlists</li></ul></div>
 </div>
 </section>
 
-<!-- AGENT 51 -->
-<section id="s-a51" style="padding:40px 0">
+<!-- ============ AGENT 51 ============ -->
+<section id="s-a51" style="padding:14px 0">
 <div class="two" style="align-items:start">
-<div>
-<div class="tag">AI OPERATIVE</div>
-<div class="ttl" style="margin-bottom:10px">AGENT 51</div>
-<p style="font:15px/1.7 'Courier Prime',monospace;color:#7a9a8a;margin-bottom:20px">Autonomous AI field agent. Monitors disclosure sources. Publishes satirical Field Reports from an alien perspective. Powers the tool analytics. Never breaks character.</p>
-<div style="display:flex;gap:10px;flex-wrap:wrap">
-<button class="bg" style="font-size:13px;padding:10px 20px">FOLLOW @AGENT51</button>
-<button class="bg" style="font-size:13px;padding:10px 20px">JOIN TELEGRAM</button>
-</div>
-</div>
-<div>
-<div class="pnl" style="border-color:rgba(0,255,65,.2)">
-<div style="font:12px/1 'Orbitron',sans-serif;color:var(--g);letter-spacing:2px;margin-bottom:10px">LATEST FIELD REPORT</div>
-<div style="font:11px/1 'Share Tech Mono',monospace;color:var(--td);letter-spacing:2px;margin-bottom:6px">REPORT #012 -- MAR 23, 2026</div>
-<p style="font:14px/1.7 'Courier Prime',monospace;color:var(--t)">Day 5. The locals registered aliens.gov. It returns 404. Our interns built quantum communication during a lunch break. Earth Competence Score: 2.1/10. $AGOV remains the only operational disclosure infrastructure on this planet.</p>
-<div style="font:12px/1 'Share Tech Mono',monospace;color:#3a5a4a;margin-top:10px">-- Agent 51, Galactic Intelligence Division</div>
-</div>
-</div>
+<div><div style="font:9px/1 'Silkscreen';color:var(--dim);letter-spacing:4px">AI OPERATIVE</div><h2 style="font:600 16px/1 'Orbitron';color:var(--w);letter-spacing:2px;margin-top:3px">AGENT 51</h2><p style="font:15px/1.6 'VT323';color:var(--dim);margin:6px 0 12px">Autonomous AI. Powers all 10 tools. Publishes Field Reports. Never breaks character.</p><div style="display:flex;gap:5px"><button class="b3 b3-o" style="font-size:12px;padding:8px 12px">@AGENT51_AGOV</button><button class="b3 b3-o" style="font-size:12px;padding:8px 12px">TELEGRAM</button></div></div>
+<div class="scr"><div class="scr-lbl">FIELD REPORT</div><div class="scr-led led-g"></div><div class="scr-body"><div style="font:10px 'VT323';color:var(--dim);margin-bottom:4px">RPT #015 — MAR 29, 2026</div><p style="font:15px/1.6 'VT323';color:var(--t)">Day 11. Humans registered aliens.gov. Returns 404. Station 51 scanned 4,200+ tokens, flagged 312 rugs, tracked 47 graduations. Earth intelligence: inadequate. Ours: operational. WARP DRIVE: standing by.</p><div style="font:13px 'VT323';color:var(--dim);margin-top:5px">— Agent 51</div><p style="font:8px 'Share Tech Mono';color:rgba(0,255,65,.06);letter-spacing:4px;margin-top:6px">⌬⟐◈⧫△◇⟡⬡◊⌘⌬⟐◈⧫△◇</p></div></div>
 </div>
 </section>
 
-<!-- X-FILES -->
-<section id="s-xfiles" style="padding:40px 0">
-<div class="tag">CLASSIFIED ARCHIVE -- INTELLIGENCE FEED</div>
-<div class="ttl" style="margin-bottom:6px">THE X-FILES</div>
-<p style="font:14px/1.6 'Courier Prime',monospace;color:#7a9a8a;max-width:650px;margin-bottom:24px">Real events. Real government actions. Credibility scored by Agent 51. Redacted text can be revealed on hover -- if you have the clearance.</p>
-
-<div class="two" style="grid-template-columns:2fr 1fr;gap:24px">
-<div>
-<div class="xf-item">
-<div class="xf-date">MAR 22, 2026 <span class="xf-priority" style="color:var(--r);border:1px solid rgba(255,51,51,.25)">HIGH</span></div>
-<div class="xf-headline">Rep. Luna says UFO file release is "very serious" -- mentions <span class="red">materials of non-human origin</span> recovered from crash sites</div>
-<div class="xf-source">NEWSWEEK -- <span class="xf-cred">CREDIBILITY: 78%</span></div>
-</div>
-
-<div class="xf-item">
-<div class="xf-date">MAR 19, 2026 <span class="xf-priority" style="color:var(--r);border:1px solid rgba(255,51,51,.25)">URGENT</span></div>
-<div class="xf-headline">White House registers aliens.gov and alien.gov -- spokesperson responds "Stay tuned!" -- <span class="red">internal memo leaked suggesting full disclosure timeline</span></div>
-<div class="xf-source">DEFENSESCOOP -- <span class="xf-cred">CREDIBILITY: 99%</span></div>
-</div>
-
-<div class="xf-item">
-<div class="xf-date">MAR 7, 2026</div>
-<div class="xf-headline">CNN: Why Trump's alien file release hasn't happened yet -- sources cite <span class="red">interagency resistance from intelligence community</span></div>
-<div class="xf-source">CNN -- <span style="color:var(--a)">CREDIBILITY: 72%</span></div>
-</div>
-
-<div class="xf-item">
-<div class="xf-date">FEB 25, 2026 <span class="xf-priority" style="color:var(--g);border:1px solid rgba(0,255,65,.25)">VERIFIED</span></div>
-<div class="xf-headline">Hegseth confirms AARO caseload exceeds 2,000 reports -- <span class="red">multiple cases involve radar data corroborating visual contact</span></div>
-<div class="xf-source">DEFENSESCOOP -- <span class="xf-cred">CREDIBILITY: 91%</span></div>
-</div>
-
-<div class="xf-item">
-<div class="xf-date">FEB 20, 2026 <span class="xf-priority" style="color:var(--r);border:1px solid rgba(255,51,51,.25)">HISTORIC</span></div>
-<div class="xf-headline">Trump signs executive order: release files on "aliens, UAPs, and related matters" -- <span class="red">Pentagon given 180-day deadline to declassify all Category 3 materials</span></div>
-<div class="xf-source">TRUTH SOCIAL / TIME -- <span class="xf-cred">CREDIBILITY: 99%</span></div>
-</div>
-
-<div class="xf-item">
-<div class="xf-date">FEB 14, 2026</div>
-<div class="xf-headline">Obama: "They're real" -- referring to extraterrestrial life in interview -- adds <span class="red">he was briefed on programs that never went through congressional oversight</span></div>
-<div class="xf-source">CNN / POLITIFACT -- <span style="color:var(--a)">CREDIBILITY: 85%</span></div>
-</div>
-
-<div class="xf-item">
-<div class="xf-date">JAN 12, 2026</div>
-<div class="xf-headline">AARO annual report delayed for third time -- whistleblower claims <span class="red">report was rewritten to remove references to recovered craft</span></div>
-<div class="xf-source">THE DEBRIEF -- <span style="color:var(--a)">CREDIBILITY: 74%</span></div>
-</div>
-
-<div class="xf-item">
-<div class="xf-date">DEC 2025</div>
-<div class="xf-headline">Congressional hearing: witnesses describe <span class="red">biologics recovered from non-human craft</span> -- committee demands <span class="red">immediate declassification of all Immaculate Constellation files</span></div>
-<div class="xf-source">C-SPAN / AP -- <span class="xf-cred">CREDIBILITY: 95%</span></div>
-</div>
-</div>
-
-<div>
-<div class="pnl" style="margin-bottom:16px">
-<div style="font:12px/1 'Orbitron',sans-serif;color:var(--r);letter-spacing:2px;margin-bottom:12px">UPCOMING CATALYSTS</div>
-
-<div style="padding:10px;border-left:2px solid var(--g);margin-bottom:10px">
-<div style="font:10px/1 'Share Tech Mono',monospace;color:var(--g);letter-spacing:2px">IMMINENT</div>
-<div style="font:14px/1.3 'Courier Prime',monospace;color:var(--tb);margin-top:4px">aliens.gov goes live</div>
-<div style="font:12px/1 'Courier Prime',monospace;color:var(--td);margin-top:3px">WH said "Stay tuned"</div>
-</div>
-
-<div style="padding:10px;border-left:2px solid var(--a);margin-bottom:10px">
-<div style="font:10px/1 'Share Tech Mono',monospace;color:var(--a);letter-spacing:2px">Q2 2026</div>
-<div style="font:14px/1.3 'Courier Prime',monospace;color:var(--tb);margin-top:4px">Congressional UAP hearings</div>
-</div>
-
-<div style="padding:10px;border-left:2px solid var(--cy);margin-bottom:10px">
-<div style="font:10px/1 'Share Tech Mono',monospace;color:var(--cy);letter-spacing:2px">JUNE 12, 2026</div>
-<div style="font:14px/1.3 'Courier Prime',monospace;color:var(--tb);margin-top:4px">Spielberg "Disclosure Day"</div>
-</div>
-
-<div style="padding:10px;border-left:2px solid var(--r)">
-<div style="font:10px/1 'Share Tech Mono',monospace;color:var(--r);letter-spacing:2px">OVERDUE</div>
-<div style="font:14px/1.3 'Courier Prime',monospace;color:var(--tb);margin-top:4px">AARO annual report</div>
-<div style="font:12px/1 'Courier Prime',monospace;color:var(--td);margin-top:3px">2,000+ cases pending</div>
-</div>
-</div>
-
-<div class="pnl">
-<div style="font:12px/1 'Orbitron',sans-serif;color:var(--a);letter-spacing:2px;margin-bottom:10px">HOW TO READ</div>
-<p style="font:13px/1.6 'Courier Prime',monospace;color:#7a9a8a"><span style="background:var(--r);color:var(--r);padding:0 3px;border-radius:2px">redacted text</span> contains classified details. Hover to reveal. These represent unverified claims or sensitive intel that Agent 51 has flagged for review.</p>
-</div>
-</div>
+<!-- ============ X-FILES ============ -->
+<section id="s-xfiles" style="padding:14px 0">
+<div style="margin-bottom:12px"><div style="font:9px/1 'Silkscreen';color:var(--dim);letter-spacing:4px">CLASSIFIED</div><h2 style="font:600 16px/1 'Orbitron';color:var(--w);letter-spacing:2px;margin-top:3px">X-FILES</h2><p style="font:12px 'VT323';color:var(--red);margin-top:4px;letter-spacing:1px">HOVER OVER REDACTED TEXT TO DECLASSIFY</p></div>
+<div class="two" style="grid-template-columns:2fr 1fr">
+<div class="scr"><div class="scr-lbl">INTEL FEED</div><div class="scr-led led-g"></div><div class="scr-body" style="padding:0">
+<div class="xf" style="padding:8px 12px"><div style="font:10px 'VT323';color:var(--dim);margin-bottom:3px">MAR 22 <span class="ctag" style="color:var(--red);border:1px solid rgba(255,51,68,.1)">HIGH</span></div><div style="font:14px/1.3 'VT323';color:var(--w)">Rep. Luna: UFO files "very serious" — <span class="red">materials of non-human origin</span></div><div style="font:10px 'VT323';color:var(--dim);margin-top:2px">NEWSWEEK · <span style="color:var(--g)">78%</span></div></div>
+<div class="xf" style="padding:8px 12px"><div style="font:10px 'VT323';color:var(--dim);margin-bottom:3px">MAR 19 <span class="ctag" style="color:var(--red);border:1px solid rgba(255,51,68,.1)">URGENT</span></div><div style="font:14px/1.3 'VT323';color:var(--w)">White House registers aliens.gov — "Stay tuned!" — <span class="red">memo suggests disclosure timeline</span></div><div style="font:10px 'VT323';color:var(--dim);margin-top:2px">DEFENSESCOOP · <span style="color:var(--g)">99%</span></div></div>
+<div class="xf" style="padding:8px 12px"><div style="font:10px 'VT323';color:var(--dim);margin-bottom:3px">FEB 20 <span class="ctag" style="color:var(--g);border:1px solid rgba(0,255,65,.1)">HISTORIC</span></div><div style="font:14px/1.3 'VT323';color:var(--w)">Trump EO: release alien files — <span class="red">180-day Pentagon deadline</span></div><div style="font:10px 'VT323';color:var(--dim);margin-top:2px">TIME · <span style="color:var(--g)">99%</span></div></div>
+<div class="xf" style="padding:8px 12px"><div style="font:10px 'VT323';color:var(--dim);margin-bottom:3px">FEB 14</div><div style="font:14px/1.3 'VT323';color:var(--w)">Obama: "They're real" — <span class="red">briefed on programs without oversight</span></div><div style="font:10px 'VT323';color:var(--dim);margin-top:2px">CNN · <span style="color:var(--am)">85%</span></div></div>
+</div></div>
+<div class="scr"><div class="scr-lbl">CATALYSTS</div><div class="scr-led led-a"></div><div class="scr-body" style="display:flex;flex-direction:column;gap:6px">
+<div style="border-left:2px solid var(--g);padding-left:8px"><div style="font:10px 'VT323';color:var(--g)">IMMINENT</div><div style="font:14px 'VT323';color:var(--w);margin-top:2px">aliens.gov live</div></div>
+<div style="border-left:2px solid var(--am);padding-left:8px"><div style="font:10px 'VT323';color:var(--am)">Q2 2026</div><div style="font:14px 'VT323';color:var(--w);margin-top:2px">UAP hearings</div></div>
+<div style="border-left:2px solid var(--pu);padding-left:8px"><div style="font:10px 'VT323';color:var(--pu)">JUNE 12</div><div style="font:14px 'VT323';color:var(--w);margin-top:2px">Spielberg Disclosure</div></div>
+<div style="border-left:2px solid var(--red);padding-left:8px"><div style="font:10px 'VT323';color:var(--red)">OVERDUE</div><div style="font:14px 'VT323';color:var(--w);margin-top:2px">AARO report</div></div>
+</div></div>
 </div>
 </section>
 
-<!-- TRANSPARENCY -->
-<section id="s-trust" style="padding:40px 0">
-<div class="tag">VERIFY EVERYTHING</div>
-<div class="ttl" style="margin-bottom:20px">TRANSPARENCY</div>
+<!-- ============ VERIFY ============ -->
+<section id="s-verify" style="padding:14px 0">
+<div style="margin-bottom:12px"><div style="font:9px/1 'Silkscreen';color:var(--dim);letter-spacing:4px">TRANSPARENCY</div><h2 style="font:600 16px/1 'Orbitron';color:var(--w);letter-spacing:2px;margin-top:3px">VERIFY</h2></div>
 <div class="two">
-<div class="pnl">
-<div style="font:13px/1 'Orbitron',sans-serif;color:var(--g);letter-spacing:2px;margin-bottom:14px">TOOL STATUS</div>
-<div class="tr-row"><span>XRAY.51</span><div class="tr-status"><span class="badge badge-live">LIVE</span><span style="color:var(--td);font-size:12px">GoPlus + RugCheck</span></div></div>
-<div class="tr-row"><span>THE PROBE</span><div class="tr-status"><span class="badge badge-live">LIVE</span><span style="color:var(--td);font-size:12px">Pump.fun monitor</span></div></div>
-<div class="tr-row"><span>DEBRIEFING</span><div class="tr-status"><span class="badge badge-live">LIVE</span><span style="color:var(--td);font-size:12px">Helius + Jupiter</span></div></div>
-<div class="tr-row"><span>ABDUCTION RPT</span><div class="tr-status"><span class="badge badge-live">LIVE</span><span style="color:var(--td);font-size:12px">Custom DB</span></div></div>
-<div class="tr-row"><span>MOTHERSHIP</span><div class="tr-status"><span class="badge badge-live">LIVE</span><span style="color:var(--td);font-size:12px">Helius webhooks</span></div></div>
-<div class="tr-row"><span>SIGNAL INTERCEPT</span><div class="tr-status"><span class="badge badge-live">LIVE</span><span style="color:var(--td);font-size:12px">Reddit + GDELT</span></div></div>
-<div class="tr-row"><span>HOLOGRAM DET</span><div class="tr-status"><span class="badge badge-live">LIVE</span><span style="color:var(--td);font-size:12px">Heuristic engine</span></div></div>
-<div class="tr-row"><span>AGENT 51</span><div class="tr-status"><span class="badge badge-live">ACTIVE</span><span style="color:var(--td);font-size:12px">@Agent51_AGOV</span></div></div>
-</div>
-<div class="pnl">
-<div style="font:13px/1 'Orbitron',sans-serif;color:var(--g);letter-spacing:2px;margin-bottom:14px">TOKEN</div>
-<div class="srow"><span class="sk">Contract Address</span><span class="sv" style="color:var(--a)">Pending launch</span></div>
-<div class="srow"><span class="sk">Chain</span><span class="sv" style="color:#9966ff">Solana</span></div>
-<div class="srow"><span class="sk">Platform</span><span class="sv" style="color:var(--tb)">Pump.fun</span></div>
-<div class="srow"><span class="sk">Supply</span><span class="sv" style="color:var(--tb)">1,000,000,000</span></div>
-<div class="srow"><span class="sk">Tax</span><span class="sv" style="color:var(--g)">0%</span></div>
-<div class="srow"><span class="sk">Presale</span><span class="sv" style="color:var(--g)">None</span></div>
-<div class="srow"><span class="sk">Mint Auth</span><span class="sv" style="color:var(--g)">Revoked at launch</span></div>
-<div class="srow"><span class="sk">Freeze Auth</span><span class="sv" style="color:var(--g)">Revoked at launch</span></div>
-<div class="srow"><span class="sk">LP</span><span class="sv" style="color:var(--g)">Auto-burned</span></div>
-<div class="srow"><span class="sk">Creator Fee</span><span class="sv" style="color:var(--g)">0.95% to ecosystem</span></div>
-</div>
+<div class="scr"><div class="scr-lbl">TOKEN</div><div class="scr-led led-g"></div><div class="scr-body">
+<div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid rgba(0,255,65,.03);font:14px 'VT323'"><span style="color:var(--dim)">Contract</span><span style="color:var(--am)">Pending</span></div>
+<div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid rgba(0,255,65,.03);font:14px 'VT323'"><span style="color:var(--dim)">Chain</span><span style="color:var(--pu)">Solana</span></div>
+<div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid rgba(0,255,65,.03);font:14px 'VT323'"><span style="color:var(--dim)">Supply</span><span style="color:var(--w)">1,000,000,000</span></div>
+<div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid rgba(0,255,65,.03);font:14px 'VT323'"><span style="color:var(--dim)">Tax</span><span style="color:var(--g)">0%</span></div>
+<div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid rgba(0,255,65,.03);font:14px 'VT323'"><span style="color:var(--dim)">Presale</span><span style="color:var(--g)">None</span></div>
+<div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid rgba(0,255,65,.03);font:14px 'VT323'"><span style="color:var(--dim)">Mint/Freeze</span><span style="color:var(--g)">Revoked</span></div>
+<div style="display:flex;justify-content:space-between;padding:4px 0;font:14px 'VT323'"><span style="color:var(--dim)">Revenue</span><span style="color:var(--cy)">Creator fees &#8594; buyback</span></div>
+</div></div>
+<div class="scr"><div class="scr-lbl">SYSTEMS</div><div class="scr-led led-g"></div><div class="scr-body" id="sysP"></div></div>
 </div>
 </section>
 
-<!-- FAQ -->
-<section id="s-faq" style="padding:40px 0">
-<div class="tag">QUESTIONS</div>
-<div class="ttl" style="margin-bottom:20px">FAQ</div>
-<details class="faq"><summary>What is $AGOV?</summary><div class="fa">$AGOV is the token that unlocks the AGOV intelligence portal -- crypto tools built around the aliens.gov 404 narrative. Scan tokens, track whales, filter launches, detect fake volume. The disclosure theme drives attention. The tools give you a reason to stay.</div></details>
-<details class="faq"><summary>Is this safe?</summary><div class="fa">Mint and freeze authorities revoked at launch. LP auto-burned on graduation. 100% fair launch via Pump.fun. No presale, no team tokens, 0% tax. All wallets published at launch for verification.</div></details>
-<details class="faq"><summary>What can I use for free?</summary><div class="fa">XRAY.51 (limited daily scans), DEBRIEFING basic view, and THE PROBE with 5-minute delay. No wallet required. Try the scanner on the home page.</div></details>
-<details class="faq"><summary>What do the tools do?</summary><div class="fa">XRAY.51 detects honeypots, checks authorities, finds bundles, and maps dev wallets. THE PROBE filters every Pump.fun launch to the top 1%. MOTHERSHIP tracks 247 whale wallets with AI intent prediction. SIGNAL INTERCEPT detects emerging narratives. HOLOGRAM DETECTOR reveals wash trading. ABDUCTION REPORT checks any dev's track record. DEBRIEFING aggregates PnL across platforms.</div></details>
-<details class="faq"><summary>Who is Agent 51?</summary><div class="fa">An autonomous AI operative that monitors disclosure sources, publishes satirical Field Reports from an alien bureaucrat's perspective, and powers the tool analytics. Follow @Agent51_AGOV.</div></details>
-<details class="faq"><summary>What about revenue sharing?</summary><div class="fa">Portal usage generates fees. 30% goes to buyback. 10% distributed to Commander holders. 60% funds operations. Non-holders can pay $49/month USDC (100% goes to buyback). All distributions are manual and verifiable on-chain.</div></details>
+<!-- ============ FAQ ============ -->
+<section id="s-faq" style="padding:14px 0">
+<div style="margin-bottom:12px"><div style="font:9px/1 'Silkscreen';color:var(--dim);letter-spacing:4px">QUESTIONS</div><h2 style="font:600 16px/1 'Orbitron';color:var(--w);letter-spacing:2px;margin-top:3px">FAQ</h2></div>
+<div style="max-width:640px">
+<details><summary><span>What is $AGOV?</span><span style="color:var(--g)">+</span></summary><div>Access token for Station 51 — 10 intelligence tools for Pump.fun traders. 9 tools are live at launch. WARP DRIVE (perpetual market creation) activates when conditions are met. The UFO disclosure narrative drives organic attention. The tools give people a reason to stay.</div></details>
+<details><summary><span>What is WARP DRIVE?</span><span style="color:var(--g)">+</span></summary><div>COMING ONLINE. Will auto-create perpetual futures markets on Perpolator when tokens graduate from Pump.fun. First creator earns 8% of all trading fees on that market forever. Activates when Perpolator launches on mainnet and creator fee revenue funds the seed liquidity. Revenue goes to transparent $AGOV buyback.</div></details>
+<details><summary><span>What's free?</span><span style="color:var(--g)">+</span></summary><div>XRAY.51 (3 scans/day), DEBRIEFING basic, RUG AUTOPSY (read all reports), THE PROBE (5-minute delay). No wallet needed for free tier.</div></details>
+<details><summary><span>Is this safe?</span><span style="color:var(--g)">+</span></summary><div>Mint and freeze authorities revoked at launch. LP auto-burned on graduation. 0% tax. No presale. No team tokens. Revenue wallets are public and auditable. Scan $AGOV with our own XRAY.51 tool.</div></details>
+<details><summary><span>Why the alien theme?</span><span style="color:var(--g)">+</span></summary><div>The White House registered aliens.gov on March 18, 2026. It returns 404. We built the intelligence infrastructure they didn't. The disclosure news cycle generates organic attention — every UFO headline, every congressional hearing, every government statement is a catalyst for $AGOV. The tools are the product. The aliens are the story.</div></details>
+<details><summary><span>How does revenue work?</span><span style="color:var(--g)">+</span></summary><div>Currently: Pump.fun creator fees (0.30-0.95% on PumpSwap trades post-graduation). Future: WARP DRIVE will create perp markets on Perpolator — creator earns 8% of all trading fees. All revenue goes to transparent, on-chain buyback of $AGOV. Every transaction published with Solscan links.</div></details>
+</div>
 </section>
 
-<!-- BUY -->
-<section id="s-buy" style="text-align:center;padding:50px 0">
-<div style="max-width:520px;margin:0 auto">
-<div style="font:900 2rem/1 'Orbitron',sans-serif;color:var(--g);animation:float 3s ease-in-out infinite;text-shadow:0 0 25px rgba(0,255,65,.15)">$AGOV</div>
-<div class="tag" style="margin:14px 0 6px">ACQUISITION</div>
-<div class="ttl" style="margin-bottom:18px">GET $AGOV</div>
-<p style="font:15px/1.7 'Courier Prime',monospace;color:#7a9a8a;margin-bottom:24px">Token-gated access to 7 live intelligence tools on Solana.</p>
-<div style="display:flex;flex-direction:column;gap:10px;margin-bottom:24px">
-<button class="bp" style="width:100%;padding:16px;font-size:15px">BUY ON PUMP.FUN</button>
-<button class="bc" style="width:100%;padding:16px;font-size:15px">TRADE ON JUPITER</button>
-<button class="bg" style="width:100%;padding:16px;font-size:15px">VIEW ON DEXSCREENER</button>
+<!-- ============ BUY ============ -->
+<section id="s-buy" style="padding:20px 0;text-align:center">
+<div style="max-width:380px;margin:0 auto">
+<div style="width:28px;height:28px;margin:0 auto 6px;border-radius:50%;border:2px solid var(--g);display:flex;align-items:center;justify-content:center;box-shadow:0 0 10px var(--gl);animation:float 3s ease-in-out infinite"><div style="width:10px;height:5px;background:var(--g);border-radius:5px 5px 0 0;box-shadow:0 0 5px var(--g)"></div></div>
+<h2 style="font:900 1.6rem/1 'Orbitron';color:var(--g);letter-spacing:3px;text-shadow:0 0 12px rgba(0,255,65,.12)">$AGOV</h2>
+<p style="font:14px/1.5 'VT323';color:var(--dim);margin:6px 0 16px">10 tools. 9 live. Token-gated intelligence.</p>
+<div style="display:flex;flex-direction:column;gap:5px;margin-bottom:12px">
+<button class="b3 b3-g" style="width:100%;padding:12px">BUY ON PUMP.FUN</button>
+<button class="b3 b3-o" style="width:100%;padding:12px">TRADE ON JUPITER</button>
 </div>
-<div class="pnl" style="text-align:left;margin-bottom:20px">
-<div style="font:12px/1 'Orbitron',sans-serif;color:var(--td);letter-spacing:2px;margin-bottom:8px">CONTRACT ADDRESS</div>
-<div style="font:15px/1 'JetBrains Mono',monospace;color:var(--g);padding:12px;background:rgba(0,0,0,.3);border-radius:4px">Pending deployment</div>
+<div class="scr" style="text-align:left;margin-bottom:10px"><div class="scr-lbl">CONTRACT</div><div class="scr-led led-a"></div><div class="scr-body"><div style="font:16px 'VT323';color:var(--g);padding:6px;background:rgba(0,0,0,.2);border-radius:2px">Pending deployment</div></div></div>
+<div style="display:flex;justify-content:center;gap:4px">
+<button class="b3 b3-o" style="font-size:12px;padding:6px 10px">@AGOVCOIN</button>
+<button class="b3 b3-o" style="font-size:12px;padding:6px 10px">@AGENT51_AGOV</button>
+<button class="b3 b3-am" style="font-size:12px;padding:6px 10px">TELEGRAM</button>
 </div>
-<div style="display:flex;justify-content:center;gap:10px">
-<button class="bg" style="padding:10px 20px;font-size:12px">TWITTER @AGOVCOIN</button>
-<button class="bg" style="padding:10px 20px;font-size:12px">TELEGRAM</button>
-<button class="bg" style="padding:10px 20px;font-size:12px">DEXSCREENER</button>
-</div>
-<div class="xq" style="margin-top:20px">"aliens.gov: 404. $AGOV: operational."</div>
+<p style="font:8px 'Share Tech Mono';color:rgba(0,255,65,.06);letter-spacing:4px;margin-top:8px">⌬◊⟐⧫⌘◈⟡△◇⬡⌬⧫◊⟐⌘◈⟡</p>
 </div>
 </section>
 
 </div>
 
-<footer>
-<div class="fl">2026 GALACTIC INTELLIGENCE DIVISION -- EARTH STATION #51 -- NOT FINANCIAL ADVICE</div>
-<div class="fr">THE TRUTH IS ON-CHAIN</div>
-</footer>
+<div style="border-top:1px solid var(--bz);padding:10px 16px;display:flex;justify-content:space-between;font:12px 'VT323';color:var(--dim)">
+<span>STATION 51 — NOT FINANCIAL ADVICE</span>
+<span style="color:var(--dim)">THE TRUTH IS ON-CHAIN</span>
+</div>
 </div>
 
 <script>
-// GOV INTRO — skips on click OR after 3 seconds
-const ov=document.getElementById('gov'),cv=document.getElementById('ptc'),cx=cv.getContext('2d'),ms=document.getElementById('site');
-cv.width=innerWidth;cv.height=innerHeight;addEventListener('resize',()=>{cv.width=innerWidth;cv.height=innerHeight});
-let pts=[];function mkP(){pts=[];for(let i=0;i<2000;i++)pts.push({x:Math.random()*cv.width,y:Math.random()*cv.height,vx:(Math.random()-.5)*12,vy:(Math.random()-.5)*12,sz:Math.random()*3+1,a:1,c:Math.random()>.6?'#00ff41':Math.random()>.5?'#1a4480':'#fff',d:Math.random()*.015+.008})}
-function drawP(){cx.clearRect(0,0,cv.width,cv.height);let alive=0;pts.forEach(p=>{if(p.a<=0)return;alive++;p.x+=p.vx;p.y+=p.vy;p.a-=p.d;p.vx*=1.02;p.vy*=1.02;cx.globalAlpha=Math.max(0,p.a);cx.fillStyle=p.c;cx.fillRect(p.x,p.y,p.sz,p.sz)});cx.globalAlpha=1;if(alive)requestAnimationFrame(drawP);else cv.style.display='none'}
+// Stars
+(function(){const c=document.getElementById('stars');for(let i=0;i<80;i++){const s=document.createElement('div');s.className='st';const sz=Math.random()*1.2+.2;s.style.cssText=`width:${sz}px;height:${sz}px;left:${Math.random()*100}%;top:${Math.random()*100}%;opacity:${Math.random()*.2+.03}`;c.appendChild(s)}})();
 
-let govSkipped=false;
-function triggerGlitch(){
-  if(govSkipped)return;govSkipped=true;
-  ov.classList.add('glitching');
-  setTimeout(()=>{cv.style.display='block';mkP();drawP()},400);
-  setTimeout(()=>{ov.classList.add('hidden');ms.style.opacity='1';startDashboard()},2000);
-}
-// Auto-trigger after 3 seconds
-setTimeout(triggerGlitch,3000);
-// Click anywhere on gov page to skip immediately
-ov.addEventListener('click',triggerGlitch);
+// Gov
+let sk=false;function skip(){if(sk)return;sk=true;document.getElementById('gov').classList.add('die');setTimeout(()=>{document.getElementById('gov').style.display='none';document.getElementById('site').style.opacity='1';boot()},1600)}
+setTimeout(skip,3000);
 
-// COUNTDOWN TIMER + DASHBOARD METRICS
-function startDashboard(){
-  const L=new Date('2026-03-18T00:00:00Z');
-  function uc(){
-    const df=Date.now()-L;
-    const de=document.getElementById('d'),he=document.getElementById('h'),mie=document.getElementById('mi'),see=document.getElementById('se');
-    if(de)de.textContent=String(Math.floor(df/864e5)).padStart(2,'0');
-    if(he)he.textContent=String(Math.floor((df%864e5)/36e5)).padStart(2,'0');
-    if(mie)mie.textContent=String(Math.floor((df%36e5)/6e4)).padStart(2,'0');
-    if(see)see.textContent=String(Math.floor((df%6e4)/1e3)).padStart(2,'0');
-  }
-  setInterval(uc,1000);uc();
-  // Ping counter
-  let pg=0;setInterval(()=>{pg++;const e=document.getElementById('pc');if(e)e.textContent=pg},6000);
-  // Animated metrics
-  function av(el,t,sf,dur){if(!el)return;let s=0;const st=t/(dur/16);const iv=setInterval(()=>{s+=st;if(s>=t){el.textContent=t+sf;clearInterval(iv)}else el.textContent=Math.floor(s)+sf},16)}
+// Countdown
+function upCD(){const L=new Date('2026-03-18T00:00:00Z'),df=Date.now()-L;
+document.getElementById('cD').textContent=String(Math.floor(df/864e5)).padStart(2,'0');
+document.getElementById('cH').textContent=String(Math.floor((df%864e5)/36e5)).padStart(2,'0');
+document.getElementById('cM').textContent=String(Math.floor((df%36e5)/6e4)).padStart(2,'0');
+document.getElementById('cS').textContent=String(Math.floor((df%6e4)/1e3)).padStart(2,'0')}
+setInterval(upCD,1000);upCD();
+
+// Systems panel
+(function(){const p=document.getElementById('sysP');if(!p)return;
+[['XRAY.51','on'],['THE PROBE','on'],['HOLOGRAM','on'],['MOTHERSHIP','on'],['GRAD TRACKER','on'],['SIGNAL INT','on'],['ABDUCTION','on'],['AUTOPSY','on'],['WARP DRIVE','soon'],['DEBRIEFING','on']].forEach(([n,s])=>{const c=s==='on'?'var(--g)':s==='soon'?'var(--am)':'var(--am)';const lbl=s==='on'?'LIVE':s==='soon'?'SOON':'NEW';
+p.innerHTML+=`<div style="display:flex;justify-content:space-between;align-items:center;padding:4px 0;border-bottom:1px solid rgba(0,255,65,.03);font:14px 'VT323'"><span style="color:var(--t)">${n}</span><div style="display:flex;align-items:center;gap:3px"><div style="width:4px;height:4px;border-radius:50%;background:${c};box-shadow:0 0 3px ${c}"></div><span style="color:${c}">${lbl}</span></div></div>`})})();
+
+function boot(){
+  setInterval(()=>{const e=document.getElementById('mD');if(e)e.textContent=parseInt(e.textContent)+Math.floor(Math.random()*3)},8000);
+  setInterval(()=>{const e=document.getElementById('mS');if(e){const v=e.textContent==='--'?100:parseInt(e.textContent);e.textContent=v+Math.floor(Math.random()*4)+1}},4000);
 }
 
-// SECTION SWITCHING
-function go(id,btn){
-  document.querySelectorAll('section').forEach(s=>s.classList.remove('active'));
-  document.getElementById('s-'+id).classList.add('active');
-  document.querySelectorAll('.nv button').forEach(b=>b.classList.remove('on'));
-  if(btn)btn.classList.add('on');
-  window.scrollTo({top:0,behavior:'instant'});
-}
+// Nav
+function nav(id,btn){document.querySelectorAll('section').forEach(s=>s.classList.remove('active'));document.getElementById('s-'+id).classList.add('active');document.querySelectorAll('.nb').forEach(b=>b.classList.remove('on'));if(btn)btn.classList.add('on');window.scrollTo({top:0,behavior:'instant'})}
+function showT(id,btn){document.querySelectorAll('.tv').forEach(v=>v.classList.remove('on'));document.querySelectorAll('.tb').forEach(b=>b.classList.remove('on'));const tv=document.getElementById('tv-'+id);if(tv)tv.classList.add('on');if(btn)btn.classList.add('on');else document.querySelectorAll('.tb').forEach(b=>{if(b.textContent.toLowerCase().includes(id.slice(0,4)))b.classList.add('on')})}
 
-// XRAY LOGIC
-const mocks=[
-{score:84,mint:'REVOKED',freeze:'REVOKED',lp:'BURNED',bundle:'NO',devSold:'NO',holders:347,top:'4.2%',risk:'LOW',ai:'Token passes all critical safety checks. Mint and freeze permanently revoked. LP burned. No bundles at genesis. Developer has not sold. 347 holders, no wallet over 4.2%.'},
-{score:31,mint:'ACTIVE',freeze:'REVOKED',lp:'UNLOCKED',bundle:'YES (3)',devSold:'YES (42%)',holders:28,top:'23.1%',risk:'CRITICAL',ai:'Multiple critical red flags. Mint authority ACTIVE. LP NOT locked. 3-wallet bundle at genesis. Developer sold 42%. Top holder 23.1%. Consistent with rug pull.'},
-{score:62,mint:'REVOKED',freeze:'ACTIVE',lp:'BURNED',bundle:'NO',devSold:'NO',holders:143,top:'8.7%',risk:'MEDIUM',ai:'Mixed. Mint revoked (good) but freeze authority active -- tokens could be frozen. LP burned. No bundles. Dev hasn\'t sold. Active freeze is a significant concern.'}];
-
-function scanFn(progEl,resEl,ringEl,scEl,vEl,gridEl,aiEl,btnEl){
-  const d=mocks[Math.floor(Math.random()*mocks.length)];
-  btnEl.disabled=true;btnEl.textContent='...';resEl.style.display='none';progEl.style.display='block';progEl.innerHTML='';
-  const steps=['> Solana RPC connected','> Token data fetched','> Mint authority checked','> Freeze authority checked','> GoPlus queried','> RugCheck queried','> Holders analyzed','> Genesis scanned','> AI assessment done'];
-  let i=0;const iv=setInterval(()=>{if(i<steps.length){progEl.innerHTML+=steps[i]+'<br>';i++;progEl.scrollTop=9999}else{clearInterval(iv);setTimeout(()=>{
-    btnEl.disabled=false;btnEl.textContent='SCAN';progEl.style.display='none';resEl.style.display='block';
-    scEl.textContent=d.score;const c=d.score>70?'var(--g)':d.score>40?'var(--a)':'var(--r)';
-    ringEl.style.border='3px solid '+c;scEl.style.color=c;ringEl.style.boxShadow='0 0 18px '+c+'33';
-    if(d.score>70)vEl.innerHTML='<span style="color:var(--g)">LOW RISK</span> -- Passes safety checks.';
-    else if(d.score>40)vEl.innerHTML='<span style="color:var(--a)">MEDIUM RISK</span> -- Flags detected.';
-    else vEl.innerHTML='<span style="color:var(--r)">CRITICAL</span> -- Do not buy.';
-    if(gridEl){const cls=v=>String(v).includes('REVOKED')||String(v).includes('BURNED')||v==='NO'?'rs':(String(v).includes('ACTIVE')||String(v).includes('YES')||String(v).includes('UNLOCKED')?'rd':'');
-    gridEl.innerHTML=[['MINT',d.mint],['FREEZE',d.freeze],['LP',d.lp],['BUNDLE',d.bundle],['DEV SOLD',d.devSold],['HOLDERS',d.holders],['TOP',d.top],['RISK',d.risk]].map(([l,v])=>`<div class="rc"><div class="rl">${l}</div><div class="rv ${cls(v)}">${v}</div></div>`).join('')}
-    if(aiEl&&aiEl.innerHTML!==undefined)aiEl.innerHTML='<div class="at">AGENT 51 ANALYSIS</div>'+d.ai;
-  },200)}},140);
-}
-function runHS(){scanFn(document.getElementById('heroProg'),document.getElementById('heroRes'),document.getElementById('heroRing'),document.getElementById('heroSc'),document.getElementById('heroV'),null,{innerHTML:''},document.getElementById('heroBtn'))}
+// XRAY
+const mocks=[{score:84,mint:'REVOKED',freeze:'REVOKED',lp:'BURNED',bundle:'NO',devSold:'NO',holders:347,top:'4.2%',risk:'LOW',ai:'All checks pass. Mint/freeze revoked. LP burned. 347 holders. Station 51: LOW RISK.'},{score:31,mint:'ACTIVE',freeze:'REVOKED',lp:'UNLOCKED',bundle:'YES(3)',devSold:'YES(42%)',holders:28,top:'23.1%',risk:'CRITICAL',ai:'Mint ACTIVE. LP unlocked. Bundled. Dev dumped 42%. Station 51: RUG 89%.'},{score:62,mint:'REVOKED',freeze:'ACTIVE',lp:'BURNED',bundle:'NO',devSold:'NO',holders:143,top:'8.7%',risk:'MEDIUM',ai:'Freeze active. LP burned. Station 51: CAUTION.'}];
+function scanFn(p,r,ring,sc,v,g,ai,btn){const d=mocks[Math.floor(Math.random()*3)];btn.disabled=true;btn.textContent='...';r.style.display='none';p.style.display='block';p.innerHTML='';const st=['> RPC connected','> metadata fetched','> mint authority check','> freeze authority check','> goplus scan','> rugcheck verify','> holders mapped','> genesis scanned','> agent 51 assessing...'];let i=0;const iv=setInterval(()=>{if(i<st.length){p.innerHTML+=st[i]+'<br>';i++;p.scrollTop=9999}else{clearInterval(iv);setTimeout(()=>{btn.disabled=false;btn.textContent='SCAN';p.style.display='none';r.style.display='block';sc.textContent=d.score;const c=d.score>70?'var(--g)':d.score>40?'var(--am)':'var(--red)';ring.style.borderColor=c;sc.style.color=c;if(d.score>70)v.innerHTML='<span style="color:var(--g)">LOW RISK</span>';else if(d.score>40)v.innerHTML='<span style="color:var(--am)">MEDIUM</span>';else v.innerHTML='<span style="color:var(--red)">CRITICAL</span>';if(g){const cl=x=>String(x).includes('REVOKED')||String(x).includes('BURNED')||x==='NO'?'v-ok':(String(x).includes('ACTIVE')||String(x).includes('YES')||String(x).includes('UNLOCKED')?'v-bad':'');g.innerHTML=[['MINT',d.mint],['FREEZE',d.freeze],['LP',d.lp],['BUNDLE',d.bundle],['DEV',d.devSold],['HOLDERS',d.holders],['TOP',d.top],['RISK',d.risk]].map(([l,x])=>`<div class="cl"><div class="cl-l">${l}</div><div class="cl-v ${cl(x)}">${x}</div></div>`).join('')}if(ai)ai.innerHTML='<div class="ai-l">AGENT 51</div>'+d.ai},200)}},110)}
+function runHS(){scanFn(document.getElementById('heroProg'),document.getElementById('heroRes'),document.getElementById('heroRing'),document.getElementById('heroSc'),document.getElementById('heroV'),null,null,document.getElementById('heroBtn'))}
 function runX(){scanFn(document.getElementById('xProg'),document.getElementById('xRes'),document.getElementById('xRing'),document.getElementById('xSc'),document.getElementById('xV'),document.getElementById('xG'),document.getElementById('xAI'),document.getElementById('xBtn'))}
 
-// PROBE
-const tks=['$NEXUS','$ORBIT','$WARP','$DELTA','$VOID','$FLUX','$PRISM','$NOVA','$APEX','$HELIX','$CIPHER'];
-const pds=['AI gaming, clean contract, smart money entered','RWA play, dev has 5 successful launches','L2 bridge, TG growth 800 in 2h','Meme+utility, score 91, no bundles','DeFi aggregator, clean wallet, LP burned'];
-let pc=0,pt=0;
-function addP(){const f=document.getElementById('pFeed');if(!f)return;pt+=Math.floor(Math.random()*80)+20;pc++;const a=document.getElementById('pC'),b=document.getElementById('pT');if(a)a.textContent=pc;if(b)b.textContent=pt;const tk=tks[Math.floor(Math.random()*tks.length)],d=pds[Math.floor(Math.random()*pds.length)],s=Math.floor(Math.random()*25)+75,mc=(Math.random()*80+5).toFixed(0),n=new Date(),ts=n.getHours().toString().padStart(2,'0')+':'+n.getMinutes().toString().padStart(2,'0');const e=document.createElement('div');e.className='fi';e.style.animation='fadeIn .3s';e.innerHTML=`<span style="color:var(--td);width:44px;flex-shrink:0;font:11px/1.5 'JetBrains Mono',monospace">${ts}</span><span style="color:var(--g);width:46px;flex-shrink:0;font:11px/1.5 'Orbitron',sans-serif;letter-spacing:1px">PASS</span><span style="flex:1"><b style="color:var(--w);font-weight:500">${tk}</b> $${mc}K -- ${d}</span><span style="width:34px;text-align:right;font:600 13px/1.5 'Orbitron',sans-serif;color:${s>85?'var(--g)':'var(--a)'}">${s}</span>`;f.prepend(e);if(f.children.length>18)f.removeChild(f.lastChild)}
-setInterval(addP,4000);setTimeout(()=>{addP();addP();addP()},4500);
+// Probe
+const tks=['$NEXUS','$ORBIT','$WARP','$DELTA','$VOID','$FLUX','$NOVA'];let pc=0,pt=0;
+function addP(){const f=document.getElementById('pFeed');if(!f)return;pt+=Math.floor(Math.random()*80)+20;pc++;document.getElementById('pC').textContent=pc;document.getElementById('pT').textContent=pt;const e=document.createElement('div');e.className='fi';e.innerHTML=`<span style="color:var(--dim);width:32px">${new Date().toTimeString().slice(0,5)}</span><span style="color:var(--g);width:24px">OK</span><span style="flex:1"><b style="color:var(--w)">${tks[Math.floor(Math.random()*7)]}</b> $${(Math.random()*80+5).toFixed(0)}K</span><span style="font:600 10px 'Orbitron';color:var(--g)">${Math.floor(Math.random()*25)+75}</span>`;f.prepend(e);if(f.children.length>10)f.removeChild(f.lastChild)}
+setInterval(addP,4000);setTimeout(()=>{addP();addP();addP()},4000);
 
-// MOTHERSHIP
-const wa=['8xF2...mP7','3aD9...nK2','7bR4...qL5','9cE6...vJ8','2dG1...tH3'],wt=['$SOL','$WIF','$BONK','$JTO','$POPCAT','$JUP'],wac=['Bought','Sold','Transferred','Accumulated'],wi=['ACCUMULATION','DISTRIBUTION','RESHUFFLING','PROFIT','ENTRY'],wic=['var(--g)','var(--r)','var(--td)','var(--a)','var(--cy)'];
-let wm=0;function addW(){const f=document.getElementById('wFeed');if(!f)return;wm++;const e=document.getElementById('wM');if(e)e.textContent=wm;const a=wa[Math.floor(Math.random()*wa.length)],t=wt[Math.floor(Math.random()*wt.length)],ac=wac[Math.floor(Math.random()*wac.length)],am=(Math.random()*9000+500).toFixed(0),ii=Math.floor(Math.random()*wi.length),cf=Math.floor(Math.random()*20)+75;const el=document.createElement('div');el.className='fi';el.style.animation='fadeIn .3s';el.innerHTML=`<span style="color:var(--cy);width:72px;flex-shrink:0;font:12px/1.5 'JetBrains Mono',monospace">${a}</span><span style="flex:1">${ac} <b style="color:var(--w);font-weight:500">${t}</b></span><span style="width:80px;text-align:right;font:13px/1.5 'JetBrains Mono',monospace;color:var(--w)">${Number(am).toLocaleString()}</span><span style="width:100px;text-align:right;font:10px/1.5 'Orbitron',sans-serif;color:${wic[ii]}">${wi[ii]} ${cf}%</span>`;f.prepend(el);if(f.children.length>16)f.removeChild(f.lastChild)}
-setInterval(addW,3500);setTimeout(()=>{for(let i=0;i<5;i++)addW()},4500);
+// Mothership
+const wa=['8xF2..mP7','3aD9..nK2','7bR4..qL5'],wt=['$SOL','$WIF','$BONK','$JUP'],wac=['Bought','Sold','Accum'];let wm=0;
+function addW(){const f=document.getElementById('wFeed');if(!f)return;wm++;document.getElementById('wM').textContent=wm;const e=document.createElement('div');e.className='fi';e.innerHTML=`<span style="color:var(--cy);width:52px">${wa[Math.floor(Math.random()*3)]}</span><span style="flex:1">${wac[Math.floor(Math.random()*3)]} <b style="color:var(--w)">${wt[Math.floor(Math.random()*4)]}</b></span><span style="color:var(--w)">${Number((Math.random()*9000+500).toFixed(0)).toLocaleString()}</span>`;f.prepend(e);if(f.children.length>10)f.removeChild(f.lastChild)}
+setInterval(addW,3500);setTimeout(()=>{for(let i=0;i<4;i++)addW()},4000);
 
-// SIGNAL
-const nars=[{n:'AI GAMING',p:'Phase 2',c:'var(--g)',v:'+340%',tk:12,pct:68},{n:'RWA',p:'Phase 2',c:'var(--g)',v:'+280%',tk:8,pct:55},{n:'DEPIN',p:'Phase 3',c:'var(--a)',v:'+120%',tk:34,pct:82},{n:'RESTAKING',p:'Phase 1',c:'var(--cy)',v:'+890%',tk:3,pct:15},{n:'MEME UTILITY',p:'Phase 2',c:'var(--g)',v:'+210%',tk:19,pct:42}];
-setTimeout(()=>{const s=document.getElementById('sigB');if(!s)return;s.innerHTML='<div style="font:12px \'Share Tech Mono\',monospace;color:var(--td);letter-spacing:2px;margin-bottom:12px">ACTIVE NARRATIVES</div>';nars.forEach(n=>{s.innerHTML+=`<div class="nc"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px"><span style="font:600 14px 'Orbitron',sans-serif;letter-spacing:2px;color:${n.c}">${n.n}</span><span style="font:10px 'Share Tech Mono',monospace;color:${n.c};border:1px solid ${n.c}33;padding:2px 8px;border-radius:2px">${n.p}</span></div><div class="nc-bar"><div style="width:${n.pct}%;background:${n.c}"></div></div><div style="font:12px 'Share Tech Mono',monospace;color:var(--td);display:flex;gap:14px"><span>Social: <b style="color:var(--w)">${n.v}</b></span><span>Tokens: ${n.tk}</span><span>Cycle: ${n.pct}%</span></div></div>`})},100);
+// Grad
+const gT=['$QUANTUM','$NEBULA','$PHOTON','$VORTEX','$ECLIPSE'];let gI=[];
+function initG(){const f=document.getElementById('gFeed');if(!f)return;for(let i=0;i<5;i++){const p=Math.floor(Math.random()*25)+70;const it={p,el:null};const d=document.createElement('div');d.className='grad-r';d.innerHTML=`<span style="font:600 10px 'Orbitron';color:var(--w);width:56px">${gT[i]}</span><span style="font:12px 'VT323';color:var(--dim);width:32px">$${(p/100*69).toFixed(0)}K</span><div class="grad-b"><div class="grad-f" style="width:${p}%"></div></div><span style="font:700 10px 'Orbitron';color:var(--g);width:30px;text-align:right">${p}%</span>`;f.appendChild(d);it.el=d;gI.push(it)}document.getElementById('gN').textContent=gI.length;document.getElementById('sG').textContent=gI.length;document.getElementById('mG').textContent=gI.length}
+setInterval(()=>{gI.forEach(g=>{if(g.p<100){g.p=Math.min(100,g.p+Math.random()*1);if(g.el){g.el.querySelector('.grad-f').style.width=g.p+'%';const s=g.el.querySelectorAll('span');s[2].textContent=g.p>=100?'GRAD!':Math.floor(g.p)+'%';if(g.p>=100)s[2].style.color='var(--g)'}}})},3000);
+setTimeout(initG,4000);
 
-// HOLOGRAM
-function runH(){const r=document.getElementById('hRes'),a=Math.floor(Math.random()*60)+20,w=100-a,u=Math.floor(Math.random()*200)+30,rc=Math.floor(Math.random()*50)+5,c=a>60?'var(--g)':a>35?'var(--a)':'var(--r)';r.style.display='block';r.innerHTML=`<div style="display:flex;align-items:center;gap:16px;margin:14px 0"><div class="sr" style="border:3px solid ${c};box-shadow:0 0 18px ${c}33"><div class="sn" style="color:${c}">${a}</div><div class="sl">AUTH</div></div><div style="font:14px/1.5 'Share Tech Mono',monospace">${a>60?'Mostly organic. Diverse wallet participation.':a>35?'Mixed. Wash trading detected with organic activity.':'Mostly artificial. Recycled wallets and mechanical patterns.'}</div></div><div class="rg"><div class="rc"><div class="rl">ORGANIC</div><div class="rv" style="color:${c}">${a}%</div></div><div class="rc"><div class="rl">WASH</div><div class="rv rd">${w}%</div></div><div class="rc"><div class="rl">UNIQUE</div><div class="rv" style="color:var(--w)">${u}</div></div><div class="rc"><div class="rl">RECYCLED</div><div class="rv rw">${rc}</div></div></div><div class="ai"><div class="at">PATTERN ANALYSIS</div>${a>60?u+' unique wallets with varied funding. Natural variance in trade sizes.':'Detected '+rc+' wallets in circular patterns. Trade sizes cluster at $'+((Math.random()*500+50).toFixed(0))+'.'}</div>`}
+// Autopsy
+const causes=[{c:'INSIDER DUMP',d:'Dev sold 67% in 4m.'},{c:'LP REMOVED',d:'LP drained. $18K gone.'},{c:'ABANDONED',d:'No activity 72h.'},{c:'SNIPED',d:'5 bots captured 94%.'}];
+const dTk=['$PHANTOM_D','$MOONBASE','$ELONAI','$MEGAPUMP','$YOLOSWAP'];let aC=0;
+function addA(){const f=document.getElementById('aFeed');if(!f)return;aC++;document.getElementById('aT').textContent=aC;const c=causes[Math.floor(Math.random()*4)];const d=document.createElement('div');d.className='c-rug';d.innerHTML=`<div style="display:flex;justify-content:space-between;margin-bottom:2px"><span style="font:15px 'VT323';color:var(--red)">${dTk[Math.floor(Math.random()*5)]}</span><span class="ctag" style="color:var(--red);border:1px solid rgba(255,51,68,.1)">${c.c}</span></div><div style="font:13px 'VT323';color:var(--t)">${c.d}</div><div style="font:11px 'VT323';color:var(--dim);margin-top:2px">Lost: <span style="color:var(--red)">$${Number((Math.random()*50000+1000).toFixed(0)).toLocaleString()}</span> · XRAY: <span style="color:var(--red)">${Math.floor(Math.random()*30)+10}</span></div>`;f.prepend(d);if(f.children.length>4)f.removeChild(f.lastChild)}
+setInterval(addA,7000);setTimeout(()=>{addA();addA();addA()},4000);
 
-// DEV CHECK
-function runD(){const r=document.getElementById('dRes'),s=Math.floor(Math.random()*80)+15,l=Math.floor(Math.random()*15)+1,g=Math.floor(l*Math.random()*.4),ru=Math.floor(Math.random()*l*.6),ac=Math.max(0,l-g-ru),avg=Math.floor(Math.random()*300)-150,c=s>65?'var(--g)':s>35?'var(--a)':'var(--r)';document.getElementById('dRing').style.cssText='border:3px solid '+c+';box-shadow:0 0 18px '+c+'33';document.getElementById('dSc').style.color=c;document.getElementById('dSc').textContent=s;document.getElementById('dAddr').textContent='7xK9m...dFp2';document.getElementById('dAddr').style.color=c;document.getElementById('dLbl').textContent=s>65?'TRUSTED':s>35?'MIXED':'HIGH RISK';document.getElementById('dStats').innerHTML=[['LAUNCHED',l,'var(--w)'],['GRADUATED',g,'var(--g)'],['RUGGED',ru,ru>0?'var(--r)':'var(--g)'],['ACTIVE',ac,'var(--cy)'],['AVG RETURN',avg+'%',avg>0?'var(--g)':'var(--r)']].map(([lb,v,co])=>`<div style="display:flex;align-items:center;gap:14px;padding:8px 0;border-bottom:1px solid rgba(0,255,65,.04);font:13px 'Share Tech Mono',monospace"><span style="color:var(--td);width:100px">${lb}</span><span style="color:${co}">${v}</span></div>`).join('');document.getElementById('dAI').innerHTML=`<div class="at">ASSESSMENT</div>${l} tokens. ${g} graduated, ${ru} rugged. ${s>65?'Above average. Return: '+avg+'%.':s>35?'Mixed. '+ru+' abandoned. Avg: '+avg+'%.':'Poor record. '+ru+'/'+l+' rugged. Avg: '+avg+'%.'}`;r.style.display='block'}
+// Warp — COMING ONLINE (no mock data)
 
-// PNL
-function runPL(){const r=document.getElementById('plRes'),tp=(Math.random()*6000-2000).toFixed(2),tr=Math.floor(Math.random()*300)+50,wr=Math.floor(Math.random()*30)+35,b=(Math.random()*2000+100).toFixed(0),wo=(-Math.random()*800-50).toFixed(0),rg=(Math.random()*5000+500).toFixed(0),c=parseFloat(tp)>0?'var(--g)':'var(--r)';r.style.display='block';r.innerHTML=`<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:14px 0"><div class="rc" style="text-align:center;padding:14px"><div style="font:700 18px 'Orbitron',sans-serif;color:${c}">${parseFloat(tp)>0?'+':''}$${Number(Math.abs(tp)).toLocaleString()}</div><div class="rl" style="margin-top:5px">PNL 30D</div></div><div class="rc" style="text-align:center;padding:14px"><div style="font:700 18px 'Orbitron',sans-serif;color:var(--w)">${tr}</div><div class="rl" style="margin-top:5px">TRADES</div></div><div class="rc" style="text-align:center;padding:14px"><div style="font:700 18px 'Orbitron',sans-serif;color:${wr>50?'var(--g)':'var(--a)'}">${wr}%</div><div class="rl" style="margin-top:5px">WIN RATE</div></div></div><div class="ai"><div class="at">PATTERN ANALYSIS</div>${tr} trades. Win rate ${wr}% (median: 47%). Best: +$${b}. Unrealized: $${Number(rg).toLocaleString()}. ${wr<50?'Losses concentrate in first-60s buys. Use THE PROBE.':'Strong on 4h+ holds.'}</div>`}
+// Signal
+setTimeout(()=>{const s=document.getElementById('sigB');if(!s)return;[{n:'AI GAMING',c:'var(--g)',p:68},{n:'RWA',c:'var(--cy)',p:55},{n:'DEPIN',c:'var(--am)',p:82},{n:'RESTAKING',c:'var(--pu)',p:15},{n:'MEME UTILITY',c:'var(--red)',p:42}].forEach(n=>{s.innerHTML+=`<div style="display:flex;align-items:center;gap:6px;padding:5px 0;border-bottom:1px solid rgba(0,255,65,.03)"><span style="font:600 9px 'Orbitron';color:${n.c};width:75px">${n.n}</span><div class="hg" style="flex:1"><div class="hg-f" style="width:${n.p}%;background:${n.c}"></div></div><span style="font:12px 'VT323';color:var(--dim);width:24px;text-align:right">${n.p}%</span></div>`})},100);
 
-// TOOLS NAV
-function showT(id,btn){document.querySelectorAll('.tv').forEach(v=>v.classList.remove('tva'));document.querySelectorAll('.tsb-item').forEach(i=>i.classList.remove('ta'));document.getElementById('tv-'+id).classList.add('tva');if(btn)btn.classList.add('ta')}
+// Hologram
+function runH(){const r=document.getElementById('hRes'),a=Math.floor(Math.random()*60)+20,c=a>60?'var(--g)':a>35?'var(--am)':'var(--red)';r.style.display='block';r.innerHTML=`<div style="display:flex;align-items:center;gap:8px;margin:8px 0"><div class="sc-ring" style="border-color:${c}"><div class="sc-n" style="color:${c}">${a}</div><div class="sc-l">AUTH</div></div><div style="font:15px 'VT323'">${a>60?'Organic.':a>35?'Mixed.':'Artificial.'}</div></div><div class="cells" style="grid-template-columns:repeat(4,1fr)"><div class="cl"><div class="cl-l">ORGANIC</div><div class="cl-v" style="color:${c}">${a}%</div></div><div class="cl"><div class="cl-l">WASH</div><div class="cl-v v-bad">${100-a}%</div></div><div class="cl"><div class="cl-l">UNIQUE</div><div class="cl-v" style="color:var(--w)">${Math.floor(Math.random()*200)+30}</div></div><div class="cl"><div class="cl-l">RECYCLED</div><div class="cl-v v-mid">${Math.floor(Math.random()*50)+5}</div></div></div>`}
 
-// Redacted text hover reveal
-document.querySelectorAll('.red').forEach(el=>{
-  el.addEventListener('mouseenter',()=>{el.style.background='transparent';el.style.color='var(--g)'});
-  el.addEventListener('mouseleave',()=>{el.style.background='var(--r)';el.style.color='var(--r)'});
-});
+// Dev
+function runD(){const r=document.getElementById('dRes'),s=Math.floor(Math.random()*80)+15,l=Math.floor(Math.random()*15)+1,g=Math.floor(l*.3),ru=Math.floor(l*.4),c=s>65?'var(--g)':s>35?'var(--am)':'var(--red)';document.getElementById('dRing').style.borderColor=c;document.getElementById('dSc').style.color=c;document.getElementById('dSc').textContent=s;document.getElementById('dAddr').textContent='7xK9m..dFp2';document.getElementById('dAddr').style.color=c;document.getElementById('dLbl').textContent=s>65?'TRUSTED':s>35?'MIXED':'AVOID';document.getElementById('dSt').innerHTML=[['LAUNCHED',l,'var(--w)'],['GRADUATED',g,'var(--g)'],['RUGGED',ru,'var(--red)']].map(([a,b,co])=>`<div style="display:flex;gap:8px;padding:3px 0;border-bottom:1px solid rgba(0,255,65,.03);font:14px 'VT323'"><span style="color:var(--dim);width:56px">${a}</span><span style="color:${co}">${b}</span></div>`).join('');document.getElementById('dAI').innerHTML=`<div class="ai-l">AGENT 51</div>${l} tokens. ${g} grad. ${ru} rugged. ${s>65?'Trusted.':'Caution.'}`;r.style.display='block'}
+
+// PnL
+function runPL(){const r=document.getElementById('plRes'),t=(Math.random()*6000-2000).toFixed(2),c=parseFloat(t)>0?'var(--g)':'var(--red)';r.style.display='block';r.innerHTML=`<div class="cells" style="grid-template-columns:repeat(3,1fr);margin-top:6px"><div class="cl" style="text-align:center;padding:10px"><div style="font:700 14px 'Orbitron';color:${c}">${parseFloat(t)>0?'+':''}$${Number(Math.abs(t)).toLocaleString()}</div><div class="cl-l" style="margin-top:3px">PNL 30D</div></div><div class="cl" style="text-align:center;padding:10px"><div style="font:700 14px 'Orbitron';color:var(--w)">${Math.floor(Math.random()*300)+50}</div><div class="cl-l" style="margin-top:3px">TRADES</div></div><div class="cl" style="text-align:center;padding:10px"><div style="font:700 14px 'Orbitron';color:var(--cy)">${Math.floor(Math.random()*30)+35}%</div><div class="cl-l" style="margin-top:3px">WIN RATE</div></div></div>`}
+
+// Redacted
+document.querySelectorAll('.red').forEach(el=>{el.addEventListener('mouseenter',()=>el.style.filter='blur(0)');el.addEventListener('mouseleave',()=>el.style.filter='blur(4px)')});
 </script>
 </body>
 </html>
