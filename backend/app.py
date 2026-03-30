@@ -141,22 +141,44 @@ def health():
 
 
 # ============================================================
-# TOOL 1: XRAY.51 -- Token Forensics Scanner
+# TOOL 1: XRAY.51 -- Token Forensics Scanner (MULTI-CHAIN)
 # ============================================================
+
+# Chain config: GoPlus chain IDs + DexScreener slugs
+CHAINS = {
+    "solana":   {"goplus": "solana", "goplus_url": "https://api.gopluslabs.io/api/v1/solana/token_security", "dex": "solana", "label": "Solana"},
+    "ethereum": {"goplus": "1",      "goplus_url": "https://api.gopluslabs.io/api/v1/token_security/1",      "dex": "ethereum", "label": "Ethereum"},
+    "base":     {"goplus": "8453",   "goplus_url": "https://api.gopluslabs.io/api/v1/token_security/8453",   "dex": "base", "label": "Base"},
+    "bsc":      {"goplus": "56",     "goplus_url": "https://api.gopluslabs.io/api/v1/token_security/56",     "dex": "bsc", "label": "BSC"},
+    "arbitrum": {"goplus": "42161",  "goplus_url": "https://api.gopluslabs.io/api/v1/token_security/42161",  "dex": "arbitrum", "label": "Arbitrum"},
+    "polygon":  {"goplus": "137",    "goplus_url": "https://api.gopluslabs.io/api/v1/token_security/137",    "dex": "polygon", "label": "Polygon"},
+    "avalanche":{"goplus": "43114",  "goplus_url": "https://api.gopluslabs.io/api/v1/token_security/43114",  "dex": "avalanche", "label": "Avalanche"},
+    "sui":      {"goplus": None,     "goplus_url": None,                                                       "dex": "sui", "label": "Sui"},
+}
+
 @app.route("/api/xray/scan", methods=["POST"])
 def xray_scan():
     data = request.get_json() or {}
     address = data.get("address", "").strip()
+    chain = data.get("chain", "solana").lower().strip()
     if not address:
         return jsonify({"error": "Address required"}), 400
 
-    # Check cache
-    cached = cache_get(f"xray:{address}")
+    # Validate chain
+    if chain not in CHAINS:
+        return jsonify({"error": f"Unsupported chain. Use: {', '.join(CHAINS.keys())}"}), 400
+
+    chain_cfg = CHAINS[chain]
+
+    # Check cache (include chain in key)
+    cached = cache_get(f"xray:{chain}:{address}")
     if cached:
         return jsonify(cached)
 
     result = {
         "address": address,
+        "chain": chain,
+        "chain_label": chain_cfg["label"],
         "name": "UNKNOWN",
         "symbol": "UNKNOWN",
         "price_usd": 0,
@@ -178,10 +200,10 @@ def xray_scan():
 
     score = 50  # Start neutral
 
-    # --- DexScreener (no key, 300 req/min) -- Get token name, price, liquidity, honeypot proxy ---
+    # --- DexScreener (works for ALL chains) ---
     try:
         dx = requests.get(
-            f"https://api.dexscreener.com/tokens/v1/solana/{address}",
+            f"https://api.dexscreener.com/tokens/v1/{chain_cfg['dex']}/{address}",
             timeout=10
         )
         if dx.status_code == 200:
@@ -195,7 +217,6 @@ def xray_scan():
                 result["liquidity_usd"] = float(pair.get("liquidity", {}).get("usd", 0) or 0)
                 result["volume_24h"] = float(pair.get("volume", {}).get("h24", 0) or 0)
 
-                # LP check from liquidity
                 liq = result["liquidity_usd"]
                 if liq > 50000:
                     result["lp_status"] = "DEEP"
@@ -210,7 +231,6 @@ def xray_scan():
                     result["lp_status"] = "NONE"
                     score -= 20
 
-                # Honeypot proxy: if people can sell, it's not a honeypot
                 txns_24h = pair.get("txns", {}).get("h24", {})
                 buys_24h = int(txns_24h.get("buys", 0) or 0)
                 sells_24h = int(txns_24h.get("sells", 0) or 0)
@@ -224,94 +244,100 @@ def xray_scan():
                     result["is_honeypot"] = "NO"
                     score += 5
 
-                # Store txn data for later use
                 result["buys_24h"] = buys_24h
                 result["sells_24h"] = sells_24h
 
-                # Pair age as trust signal
                 created = pair.get("pairCreatedAt", 0)
                 if created:
                     age_hours = (time.time() * 1000 - created) / 3600000
                     result["age_hours"] = round(age_hours, 1)
-                    if age_hours > 168:  # > 1 week
+                    if age_hours > 168:
                         score += 5
                     elif age_hours < 1:
                         score -= 10
     except Exception as e:
         result["sources"].append(f"dexscreener:error:{str(e)[:50]}")
 
-    # --- GoPlus Security API (no key needed, 30 req/min) ---
-    try:
-        gp = requests.get(
-            f"https://api.gopluslabs.io/api/v1/solana/token_security?contract_addresses={address}",
-            timeout=10
-        )
-        if gp.status_code == 200:
-            gp_result = gp.json().get("result", {})
-            # Try original address first, then try any key in result (GoPlus may transform case)
-            gp_data = gp_result.get(address) or gp_result.get(address.lower()) or gp_result.get(address.upper())
-            if not gp_data and gp_result:
-                # Fallback: just grab the first result
-                gp_data = next(iter(gp_result.values()), {})
-            if gp_data:
-                result["sources"].append("goplus")
+    # --- GoPlus Security API (works for most chains) ---
+    if chain_cfg.get("goplus_url"):
+        try:
+            gp = requests.get(
+                f"{chain_cfg['goplus_url']}?contract_addresses={address}",
+                timeout=10
+            )
+            if gp.status_code == 200:
+                gp_result = gp.json().get("result", {})
+                gp_data = gp_result.get(address) or gp_result.get(address.lower()) or gp_result.get(address.upper())
+                if not gp_data and gp_result:
+                    gp_data = next(iter(gp_result.values()), {})
+                if gp_data:
+                    result["sources"].append("goplus")
 
-                # Honeypot
-                hp = gp_data.get("is_honeypot")
-                if hp is not None:
-                    result["is_honeypot"] = "YES" if str(hp) == "1" else "NO"
-                    if str(hp) == "1":
-                        score -= 40
-                    else:
-                        score += 10
+                    hp = gp_data.get("is_honeypot")
+                    if hp is not None:
+                        result["is_honeypot"] = "YES" if str(hp) == "1" else "NO"
+                        if str(hp) == "1":
+                            score -= 40
+                        else:
+                            score += 10
 
-                # Mint authority
-                mint = gp_data.get("is_mintable")
-                if mint is not None:
-                    result["mint_authority"] = "ACTIVE" if str(mint) == "1" else "REVOKED"
-                    if str(mint) == "1":
-                        score -= 20
-                    else:
-                        score += 10
+                    mint = gp_data.get("is_mintable")
+                    if mint is not None:
+                        result["mint_authority"] = "ACTIVE" if str(mint) == "1" else "REVOKED"
+                        if str(mint) == "1":
+                            score -= 20
+                        else:
+                            score += 10
 
-                # Holders
-                holders = gp_data.get("holder_count")
-                if holders:
-                    result["holders"] = int(holders)
-                    if int(holders) > 100:
-                        score += 10
-                    elif int(holders) < 20:
-                        score -= 10
+                    # EVM-specific: check proxy, owner changes, etc.
+                    if chain != "solana":
+                        is_proxy = gp_data.get("is_proxy")
+                        if is_proxy and str(is_proxy) == "1":
+                            result["bundle_detected"] = "PROXY"
+                            score -= 10
 
-                # Top holder
-                top = gp_data.get("top10_holder_rate")
-                if top:
-                    result["top_holder_pct"] = f"{float(top)*100:.1f}%"
-                    if float(top) > 0.5:
-                        score -= 15
+                        can_take_back = gp_data.get("can_take_back_ownership")
+                        if can_take_back and str(can_take_back) == "1":
+                            score -= 15
 
-                # Token name from GoPlus if DexScreener didn't have it
-                if result["name"] == "UNKNOWN":
-                    gp_name = gp_data.get("token_name", "")
-                    gp_symbol = gp_data.get("token_symbol", "")
-                    if gp_name:
-                        result["name"] = gp_name
-                    if gp_symbol:
-                        result["symbol"] = gp_symbol
-    except Exception as e:
-        result["sources"].append(f"goplus:error:{str(e)[:50]}")
+                        owner = gp_data.get("owner_address", "")
+                        if owner and owner != "0x0000000000000000000000000000000000000000":
+                            result["freeze_authority"] = "OWNER SET"
+                            score -= 5
+                        elif owner == "0x0000000000000000000000000000000000000000":
+                            result["freeze_authority"] = "RENOUNCED"
+                            score += 10
 
-    # --- Helius DAS + RPC (if key available) ---
-    if HELIUS_KEY:
+                    holders = gp_data.get("holder_count")
+                    if holders:
+                        result["holders"] = int(holders)
+                        if int(holders) > 100:
+                            score += 10
+                        elif int(holders) < 20:
+                            score -= 10
+
+                    top = gp_data.get("top10_holder_rate")
+                    if top:
+                        result["top_holder_pct"] = f"{float(top)*100:.1f}%"
+                        if float(top) > 0.5:
+                            score -= 15
+
+                    if result["name"] == "UNKNOWN":
+                        gp_name = gp_data.get("token_name", "")
+                        gp_symbol = gp_data.get("token_symbol", "")
+                        if gp_name:
+                            result["name"] = gp_name
+                        if gp_symbol:
+                            result["symbol"] = gp_symbol
+        except Exception as e:
+            result["sources"].append(f"goplus:error:{str(e)[:50]}")
+
+    # --- Helius DAS + RPC (SOLANA ONLY) ---
+    if chain == "solana" and HELIUS_KEY:
         try:
             hel = requests.post(
                 f"https://mainnet.helius-rpc.com/?api-key={HELIUS_KEY}",
-                json={
-                    "jsonrpc": "2.0",
-                    "id": 1,
-                    "method": "getAsset",
-                    "params": {"id": address}
-                },
+                json={"jsonrpc": "2.0", "id": 1, "method": "getAsset", "params": {"id": address}},
                 timeout=10
             )
             if hel.status_code == 200:
@@ -320,7 +346,6 @@ def xray_scan():
                     if "helius" not in result["sources"]:
                         result["sources"].append("helius")
 
-                    # Token name from Helius if still unknown
                     content = hel_data.get("content", {})
                     metadata = content.get("metadata", {})
                     if result["name"] == "UNKNOWN" and metadata.get("name"):
@@ -328,7 +353,6 @@ def xray_scan():
                     if result["symbol"] == "UNKNOWN" and metadata.get("symbol"):
                         result["symbol"] = metadata["symbol"]
 
-                    # Authorities from on-chain data
                     authorities = hel_data.get("authorities", [])
                     for auth in authorities:
                         scopes = auth.get("scopes", [])
@@ -337,7 +361,6 @@ def xray_scan():
                                 result["mint_authority"] = "ACTIVE"
                                 score -= 15
 
-                    # Freeze authority from token_info
                     token_info = hel_data.get("token_info", {})
                     freeze = token_info.get("freeze_authority")
                     if freeze:
@@ -347,43 +370,34 @@ def xray_scan():
                         result["freeze_authority"] = "REVOKED"
                         score += 5
 
-                    # Mint authority from token_info
                     mint_auth = token_info.get("mint_authority")
                     if not mint_auth and result["mint_authority"] == "UNKNOWN":
                         result["mint_authority"] = "REVOKED"
                         score += 10
 
-                    # Supply
                     supply = token_info.get("supply", 0)
                     if supply:
                         result["supply"] = supply
         except Exception as e:
             result["sources"].append(f"helius:error:{str(e)[:50]}")
 
-        # --- Helius RPC: Get top holders ---
+        # Top holders (Solana only via Helius)
         if result["top_holder_pct"] == "UNKNOWN":
             try:
                 th = requests.post(
                     f"https://mainnet.helius-rpc.com/?api-key={HELIUS_KEY}",
-                    json={
-                        "jsonrpc": "2.0",
-                        "id": 2,
-                        "method": "getTokenLargestAccounts",
-                        "params": [address]
-                    },
+                    json={"jsonrpc": "2.0", "id": 2, "method": "getTokenLargestAccounts", "params": [address]},
                     timeout=10
                 )
                 if th.status_code == 200:
                     th_data = th.json().get("result", {}).get("value", [])
                     if th_data:
-                        # Calculate top 10 holder concentration
                         top_amounts = [int(a.get("amount", 0)) for a in th_data[:10]]
                         total_top = sum(top_amounts)
-                        # Get total supply for percentage
                         supply_val = result.get("supply", 0)
                         if not supply_val:
                             all_amounts = [int(a.get("amount", 0)) for a in th_data[:20]]
-                            supply_val = sum(all_amounts) * 2  # rough estimate
+                            supply_val = sum(all_amounts) * 2
                         if supply_val > 0:
                             top_pct = (total_top / supply_val) * 100
                             result["top_holder_pct"] = f"{min(top_pct, 100):.1f}%"
@@ -396,25 +410,24 @@ def xray_scan():
             except Exception:
                 pass
 
-    # --- Smart defaults for remaining UNKNOWNs ---
-    # If we have DexScreener data but honeypot is still unknown, default to NO
+    # --- Smart defaults ---
     if result["is_honeypot"] == "UNKNOWN" and result.get("sells_24h", 0) > 0:
         result["is_honeypot"] = "NO"
     elif result["is_honeypot"] == "UNKNOWN" and result["volume_24h"] > 0:
         result["is_honeypot"] = "UNLIKELY"
-
-    # Bundle detection: if we can't determine, say N/A instead of UNKNOWN
     if result["bundle_detected"] == "UNKNOWN":
         result["bundle_detected"] = "N/A"
-
-    # Dev sold: if we can't determine, say N/A
     if result["dev_sold"] == "UNKNOWN":
         result["dev_sold"] = "N/A"
+    # EVM defaults
+    if chain != "solana":
+        if result["mint_authority"] == "UNKNOWN":
+            result["mint_authority"] = "N/A (EVM)"
+        if result["freeze_authority"] == "UNKNOWN":
+            result["freeze_authority"] = "N/A"
 
-    # Clamp score
     result["score"] = max(0, min(100, score))
 
-    # Risk level based on score
     if result["risk_level"] == "UNKNOWN":
         if result["score"] >= 70:
             result["risk_level"] = "LOW"
@@ -423,13 +436,14 @@ def xray_scan():
         else:
             result["risk_level"] = "CRITICAL"
 
-    # AI Analysis with Agent 51 personality
-    prompt = f"""Station 51 field scan results for {result['name']} ({result['symbol']}):
+    # AI Analysis
+    prompt = f"""Station 51 field scan on {chain_cfg['label']} chain for {result['name']} ({result['symbol']}):
 
 Address: {address}
+Chain: {chain_cfg['label']}
 Score: {result['score']}/100
 Mint Authority: {result['mint_authority']}
-Freeze Authority: {result['freeze_authority']}
+Freeze/Owner: {result['freeze_authority']}
 LP/Liquidity: {result['lp_status']} (${result['liquidity_usd']:,.0f})
 Honeypot: {result['is_honeypot']}
 Holders: {result['holders']:,}
@@ -439,11 +453,11 @@ Risk Level: {result['risk_level']}
 Price: ${result['price_usd']}
 Sources: {', '.join(result['sources'])}
 
-Write a 2-3 sentence field assessment for Earth traders. Include the token name and key data points. Be direct about whether they should proceed or avoid."""
+Write a 2-3 sentence field assessment for Earth traders. Include the token name, chain, and key data points."""
 
     result["ai_analysis"] = ai_analyze(prompt)
 
-    cache_set(f"xray:{address}", result)
+    cache_set(f"xray:{chain}:{address}", result)
     return jsonify(result)
 
 
