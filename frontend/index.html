@@ -308,14 +308,22 @@ details div{padding:9px 11px;font:14px/1.6 'VT323';color:var(--dim)}
   .ham{display:flex}
   .mx{padding:0 10px}
   /* Hero grid stacks on mobile */
-  #s-home .hero-grid{grid-template-columns:1fr!important;gap:10px}
-  #s-home .radar-col{display:flex;justify-content:center}
-  #s-home .vu-col{display:none}
+  .hero-grid{grid-template-columns:1fr!important;gap:10px}
+  .hero-grid .radar{margin:0 auto}
+  .hero-grid>div:last-child{display:none}
+  /* Feature cards stack */
+  .feat-cards{grid-template-columns:1fr!important}
   .tier-cmd::before{animation-duration:6s}
+  /* Countdown smaller */
+  .countdown{flex-wrap:wrap;gap:6px}
 }
 @media(max-width:500px){
   .tiers{grid-template-columns:1fr}
   .n-logo{font-size:15px;letter-spacing:2px}
+  /* Feature cards fully stacked */
+  .feat-cards{grid-template-columns:1fr!important}
+  /* About text smaller */
+  .about-block p{font-size:14px!important}
 }
 </style>
 </head>
@@ -408,7 +416,7 @@ SYSTEM ONLINE ◈ STATION 51 OPERATIONAL ◈ SIGNAL PROBE FEED ◈ 9 TOOLS ONLIN
 </div>
 
 <!-- HERO ROW: Radar | Title+Scanner | VU meters -->
-<div style="display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:28px;margin-bottom:16px">
+<div class="hero-grid" style="display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:28px;margin-bottom:16px">
 
 <!-- Left: Radar -->
 <div class="radar" style="width:158px;height:158px;flex-shrink:0">
@@ -463,7 +471,7 @@ SYSTEM ONLINE ◈ STATION 51 OPERATIONAL ◈ SIGNAL PROBE FEED ◈ 9 TOOLS ONLIN
 </div><!-- end hero grid -->
 
 <!-- Bottom row: 3 feature cards -->
-<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:8px">
+<div class="feat-cards" style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:8px">
 <div class="scr" style="cursor:pointer" onclick="nav('tools',document.querySelectorAll('.nb')[2]);setTimeout(()=>showT('probe'),50)">
 <div class="scr-lbl">SCANNER</div><div class="scr-led led-g"></div>
 <div class="scr-body" style="text-align:center;padding:14px 10px">
@@ -536,13 +544,55 @@ SYSTEM ONLINE ◈ STATION 51 OPERATIONAL ◈ SIGNAL PROBE FEED ◈ 9 TOOLS ONLIN
 <p style="font:16px/1.6 'VT323';color:var(--t);margin-top:8px">The UFO disclosure narrative is the brand. The tools are the product. Every government disclosure event — every news headline about aliens, UAPs, congressional hearings — drives organic attention to $AGOV. The tools give people a reason to stay.</p>
 </div>
 
+<!-- BLOCK 2.5: TOKENOMICS -->
+<div class="about-block" data-alien="TOKEN ◈ ECON">
+<div class="ax-watermark">TOK</div>
+<div style="font:9px/1 'Silkscreen';color:var(--am);letter-spacing:2px;margin-bottom:8px">TOKENOMICS</div>
+<h3 style="font:600 14px/1 'Orbitron';color:var(--w);letter-spacing:1px;margin-bottom:10px">Simple. Transparent. No tricks.</h3>
+<p style="font:16px/1.6 'VT323';color:var(--t);margin-bottom:10px">$AGOV is a Pump.fun token on Solana. No presale. No team allocation. No hidden fees. Everything is on-chain and verifiable.</p>
+
+<div class="two" style="gap:8px;margin-bottom:12px">
+<div style="padding:12px;border:1px solid rgba(0,255,65,.08);border-radius:4px;background:rgba(0,255,65,.01)">
+<div style="font:9px 'Silkscreen';color:var(--g);letter-spacing:2px;margin-bottom:8px">TOKEN SPECS</div>
+<div style="display:flex;flex-direction:column;gap:6px;font:15px 'VT323'">
+<div style="display:flex;justify-content:space-between"><span style="color:var(--dim)">Chain</span><span style="color:var(--pu)">Solana</span></div>
+<div style="display:flex;justify-content:space-between"><span style="color:var(--dim)">Launch</span><span style="color:var(--am)">Pump.fun</span></div>
+<div style="display:flex;justify-content:space-between"><span style="color:var(--dim)">Supply</span><span style="color:var(--w)">1,000,000,000</span></div>
+<div style="display:flex;justify-content:space-between"><span style="color:var(--dim)">Tax</span><span style="color:var(--g)">0%</span></div>
+<div style="display:flex;justify-content:space-between"><span style="color:var(--dim)">Presale</span><span style="color:var(--g)">None</span></div>
+<div style="display:flex;justify-content:space-between"><span style="color:var(--dim)">Team tokens</span><span style="color:var(--g)">None</span></div>
+<div style="display:flex;justify-content:space-between"><span style="color:var(--dim)">Mint authority</span><span style="color:var(--g)">Revoked by Pump.fun</span></div>
+<div style="display:flex;justify-content:space-between"><span style="color:var(--dim)">Freeze authority</span><span style="color:var(--g)">Revoked by Pump.fun</span></div>
+</div>
+</div>
+<div style="padding:12px;border:1px solid rgba(0,221,204,.08);border-radius:4px;background:rgba(0,221,204,.01)">
+<div style="font:9px 'Silkscreen';color:var(--cy);letter-spacing:2px;margin-bottom:8px">REVENUE MODEL</div>
+<div style="display:flex;flex-direction:column;gap:6px;font:15px 'VT323'">
+<div style="display:flex;justify-content:space-between"><span style="color:var(--dim)">Revenue now</span><span style="color:var(--cy)">Creator fees</span></div>
+<div style="display:flex;justify-content:space-between"><span style="color:var(--dim)">Fee range</span><span style="color:var(--w)">0.30-0.95%</span></div>
+<div style="display:flex;justify-content:space-between"><span style="color:var(--dim)">Applied on</span><span style="color:var(--w)">PumpSwap trades</span></div>
+<div style="display:flex;justify-content:space-between"><span style="color:var(--dim)">Revenue future</span><span style="color:var(--am)">WARP DRIVE perp fees</span></div>
+<div style="display:flex;justify-content:space-between"><span style="color:var(--dim)">Use of revenue</span><span style="color:var(--g)">On-chain buyback</span></div>
+<div style="display:flex;justify-content:space-between"><span style="color:var(--dim)">Buyback proof</span><span style="color:var(--g)">Solscan public txs</span></div>
+<div style="display:flex;justify-content:space-between"><span style="color:var(--dim)">Governance</span><span style="color:var(--dim)">None (utility only)</span></div>
+<div style="display:flex;justify-content:space-between"><span style="color:var(--dim)">Staking</span><span style="color:var(--dim)">None</span></div>
+</div>
+</div>
+</div>
+
+<div style="padding:10px;border:1px dashed rgba(255,170,0,.12);border-radius:4px;background:rgba(255,170,0,.01)">
+<div style="font:9px 'Silkscreen';color:var(--am);letter-spacing:2px;margin-bottom:6px">WHAT WE DON'T PROMISE</div>
+<p style="font:15px/1.6 'VT323';color:var(--t)">No guaranteed returns. No revenue share (legally impossible for a token). No automatic burns. No governance voting. $AGOV is a utility token that gates access to tools. Revenue from creator fees and WARP DRIVE goes to buyback — this is a business decision, not a contractual obligation. Every transaction is public on Solscan.</p>
+</div>
+</div>
+
 <!-- BLOCK 3: The Tools -->
 <div class="about-block" data-alien="ARSENAL ◈ TOOLS">
 <div class="ax-watermark">ARS</div>
 <div style="font:9px/1 'Silkscreen';color:var(--cy);letter-spacing:2px;margin-bottom:8px">THE ARSENAL</div>
 <h3 style="font:600 14px/1 'Orbitron';color:var(--w);letter-spacing:1px;margin-bottom:10px">10 intelligence tools — real, functional, operational</h3>
 
-<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+<div class="two" style="gap:8px">
 <div style="padding:10px;border:1px solid var(--bz);border-radius:4px">
 <div style="font:9px 'Silkscreen';color:var(--g);letter-spacing:2px;margin-bottom:4px">SCANNERS</div>
 <p style="font:15px/1.5 'VT323';color:var(--t)"><span style="color:var(--g)">XRAY.51</span> — Full token security scan. Honeypot detection, mint/freeze authority, bundle analysis, holder distribution, AI threat assessment by Agent 51.<br><br>
@@ -598,7 +648,8 @@ SYSTEM ONLINE ◈ STATION 51 OPERATIONAL ◈ SIGNAL PROBE FEED ◈ 9 TOOLS ONLIN
 <div style="display:flex;gap:10px;align-items:flex-start"><div style="display:flex;flex-direction:column;align-items:center"><div class="timeline-dot" style="border-color:var(--am)"></div><div class="timeline-line"></div></div><div style="font:15px/1.5 'VT323';color:var(--t);padding-bottom:10px"><span style="color:var(--am)">FEB 20, 2026</span> — Trump signs executive order: release all files on "aliens, UAPs, and related matters." Pentagon given 180-day deadline.</div></div>
 <div style="display:flex;gap:10px;align-items:flex-start"><div style="display:flex;flex-direction:column;align-items:center"><div class="timeline-dot"></div><div class="timeline-line"></div></div><div style="font:15px/1.5 'VT323';color:var(--t);padding-bottom:10px"><span style="color:var(--g)">FEB 25, 2026</span> — Hegseth confirms AARO caseload exceeds 2,000 reports, including radar data corroborating visual contact.</div></div>
 <div style="display:flex;gap:10px;align-items:flex-start"><div style="display:flex;flex-direction:column;align-items:center"><div class="timeline-dot" style="border-color:var(--red)"></div><div class="timeline-line"></div></div><div style="font:15px/1.5 'VT323';color:var(--t);padding-bottom:10px"><span style="color:var(--red)">MAR 18, 2026</span> — White House registers aliens.gov and alien.gov. Domain returns 404. Press Office says "Stay tuned."</div></div>
-<div style="display:flex;gap:10px;align-items:flex-start"><div style="display:flex;flex-direction:column;align-items:center"><div class="timeline-dot" style="border-color:var(--g);background:rgba(0,255,65,.2)"></div></div><div style="font:15px/1.5 'VT323';color:var(--t)"><span style="color:var(--g)">MAR 18, 2026</span> — Station 51 goes operational. $AGOV launches. We built what they wouldn't.</div></div>
+<div style="display:flex;gap:10px;align-items:flex-start"><div style="display:flex;flex-direction:column;align-items:center"><div class="timeline-dot" style="border-color:var(--g);background:rgba(0,255,65,.2)"></div><div class="timeline-line"></div></div><div style="font:15px/1.5 'VT323';color:var(--t);padding-bottom:10px"><span style="color:var(--g)">MAR 18, 2026</span> — Station 51 goes operational. $AGOV launches. We built what they wouldn't.</div></div>
+<div style="display:flex;gap:10px;align-items:flex-start"><div style="display:flex;flex-direction:column;align-items:center"><div class="timeline-dot" style="border-color:var(--pu);background:rgba(124,108,252,.2)"></div></div><div style="font:15px/1.5 'VT323';color:var(--t)"><span style="color:var(--pu)">JUN 12, 2026</span> — Steven Spielberg's <span style="color:var(--w)">"Disclosure Day"</span> hits theaters. UFO film with Emily Blunt about humanity learning we're not alone. Every headline about this movie is a headline about $AGOV's thesis.</div></div>
 </div>
 </div>
 
@@ -827,7 +878,7 @@ SYSTEM ONLINE ◈ STATION 51 OPERATIONAL ◈ SIGNAL PROBE FEED ◈ 9 TOOLS ONLIN
 <div class="scr"><div class="scr-lbl">CATALYSTS</div><div class="scr-led led-a"></div><div class="scr-body" style="display:flex;flex-direction:column;gap:6px">
 <div style="border-left:2px solid var(--g);padding-left:8px"><div style="font:10px 'VT323';color:var(--g)">IMMINENT</div><div style="font:14px 'VT323';color:var(--w);margin-top:2px">aliens.gov live</div></div>
 <div style="border-left:2px solid var(--am);padding-left:8px"><div style="font:10px 'VT323';color:var(--am)">Q2 2026</div><div style="font:14px 'VT323';color:var(--w);margin-top:2px">UAP hearings</div></div>
-<div style="border-left:2px solid var(--pu);padding-left:8px"><div style="font:10px 'VT323';color:var(--pu)">JUNE 12</div><div style="font:14px 'VT323';color:var(--w);margin-top:2px">Spielberg Disclosure</div></div>
+<div style="border-left:2px solid var(--pu);padding-left:8px"><div style="font:10px 'VT323';color:var(--pu)">JUNE 12</div><div style="font:14px 'VT323';color:var(--w);margin-top:2px">Spielberg "Disclosure Day"</div></div>
 <div style="border-left:2px solid var(--red);padding-left:8px"><div style="font:10px 'VT323';color:var(--red)">OVERDUE</div><div style="font:14px 'VT323';color:var(--w);margin-top:2px">AARO report</div></div>
 </div></div>
 </div>
