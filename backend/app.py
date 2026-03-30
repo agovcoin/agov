@@ -657,44 +657,15 @@ def mothership_feed():
 # ============================================================
 @app.route("/api/signal/narratives")
 def signal_narratives():
-    """Detect emerging crypto narratives from news + social."""
+    """Detect trending crypto narratives from DexScreener market data."""
     cached = cache_get("signal:narratives")
     if cached:
         return jsonify(cached)
 
     narratives = []
-    all_titles = []
+    top_tokens = []
 
-    # GDELT news API (free, no key) -- SINGLE query to avoid rate limit (429)
-    gdelt_errors = []
-    try:
-        gd = requests.get(
-            "https://api.gdeltproject.org/api/v2/doc/doc?query=cryptocurrency%20OR%20solana%20OR%20bitcoin%20OR%20memecoin%20OR%20blockchain&mode=artlist&maxrecords=75&format=json&sort=datedesc",
-            timeout=10
-        )
-        if gd.status_code == 200:
-            content_type = gd.headers.get("content-type", "")
-            if "json" in content_type:
-                try:
-                    data = gd.json()
-                    articles = data.get("articles", [])
-                    for a in articles:
-                        title = a.get("title", "")
-                        if title and len(title) > 10:
-                            all_titles.append(title)
-                except Exception as e:
-                    gdelt_errors.append(f"parse:{str(e)[:30]}")
-            else:
-                gdelt_errors.append(f"not_json:{content_type[:30]}")
-        elif gd.status_code == 429:
-            gdelt_errors.append("rate_limited")
-        else:
-            gdelt_errors.append(f"http_{gd.status_code}")
-    except Exception as e:
-        gdelt_errors.append(f"error:{str(e)[:30]}")
-
-    # DexScreener trending -- PRIMARY source (always works)
-    dx_narratives = []
+    # --- DexScreener TOP boosts (chain dominance) ---
     try:
         dx = requests.get("https://api.dexscreener.com/token-boosts/top/v1", timeout=10)
         if dx.status_code == 200:
@@ -705,85 +676,67 @@ def signal_narratives():
                     chain = b.get("chainId", "unknown")
                     chain_counts[chain] = chain_counts.get(chain, 0) + 1
                 chain_names = {
-                    "solana": "SOLANA",
-                    "ethereum": "ETHEREUM",
-                    "base": "BASE L2",
-                    "bsc": "BSC",
-                    "arbitrum": "ARBITRUM",
-                    "polygon": "POLYGON",
-                    "avalanche": "AVALANCHE"
+                    "solana": "SOLANA", "ethereum": "ETHEREUM", "base": "BASE",
+                    "bsc": "BSC", "arbitrum": "ARBITRUM", "polygon": "POLYGON",
+                    "avalanche": "AVAX", "sui": "SUI", "ton": "TON"
                 }
+                total_boosts = sum(chain_counts.values())
                 for chain, count in sorted(chain_counts.items(), key=lambda x: -x[1]):
                     if count >= 1:
                         name = chain_names.get(chain, chain.upper())
-                        dx_narratives.append({
+                        pct = round((count / total_boosts) * 100) if total_boosts > 0 else 0
+                        narratives.append({
                             "name": name,
                             "mentions": count,
-                            "sample_headlines": [f"{count} tokens trending on DexScreener"],
-                            "source": "dexscreener"
+                            "pct": pct,
+                            "sample_headlines": [f"{pct}% of trending activity"],
+                            "source": "dexscreener_boosts"
                         })
     except Exception:
         pass
 
-    # Expanded keyword detection with categories
-    keyword_map = {
-        "AI AGENTS": ["ai agent", "ai trading", "artificial intelligence", "chatgpt", "llm", "openai"],
-        "MEMECOINS": ["memecoin", "meme coin", "pump.fun", "degen", "pumpfun", "bonk", "pepe", "dogecoin", "shib"],
-        "GAMING": ["gaming", "gamefi", "play-to-earn", "play to earn", "metaverse", "web3 game"],
-        "RWA": ["rwa", "real world asset", "tokenized", "tokenization"],
-        "DEPIN": ["depin", "decentralized physical", "helium", "iot"],
-        "ETHEREUM": ["ethereum", "eth ", "layer 2", "rollup", "arbitrum", "base chain"],
-        "SOLANA": ["solana", "sol ", "phantom wallet", "jupiter", "raydium"],
-        "BITCOIN": ["bitcoin", "btc", "halving", "ordinals", "runes", "etf"],
-        "REGULATION": ["sec ", "regulation", "compliance", "congress crypto", "ban crypto", "lawsuit"],
-        "DEFI": ["defi", "yield", "staking", "lending", "liquidity"],
-    }
+    # --- DexScreener LATEST boosts (momentum detection) ---
+    try:
+        dx2 = requests.get("https://api.dexscreener.com/token-boosts/latest/v1", timeout=10)
+        if dx2.status_code == 200:
+            latest = dx2.json()
+            if isinstance(latest, list):
+                # Get top 5 most boosted tokens with details
+                sol_tokens = [b for b in latest if b.get("chainId") == "solana"][:8]
+                for t in sol_tokens:
+                    addr = t.get("tokenAddress", "")
+                    desc = t.get("description", "")[:60]
+                    amount = t.get("amount", 0)
+                    if addr:
+                        top_tokens.append({
+                            "address": addr[:8] + ".." + addr[-4:] if len(addr) > 12 else addr,
+                            "description": desc if desc else "New token",
+                            "boost_amount": amount
+                        })
+    except Exception:
+        pass
 
-    for category, keywords in keyword_map.items():
-        count = 0
-        matched_titles = []
-        for title in all_titles:
-            title_lower = title.lower()
-            if any(kw in title_lower for kw in keywords):
-                count += 1
-                if len(matched_titles) < 3:
-                    matched_titles.append(title[:80])
-        if count > 0:
-            narratives.append({
-                "name": category,
-                "mentions": count,
-                "sample_headlines": matched_titles,
-                "source": "gdelt"
-            })
-
-    # Sort GDELT narratives by mentions
+    # Sort by mentions (chain dominance)
     narratives.sort(key=lambda x: -x["mentions"])
 
-    # Always add DexScreener narratives (merge with GDELT)
-    # Avoid duplicates: if GDELT has SOLANA/BITCOIN/ETHEREUM, don't add DexScreener version
-    gdelt_names = {n["name"] for n in narratives}
-    for dxn in dx_narratives:
-        if dxn["name"] not in gdelt_names:
-            narratives.append(dxn)
-
-    # Re-sort combined list
-    narratives.sort(key=lambda x: -x["mentions"])
-
-    # AI phase classification — STRICT to prevent hallucination
+    # AI analysis
     ai = ""
     if narratives and (GROQ_KEY or DEEPSEEK_KEY):
-        summary = ", ".join([f"{n['name']} ({n['mentions']} mentions)" for n in narratives[:8]])
-        ai = ai_analyze(f"""ONLY reference these narratives and their exact numbers. Do NOT invent data:
+        summary = ", ".join([f"{n['name']} ({n['mentions']} tokens, {n.get('pct',0)}% dominance)" for n in narratives[:6]])
+        token_summary = ", ".join([f"{t['description']}" for t in top_tokens[:5]]) if top_tokens else "no specific tokens detected"
+        ai = ai_analyze(f"""DexScreener market signal intercepted. Chain activity right now:
 
 {summary}
 
-Classify each by adoption phase (inception/early/mainstream/saturation). Brief 2-3 sentence assessment for Earth traders. Only mention narratives from the list above.""")
+Hot Solana tokens: {token_summary}
+
+Classify market sentiment. Which chains are heating up? Where is smart money flowing? Brief 2-3 sentence field report for Earth traders. Only reference data above.""")
 
     result = {
         "narratives": narratives[:8],
-        "total_articles": len(all_titles),
-        "gdelt_status": "ok" if all_titles else f"no_articles",
-        "gdelt_errors": gdelt_errors[:5] if gdelt_errors else [],
+        "hot_tokens": top_tokens[:5],
+        "total_tracked": sum(n["mentions"] for n in narratives),
+        "source": "dexscreener",
         "ai_analysis": ai
     }
     cache_set("signal:narratives", result)
