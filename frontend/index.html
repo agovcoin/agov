@@ -447,6 +447,7 @@ SYSTEM ONLINE ◈ STATION 51 OPERATIONAL ◈ SIGNAL PROBE FEED ◈ 9 TOOLS ONLIN
 <div class="scr-lbl">XRAY.51</div><div class="scr-led led-g"></div>
 <div class="scr-body" style="padding:10px 14px">
 <div style="display:flex;gap:6px">
+<select id="heroChain" style="background:var(--bg);border:1px solid var(--bz3);color:var(--g);font:13px 'VT323';padding:8px 4px;border-radius:3px;cursor:pointer;min-width:80px"><option value="solana">SOL</option><option value="ethereum">ETH</option><option value="base">BASE</option><option value="bsc">BSC</option><option value="arbitrum">ARB</option><option value="polygon">POLY</option><option value="avalanche">AVAX</option></select>
 <input class="s-in" type="text" id="heroIn" placeholder="> paste token address..." spellcheck="false" style="font-size:15px;padding:8px 12px">
 <button class="b3 b3-g" id="heroBtn" onclick="runHS()" style="padding:8px 18px;font-size:13px">SCAN</button>
 </div>
@@ -456,7 +457,7 @@ SYSTEM ONLINE ◈ STATION 51 OPERATIONAL ◈ SIGNAL PROBE FEED ◈ 9 TOOLS ONLIN
 <div class="sc-ring" id="heroRing" style="width:48px;height:48px"><div class="sc-n" id="heroSc" style="font-size:16px">--</div><div class="sc-l">SCORE</div></div>
 <div id="heroV" style="font:15px/1.3 'VT323';flex:1"></div>
 </div></div>
-<p style="font:12px 'VT323';color:var(--dim);margin-top:5px;text-align:center">FREE 3/DAY · UNLIMITED WITH 10K $AGOV</p>
+<p style="font:12px 'VT323';color:var(--dim);margin-top:5px;text-align:center">FREE 3/DAY · 7 CHAINS · UNLIMITED WITH 10K $AGOV</p>
 </div></div>
 </div>
 
@@ -595,7 +596,7 @@ SYSTEM ONLINE ◈ STATION 51 OPERATIONAL ◈ SIGNAL PROBE FEED ◈ 9 TOOLS ONLIN
 <div class="two" style="gap:8px">
 <div style="padding:10px;border:1px solid var(--bz);border-radius:4px">
 <div style="font:9px 'Silkscreen';color:var(--g);letter-spacing:2px;margin-bottom:4px">SCANNERS</div>
-<p style="font:15px/1.5 'VT323';color:var(--t)"><span style="color:var(--g)">XRAY.51</span> — Full token security scan. Honeypot detection, mint/freeze authority, bundle analysis, holder distribution, AI threat assessment by Agent 51.<br><br>
+<p style="font:15px/1.5 'VT323';color:var(--t)"><span style="color:var(--g)">XRAY.51</span> — Multi-chain token scanner. Supports Solana, Ethereum, Base, BSC, Arbitrum, Polygon, Avalanche. Honeypot detection, authority checks, holder distribution, AI threat assessment by Agent 51.<br><br>
 <span style="color:var(--g)">THE PROBE</span> — Real-time feed of Pump.fun launches filtered to the top 1%. Only tokens that pass safety checks.<br><br>
 <span style="color:var(--g)">HOLOGRAM DETECTOR</span> — Separates real volume from wash trading. Identifies recycled wallets and inflated metrics.</p>
 </div>
@@ -695,10 +696,10 @@ SYSTEM ONLINE ◈ STATION 51 OPERATIONAL ◈ SIGNAL PROBE FEED ◈ 9 TOOLS ONLIN
 <div class="tv-h">
   <div style="display:flex;align-items:center;gap:8px"><h2 style="color:var(--g)">XRAY.51</h2><span class="bdg bdg-on">LIVE</span></div>
   <div class="ax ax-dim" style="font-size:10px;margin-top:4px">SCAN ◈ RISK ASSESSMENT</div>
-  <p>Paste any Solana token address. Returns risk score, mint/freeze authority status, honeypot detection, holder distribution, liquidity depth, and AI threat assessment by Agent 51.</p>
+  <p>Multi-chain token scanner. Select chain, paste address. Returns risk score, honeypot detection, holder distribution, liquidity depth, and AI threat assessment. Supports Solana, Ethereum, Base, BSC, Arbitrum, Polygon, Avalanche.</p>
 </div>
 <div class="tv-b">
-  <div class="scan-wrap"><div style="display:flex;gap:6px"><input class="s-in" type="text" id="xIn" placeholder="> token address..." spellcheck="false"><button class="b3 b3-g" id="xBtn" onclick="runX()">SCAN</button></div></div>
+  <div class="scan-wrap"><div style="display:flex;gap:6px"><select id="xChain" style="background:var(--bg);border:1px solid var(--bz3);color:var(--g);font:13px 'VT323';padding:6px 4px;border-radius:3px;cursor:pointer;min-width:80px"><option value="solana">SOL</option><option value="ethereum">ETH</option><option value="base">BASE</option><option value="bsc">BSC</option><option value="arbitrum">ARB</option><option value="polygon">POLY</option><option value="avalanche">AVAX</option></select><input class="s-in" type="text" id="xIn" placeholder="> token address..." spellcheck="false"><button class="b3 b3-g" id="xBtn" onclick="runX()">SCAN</button></div></div>
   <div id="xProg" style="display:none;font:14px/1.4 'VT323';color:var(--g);padding:6px;background:rgba(0,0,0,.2);border-radius:3px;margin-top:6px;max-height:65px;overflow-y:auto"></div>
   <div id="xRes" style="display:none;margin-top:8px">
     <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px">
@@ -1047,9 +1048,9 @@ setTimeout(()=>{loadProbe();loadMothership();initG();loadAutopsy();loadSignal()}
 
 const mocks=[{score:84,mint_authority:'REVOKED',freeze_authority:'REVOKED',lp_status:'BURNED',bundle_detected:'NO',dev_sold:'NO',holders:347,top_holder_pct:'4.2%',risk_level:'LOW',ai_analysis:'All checks pass. Mint/freeze revoked. LP burned. 347 holders. Station 51: LOW RISK.'},{score:31,mint_authority:'ACTIVE',freeze_authority:'REVOKED',lp_status:'UNLOCKED',bundle_detected:'YES(3)',dev_sold:'YES(42%)',holders:28,top_holder_pct:'23.1%',risk_level:'CRITICAL',ai_analysis:'Mint ACTIVE. LP unlocked. Bundled. Dev dumped 42%. Station 51: RUG 89%.'},{score:62,mint_authority:'REVOKED',freeze_authority:'ACTIVE',lp_status:'BURNED',bundle_detected:'NO',dev_sold:'NO',holders:143,top_holder_pct:'8.7%',risk_level:'MEDIUM',ai_analysis:'Freeze active. LP burned. Station 51: CAUTION.'}];
 
-async function realScan(address){
+async function realScan(address,chain='solana'){
   try{
-    const r=await fetchT(API+'/api/xray/scan',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({address})},15000);
+    const r=await fetchT(API+'/api/xray/scan',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({address,chain})},15000);
     if(r.ok)return await r.json();
   }catch(e){console.log('API fallback:',e)}
   return null;
@@ -1060,7 +1061,7 @@ function showResult(d,r,ring,sc,v,g,ai){
   sc.textContent=d.score;
   const c=d.score>70?'var(--g)':d.score>40?'var(--am)':'var(--red)';
   ring.style.borderColor=c;sc.style.color=c;
-  const nm=d.name&&d.name!=='UNKNOWN'?`<span style="color:var(--w)">${d.name} (${d.symbol})</span> — `:'';
+  const nm=d.name&&d.name!=='UNKNOWN'?`<span style="color:var(--w)">${d.name} (${d.symbol})</span>${d.chain_label?' <span style="font:10px Orbitron;color:var(--cy);border:1px solid rgba(0,221,204,.15);padding:1px 4px;border-radius:2px">'+d.chain_label+'</span>':''} — `:'';
   if(d.score>70)v.innerHTML=nm+'<span style="color:var(--g)">LOW RISK</span>';
   else if(d.score>40)v.innerHTML=nm+'<span style="color:var(--am)">MEDIUM</span>';
   else v.innerHTML=nm+'<span style="color:var(--red)">CRITICAL</span>';
@@ -1074,29 +1075,28 @@ function showResult(d,r,ring,sc,v,g,ai){
 function isValidSolanaAddr(s){if(!s||s.length<32||s.length>44)return false;return /^[1-9A-HJ-NP-Za-km-z]+$/.test(s)}
 function showError(el,msg){el.style.display='block';el.innerHTML=`<div style="padding:10px;border:1px solid rgba(255,51,68,.15);border-radius:3px;background:rgba(255,51,68,.03)"><span style="font:14px 'VT323';color:var(--red)">> ERROR: ${msg}</span><br><span style="font:13px 'VT323';color:var(--dim)">Solana addresses are 32-44 characters (letters + numbers, no spaces).<br>Example: DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263</span></div>`}
 
-async function scanFn(p,r,ring,sc,v,g,ai,btn,input){
+async function scanFn(p,r,ring,sc,v,g,ai,btn,input,chainSel){
   const addr=input?input.value.trim():'';
-  if(!addr){p.style.display='block';p.innerHTML='<span style="color:var(--am)">> paste a Solana token address to scan</span>';return}
-  if(!isValidSolanaAddr(addr)){showError(p,'Invalid address. Paste a Solana token contract address.');return}
+  const chain=chainSel?chainSel.value:'solana';
+  if(!addr){p.style.display='block';p.innerHTML='<span style="color:var(--am)">> paste a token address to scan</span>';return}
+  if(chain==='solana'&&!isValidSolanaAddr(addr)){showError(p,'Invalid Solana address.');return}
+  if(chain!=='solana'&&(addr.length<10||!/^0x/i.test(addr))){showError(p,'Invalid EVM address. Must start with 0x.');return}
   btn.disabled=true;btn.textContent='SCANNING...';r.style.display='none';p.style.display='block';p.innerHTML='';
-  const st=['> connecting to Station 51...','> RPC handshake...','> querying GoPlus Security...','> querying DexScreener...','> querying Helius DAS...','> mint authority check...','> freeze authority check...','> holder distribution scan...','> top 10 concentration...','> honeypot detection...','> Agent 51 analyzing...'];
+  const chainLabel=chainSel?chainSel.options[chainSel.selectedIndex].text:'SOL';
+  const st=[`> scanning on ${chainLabel}...`,'> connecting to Station 51...','> querying DexScreener...','> querying GoPlus Security...',chain==='solana'?'> querying Helius DAS...':'> checking contract owner...','> holder distribution scan...','> honeypot detection...','> Agent 51 analyzing...'];
   let i=0;let done=false;
-  // Animate lines slowly (350ms each)
   const iv=setInterval(()=>{
     if(i<st.length){p.innerHTML+=`<span style="color:var(--g)">${st[i]}</span><br>`;i++;p.scrollTop=9999}
     else if(!done){
-      // All lines shown but API still working — show blinking cursor
       if(!p.querySelector('.blink-cursor')){
-        p.innerHTML+='<span class="blink-cursor" style="animation:blink 1s infinite;color:var(--am)">> processing data from 3 sources... ▊</span>';
+        p.innerHTML+='<span class="blink-cursor" style="animation:blink 1s infinite;color:var(--am)">> processing data... ▊</span>';
         p.scrollTop=9999;
       }
     }
   },350);
-  // Fire API call in parallel
   let d=null;
-  if(addr.length>30){d=await realScan(addr)}
+  if(addr.length>8){d=await realScan(addr,chain)}
   done=true;clearInterval(iv);
-  // Remove blinking cursor
   const bc=p.querySelector('.blink-cursor');if(bc)bc.remove();
   if(!d){d=mocks[Math.floor(Math.random()*3)];p.innerHTML+='<span style="color:var(--am)">> no live data — showing demo scan</span><br>'}
   else{p.innerHTML+='<span style="color:var(--g);font-weight:bold">> ✓ LIVE DATA RECEIVED</span><br>'}
@@ -1104,8 +1104,8 @@ async function scanFn(p,r,ring,sc,v,g,ai,btn,input){
   setTimeout(()=>{btn.disabled=false;btn.textContent='SCAN';p.style.display='none';showResult(d,r,ring,sc,v,g,ai)},600);
 }
 
-function runHS(){scanFn(document.getElementById('heroProg'),document.getElementById('heroRes'),document.getElementById('heroRing'),document.getElementById('heroSc'),document.getElementById('heroV'),null,null,document.getElementById('heroBtn'),document.getElementById('heroIn'))}
-function runX(){scanFn(document.getElementById('xProg'),document.getElementById('xRes'),document.getElementById('xRing'),document.getElementById('xSc'),document.getElementById('xV'),document.getElementById('xG'),document.getElementById('xAI'),document.getElementById('xBtn'),document.getElementById('xIn'))}
+function runHS(){scanFn(document.getElementById('heroProg'),document.getElementById('heroRes'),document.getElementById('heroRing'),document.getElementById('heroSc'),document.getElementById('heroV'),null,null,document.getElementById('heroBtn'),document.getElementById('heroIn'),document.getElementById('heroChain'))}
+function runX(){scanFn(document.getElementById('xProg'),document.getElementById('xRes'),document.getElementById('xRing'),document.getElementById('xSc'),document.getElementById('xV'),document.getElementById('xG'),document.getElementById('xAI'),document.getElementById('xBtn'),document.getElementById('xIn'),document.getElementById('xChain'))}
 
 // Probe -- Real API feed
 let pc=0,pt=0;
