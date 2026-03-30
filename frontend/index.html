@@ -739,22 +739,30 @@ function runHS(){scanFn(document.getElementById('heroProg'),document.getElementB
 function runX(){scanFn(document.getElementById('xProg'),document.getElementById('xRes'),document.getElementById('xRing'),document.getElementById('xSc'),document.getElementById('xV'),document.getElementById('xG'),document.getElementById('xAI'),document.getElementById('xBtn'),document.getElementById('xIn'))}
 
 // Probe -- Real API feed
-const tks=['$NEXUS','$ORBIT','$WARP','$DELTA','$VOID','$FLUX','$NOVA'];let pc=0,pt=0;
+let pc=0,pt=0;
 async function loadProbe(){
   const f=document.getElementById('pFeed');if(!f)return;
   try{
     const r=await fetch(API+'/api/probe/feed');
     if(r.ok){const data=await r.json();
       if(data.tokens&&data.tokens.length>0){
-        data.tokens.slice(0,10).forEach(t=>{
-          pc++;const e=document.createElement('div');e.className='fi';
-          e.innerHTML=`<span style="color:var(--dim);width:32px">${new Date().toTimeString().slice(0,5)}</span><span style="color:var(--g);width:24px">OK</span><span style="flex:1"><b style="color:var(--w)">${t.symbol||t.address.slice(0,6)}</b></span><span style="font:10px 'VT323';color:var(--dim)">${t.source}</span>`;
-          f.prepend(e);if(f.children.length>10)f.removeChild(f.lastChild)});
-        document.getElementById('pC').textContent=pc;document.getElementById('pT').textContent=data.total_scanned||pt;return}}
+        f.innerHTML='';
+        data.tokens.slice(0,12).forEach(t=>{
+          const sc=t.score||0;
+          const scColor=sc>=70?'var(--g)':sc>=50?'var(--am)':'var(--red)';
+          const status=sc>=50?'PASS':'FAIL';
+          const statusColor=sc>=50?'var(--g)':'var(--red)';
+          const mcap=t.mcap?`$${(t.mcap/1000).toFixed(0)}K`:'';
+          const e=document.createElement('div');e.className='fi';
+          e.innerHTML=`<span style="font:600 10px 'Orbitron';color:${scColor};width:24px">${sc}</span><span style="color:${statusColor};width:28px;font:11px 'VT323'">${status}</span><span style="flex:1"><b style="color:var(--w)">${t.symbol||'???'}</b> <span style="color:var(--dim)">${t.name&&t.name.length<20?t.name:''}</span></span><span style="font:11px 'VT323';color:var(--dim)">${mcap}</span>`;
+          f.appendChild(e)});
+        document.getElementById('pC').textContent=data.passed||0;
+        document.getElementById('pT').textContent=data.rejected||0;return}}
   }catch(e){console.log('Probe fallback:',e)}
   // Mock fallback
-  for(let i=0;i<3;i++){pt+=Math.floor(Math.random()*80)+20;pc++;const e=document.createElement('div');e.className='fi';e.innerHTML=`<span style="color:var(--dim);width:32px">${new Date().toTimeString().slice(0,5)}</span><span style="color:var(--g);width:24px">OK</span><span style="flex:1"><b style="color:var(--w)">${tks[Math.floor(Math.random()*7)]}</b> $${(Math.random()*80+5).toFixed(0)}K</span><span style="font:600 10px 'Orbitron';color:var(--g)">${Math.floor(Math.random()*25)+75}</span>`;f.prepend(e);if(f.children.length>10)f.removeChild(f.lastChild)}
-  document.getElementById('pC').textContent=pc;document.getElementById('pT').textContent=pt;
+  const tks=['$NEXUS','$ORBIT','$WARP','$DELTA','$VOID','$FLUX','$NOVA'];
+  for(let i=0;i<5;i++){const sc=Math.floor(Math.random()*50)+40;const e=document.createElement('div');e.className='fi';e.innerHTML=`<span style="font:600 10px 'Orbitron';color:${sc>=50?'var(--g)':'var(--red)'};width:24px">${sc}</span><span style="color:${sc>=50?'var(--g)':'var(--red)'};width:28px;font:11px 'VT323'">${sc>=50?'PASS':'FAIL'}</span><span style="flex:1"><b style="color:var(--w)">${tks[i]}</b></span>`;f.appendChild(e)}
+  document.getElementById('pC').textContent='3';document.getElementById('pT').textContent='2';
 }
 setTimeout(loadProbe,4000);setInterval(loadProbe,30000);
 
@@ -766,15 +774,22 @@ async function loadMothership(){
     if(r.ok){const data=await r.json();
       if(data.movements&&data.movements.length>0){
         f.innerHTML='';
-        data.movements.forEach(m=>{
+        data.movements.slice(0,12).forEach(m=>{
+          const actionColor=m.action==='SWAP'?'var(--cy)':m.action==='TRANSFER'?'var(--am)':'var(--dim)';
           const e=document.createElement('div');e.className='fi';
-          e.innerHTML=`<span style="color:var(--cy);width:52px">${m.wallet}</span><span style="flex:1">${m.type} <b style="color:var(--w)">${m.description?.slice(0,40)||''}</b></span>`;
-          f.appendChild(e);if(f.children.length>10)f.removeChild(f.lastChild)});
-        document.getElementById('wM').textContent=data.movements.length;return}}
+          e.innerHTML=`<span style="color:var(--cy);width:72px;font:12px 'VT323'">${m.wallet||'Unknown'}</span><span style="color:${actionColor};width:48px;font:11px 'VT323'">${m.action||'TX'}</span><span style="flex:1;font:13px 'VT323';color:var(--t)">${m.token?'<b style="color:var(--w)">'+m.token+'</b> ':''} ${m.amount||''}</span>`;
+          f.appendChild(e)});
+        document.getElementById('wM').textContent=data.movements.length;
+        // Show AI analysis if available
+        if(data.ai_analysis){
+          const aiDiv=document.createElement('div');aiDiv.className='ai';aiDiv.style.marginTop='6px';
+          aiDiv.innerHTML='<div class="ai-l">AGENT 51</div>'+data.ai_analysis;
+          f.parentNode.appendChild(aiDiv)}
+        return}}
   }catch(e){console.log('Mothership fallback:',e)}
   // Mock fallback
-  const wa=['8xF2..mP7','3aD9..nK2','7bR4..qL5'],wt=['$SOL','$WIF','$BONK','$JUP'],wac=['Bought','Sold','Accum'];
-  for(let i=0;i<4;i++){const e=document.createElement('div');e.className='fi';e.innerHTML=`<span style="color:var(--cy);width:52px">${wa[Math.floor(Math.random()*3)]}</span><span style="flex:1">${wac[Math.floor(Math.random()*3)]} <b style="color:var(--w)">${wt[Math.floor(Math.random()*4)]}</b></span><span style="color:var(--w)">${Number((Math.random()*9000+500).toFixed(0)).toLocaleString()}</span>`;f.prepend(e)}
+  const wa=['Wintermute','Jump Trading','Raydium'],wt=['SOL','WIF','BONK','JUP'],wac=['SWAP','TRANSFER','SWAP'];
+  for(let i=0;i<4;i++){const e=document.createElement('div');e.className='fi';e.innerHTML=`<span style="color:var(--cy);width:72px;font:12px 'VT323'">${wa[i%3]}</span><span style="color:var(--cy);width:48px;font:11px 'VT323'">${wac[i%3]}</span><span style="flex:1"><b style="color:var(--w)">${wt[i%4]}</b> $${Number((Math.random()*9000+500).toFixed(0)).toLocaleString()}</span>`;f.appendChild(e)}
   document.getElementById('wM').textContent='4';
 }
 setTimeout(loadMothership,4500);setInterval(loadMothership,60000);
