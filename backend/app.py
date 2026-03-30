@@ -665,41 +665,44 @@ def signal_narratives():
     narratives = []
     all_titles = []
 
-    # GDELT news API (free, no key) -- multiple queries for broader coverage
+    # GDELT news API (free, no key) -- simpler queries work better
     gdelt_queries = [
-        "crypto solana memecoin",
-        "bitcoin ethereum defi",
-        "AI crypto token",
-        "NFT gaming blockchain",
+        "cryptocurrency",
+        "solana",
+        "bitcoin",
+        "memecoin",
+        "blockchain",
     ]
     for q in gdelt_queries:
         try:
-            encoded = q.replace(" ", "%20")
             gd = requests.get(
-                f"https://api.gdeltproject.org/api/v2/doc/doc?query={encoded}&mode=artlist&maxrecords=20&format=json&sort=datedesc",
-                timeout=10
+                f"https://api.gdeltproject.org/api/v2/doc/doc?query={q}&mode=artlist&maxrecords=25&format=json&sort=datedesc",
+                timeout=8
             )
             if gd.status_code == 200:
-                data = gd.json()
-                articles = data.get("articles", [])
-                for a in articles:
-                    title = a.get("title", "")
-                    if title:
-                        all_titles.append(title)
+                try:
+                    data = gd.json()
+                    articles = data.get("articles", [])
+                    for a in articles:
+                        title = a.get("title", "")
+                        if title and len(title) > 10:
+                            all_titles.append(title)
+                except Exception:
+                    pass
         except Exception:
             continue
 
     # Expanded keyword detection with categories
     keyword_map = {
-        "AI AGENTS": ["ai agent", "ai trading", "artificial intelligence", "chatbot", "llm", "gpt"],
-        "MEMECOINS": ["memecoin", "meme coin", "pump.fun", "degen", "pumpfun", "bonk", "pepe", "dogecoin"],
-        "GAMING": ["gaming", "gamefi", "play-to-earn", "play to earn", "metaverse"],
+        "AI AGENTS": ["ai agent", "ai trading", "artificial intelligence", "chatgpt", "llm", "openai"],
+        "MEMECOINS": ["memecoin", "meme coin", "pump.fun", "degen", "pumpfun", "bonk", "pepe", "dogecoin", "shib"],
+        "GAMING": ["gaming", "gamefi", "play-to-earn", "play to earn", "metaverse", "web3 game"],
         "RWA": ["rwa", "real world asset", "tokenized", "tokenization"],
         "DEPIN": ["depin", "decentralized physical", "helium", "iot"],
-        "LAYER 2": ["layer 2", "layer2", "l2", "rollup", "scaling"],
+        "ETHEREUM": ["ethereum", "eth ", "layer 2", "rollup", "arbitrum", "base chain"],
         "SOLANA": ["solana", "sol ", "phantom wallet", "jupiter", "raydium"],
-        "BITCOIN": ["bitcoin", "btc", "halving", "ordinals", "runes"],
-        "REGULATION": ["sec ", "regulation", "compliance", "congress crypto", "ban crypto"],
+        "BITCOIN": ["bitcoin", "btc", "halving", "ordinals", "runes", "etf"],
+        "REGULATION": ["sec ", "regulation", "compliance", "congress crypto", "ban crypto", "lawsuit"],
         "DEFI": ["defi", "yield", "staking", "lending", "liquidity"],
     }
 
@@ -730,25 +733,33 @@ def signal_narratives():
             if dx.status_code == 200:
                 boosts = dx.json()
                 if isinstance(boosts, list):
-                    sol_count = sum(1 for b in boosts if b.get("chainId") == "solana")
-                    eth_count = sum(1 for b in boosts if b.get("chainId") == "ethereum")
-                    base_count = sum(1 for b in boosts if b.get("chainId") == "base")
-                    if sol_count > 0:
-                        narratives.append({"name": "SOLANA MEMES", "mentions": sol_count, "sample_headlines": ["Trending on DexScreener"], "source": "dexscreener"})
-                    if eth_count > 0:
-                        narratives.append({"name": "ETH ECOSYSTEM", "mentions": eth_count, "sample_headlines": ["Trending on DexScreener"], "source": "dexscreener"})
-                    if base_count > 0:
-                        narratives.append({"name": "BASE L2", "mentions": base_count, "sample_headlines": ["Trending on DexScreener"], "source": "dexscreener"})
+                    chain_counts = {}
+                    for b in boosts:
+                        chain = b.get("chainId", "unknown")
+                        chain_counts[chain] = chain_counts.get(chain, 0) + 1
+                    chain_names = {"solana": "SOLANA MEMES", "ethereum": "ETH ECOSYSTEM", "base": "BASE L2", "bsc": "BSC DEFI"}
+                    for chain, count in sorted(chain_counts.items(), key=lambda x: -x[1]):
+                        name = chain_names.get(chain, chain.upper())
+                        narratives.append({"name": name, "mentions": count, "sample_headlines": ["Trending on DexScreener"], "source": "dexscreener"})
         except Exception:
             pass
 
-    # AI phase classification
+    # AI phase classification — STRICT to prevent hallucination
     ai = ""
     if narratives and (GROQ_KEY or DEEPSEEK_KEY):
-        summary = ", ".join([f"{n['name']}({n['mentions']} mentions)" for n in narratives[:8]])
-        ai = ai_analyze(f"These are the trending crypto narratives right now based on news analysis: {summary}. Classify each by adoption phase (inception/early/mainstream/saturation) and tell Earth traders which ones to watch.")
+        summary = ", ".join([f"{n['name']} ({n['mentions']} mentions)" for n in narratives[:8]])
+        ai = ai_analyze(f"""ONLY reference these narratives and their exact numbers. Do NOT invent data:
 
-    result = {"narratives": narratives[:8], "total_articles": len(all_titles), "ai_analysis": ai}
+{summary}
+
+Classify each by adoption phase (inception/early/mainstream/saturation). Brief 2-3 sentence assessment for Earth traders. Only mention narratives from the list above.""")
+
+    result = {
+        "narratives": narratives[:8],
+        "total_articles": len(all_titles),
+        "gdelt_status": "ok" if all_titles else "no_articles",
+        "ai_analysis": ai
+    }
     cache_set("signal:narratives", result)
     return jsonify(result)
 
