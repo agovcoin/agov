@@ -665,14 +665,9 @@ def signal_narratives():
     narratives = []
     all_titles = []
 
-    # GDELT news API (free, no key) -- simpler queries work better
-    gdelt_queries = [
-        "cryptocurrency",
-        "solana",
-        "bitcoin",
-        "memecoin",
-        "blockchain",
-    ]
+    # GDELT news API (free, no key) -- secondary source
+    gdelt_errors = []
+    gdelt_queries = ["cryptocurrency", "solana", "bitcoin", "memecoin", "blockchain"]
     for q in gdelt_queries:
         try:
             gd = requests.get(
@@ -680,17 +675,56 @@ def signal_narratives():
                 timeout=8
             )
             if gd.status_code == 200:
-                try:
-                    data = gd.json()
-                    articles = data.get("articles", [])
-                    for a in articles:
-                        title = a.get("title", "")
-                        if title and len(title) > 10:
-                            all_titles.append(title)
-                except Exception:
-                    pass
-        except Exception:
-            continue
+                # Check if response is actually JSON (GDELT sometimes returns HTML)
+                content_type = gd.headers.get("content-type", "")
+                if "json" in content_type:
+                    try:
+                        data = gd.json()
+                        articles = data.get("articles", [])
+                        for a in articles:
+                            title = a.get("title", "")
+                            if title and len(title) > 10:
+                                all_titles.append(title)
+                    except Exception as e:
+                        gdelt_errors.append(f"{q}:parse:{str(e)[:20]}")
+                else:
+                    gdelt_errors.append(f"{q}:not_json:{content_type[:30]}")
+            else:
+                gdelt_errors.append(f"{q}:http_{gd.status_code}")
+        except Exception as e:
+            gdelt_errors.append(f"{q}:{str(e)[:30]}")
+
+    # DexScreener trending -- PRIMARY source (always works)
+    dx_narratives = []
+    try:
+        dx = requests.get("https://api.dexscreener.com/token-boosts/top/v1", timeout=10)
+        if dx.status_code == 200:
+            boosts = dx.json()
+            if isinstance(boosts, list):
+                chain_counts = {}
+                for b in boosts:
+                    chain = b.get("chainId", "unknown")
+                    chain_counts[chain] = chain_counts.get(chain, 0) + 1
+                chain_names = {
+                    "solana": "SOLANA",
+                    "ethereum": "ETHEREUM",
+                    "base": "BASE L2",
+                    "bsc": "BSC",
+                    "arbitrum": "ARBITRUM",
+                    "polygon": "POLYGON",
+                    "avalanche": "AVALANCHE"
+                }
+                for chain, count in sorted(chain_counts.items(), key=lambda x: -x[1]):
+                    if count >= 1:
+                        name = chain_names.get(chain, chain.upper())
+                        dx_narratives.append({
+                            "name": name,
+                            "mentions": count,
+                            "sample_headlines": [f"{count} tokens trending on DexScreener"],
+                            "source": "dexscreener"
+                        })
+    except Exception:
+        pass
 
     # Expanded keyword detection with categories
     keyword_map = {
@@ -723,26 +757,18 @@ def signal_narratives():
                 "source": "gdelt"
             })
 
-    # Sort by mentions
+    # Sort GDELT narratives by mentions
     narratives.sort(key=lambda x: -x["mentions"])
 
-    # If GDELT returned nothing, use DexScreener trending as signal
-    if not narratives:
-        try:
-            dx = requests.get("https://api.dexscreener.com/token-boosts/top/v1", timeout=10)
-            if dx.status_code == 200:
-                boosts = dx.json()
-                if isinstance(boosts, list):
-                    chain_counts = {}
-                    for b in boosts:
-                        chain = b.get("chainId", "unknown")
-                        chain_counts[chain] = chain_counts.get(chain, 0) + 1
-                    chain_names = {"solana": "SOLANA MEMES", "ethereum": "ETH ECOSYSTEM", "base": "BASE L2", "bsc": "BSC DEFI"}
-                    for chain, count in sorted(chain_counts.items(), key=lambda x: -x[1]):
-                        name = chain_names.get(chain, chain.upper())
-                        narratives.append({"name": name, "mentions": count, "sample_headlines": ["Trending on DexScreener"], "source": "dexscreener"})
-        except Exception:
-            pass
+    # Always add DexScreener narratives (merge with GDELT)
+    # Avoid duplicates: if GDELT has SOLANA/BITCOIN/ETHEREUM, don't add DexScreener version
+    gdelt_names = {n["name"] for n in narratives}
+    for dxn in dx_narratives:
+        if dxn["name"] not in gdelt_names:
+            narratives.append(dxn)
+
+    # Re-sort combined list
+    narratives.sort(key=lambda x: -x["mentions"])
 
     # AI phase classification — STRICT to prevent hallucination
     ai = ""
@@ -757,7 +783,8 @@ Classify each by adoption phase (inception/early/mainstream/saturation). Brief 2
     result = {
         "narratives": narratives[:8],
         "total_articles": len(all_titles),
-        "gdelt_status": "ok" if all_titles else "no_articles",
+        "gdelt_status": "ok" if all_titles else f"no_articles",
+        "gdelt_errors": gdelt_errors[:5] if gdelt_errors else [],
         "ai_analysis": ai
     }
     cache_set("signal:narratives", result)
