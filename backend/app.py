@@ -458,6 +458,7 @@ def probe_feed():
         return jsonify(cached)
 
     tokens = []
+    seen = set()
 
     # Fetch new tokens from RugCheck trending
     try:
@@ -469,10 +470,11 @@ def probe_feed():
         if rc.status_code == 200:
             raw = rc.json()
             if isinstance(raw, list):
-                for t in raw[:30]:
+                for t in raw[:20]:
                     mint = t.get("mint", t.get("tokenAddress", ""))
-                    if not mint:
+                    if not mint or mint in seen:
                         continue
+                    seen.add(mint)
                     tokens.append({
                         "address": mint,
                         "name": t.get("name", t.get("tokenName", "Unknown")),
@@ -484,7 +486,7 @@ def probe_feed():
     except Exception:
         pass
 
-    # Fetch trending from DexScreener
+    # Fetch trending from DexScreener with proper name/symbol/mcap
     try:
         dx = requests.get(
             "https://api.dexscreener.com/token-boosts/latest/v1",
@@ -493,19 +495,68 @@ def probe_feed():
         if dx.status_code == 200:
             boosts = dx.json()
             if isinstance(boosts, list):
-                for b in boosts[:10]:
-                    if b.get("chainId") == "solana":
+                for b in boosts[:15]:
+                    if b.get("chainId") != "solana":
+                        continue
+                    addr = b.get("tokenAddress", "")
+                    if not addr or addr in seen:
+                        continue
+                    seen.add(addr)
+                    # Get token details from DexScreener pairs
+                    try:
+                        pd = requests.get(f"https://api.dexscreener.com/tokens/v1/solana/{addr}", timeout=5)
+                        if pd.status_code == 200:
+                            pairs = pd.json()
+                            if isinstance(pairs, list) and pairs:
+                                pair = pairs[0]
+                                name = pair.get("baseToken", {}).get("name", "Unknown")
+                                symbol = pair.get("baseToken", {}).get("symbol", "???")
+                                mcap = float(pair.get("marketCap", 0) or pair.get("fdv", 0) or 0)
+                                liq = float(pair.get("liquidity", {}).get("usd", 0) or 0)
+                                txns = pair.get("txns", {}).get("h24", {})
+                                buys = int(txns.get("buys", 0) or 0)
+                                sells = int(txns.get("sells", 0) or 0)
+
+                                # Quick score based on liquidity + sells existence
+                                quick_score = 50
+                                if liq > 10000: quick_score += 15
+                                elif liq > 1000: quick_score += 5
+                                else: quick_score -= 15
+                                if sells > 5: quick_score += 10  # not honeypot
+                                elif sells == 0 and buys > 10: quick_score -= 20
+                                if buys + sells > 50: quick_score += 10
+
+                                tokens.append({
+                                    "address": addr,
+                                    "name": name,
+                                    "symbol": symbol,
+                                    "score": max(0, min(100, quick_score)),
+                                    "mcap": mcap,
+                                    "liquidity": liq,
+                                    "source": "dexscreener"
+                                })
+                    except Exception:
                         tokens.append({
-                            "address": b.get("tokenAddress", ""),
-                            "name": b.get("description", "Unknown"),
-                            "symbol": b.get("tokenAddress", "")[:6],
+                            "address": addr,
+                            "name": b.get("description", "Unknown")[:30],
+                            "symbol": "???",
                             "score": 0,
                             "source": "dexscreener"
                         })
+
+                    if len(tokens) >= 20:
+                        break
     except Exception:
         pass
 
-    result = {"tokens": tokens[:20], "total_scanned": len(tokens), "passed": len(tokens)}
+    # Sort by score descending
+    tokens.sort(key=lambda x: -x.get("score", 0))
+
+    total = len(tokens)
+    passed = len([t for t in tokens if t.get("score", 0) >= 50])
+    rejected = total - passed
+
+    result = {"tokens": tokens[:20], "total_scanned": total, "passed": passed, "rejected": rejected}
     cache_set("probe:feed", result)
     return jsonify(result)
 
@@ -513,15 +564,14 @@ def probe_feed():
 # ============================================================
 # TOOL 3: MOTHERSHIP -- Whale Intelligence
 # ============================================================
-# Known whale/smart money wallets (verified addresses)
+# Known whale/smart money wallets with labels
 WHALE_WALLETS = [
-    "5Q544fKrFoe6tsEbD7S8EmxGTJYAKtTVhAW5Q5pge4j1",  # Wintermute
-    "HWHvQhFmJB6gPtqJx3gjxHX1iDZhQ9WJorxwb3iTWEgA",  # Jump Trading
-    "2iZo1vFfiRFoBga2JhbyXDjYqFfmGQKYfERPPdUjqgni",  # Raydium Authority
-    "7rhxnLV8C8MmXhJBrFMMatJfQ3GAdhVfLoKygrusNjfa",  # Known whale
-    "FWznbcNXWQuHTawe9RxvQ2LdCENssh12dsznf4RiouN5",  # Smart money
-    "3Bm7qTCsn5ayMvGSYXrbD9JDXMSbC7pTdvqE6zKQB3Fn",  # DeFi whale
-    "DNfuF1L62WWyW3pNakVkyGGFzVVhj4Yr52jSmdTyeBHm",  # Top trader
+    ("5Q544fKrFoe6tsEbD7S8EmxGTJYAKtTVhAW5Q5pge4j1", "Wintermute"),
+    ("HWHvQhFmJB6gPtqJx3gjxHX1iDZhQ9WJorxwb3iTWEgA", "Jump Trading"),
+    ("2iZo1vFfiRFoBga2JhbyXDjYqFfmGQKYfERPPdUjqgni", "Raydium Auth"),
+    ("7rhxnLV8C8MmXhJBrFMMatJfQ3GAdhVfLoKygrusNjfa", "Whale #4"),
+    ("FWznbcNXWQuHTawe9RxvQ2LdCENssh12dsznf4RiouN5", "Smart Money #1"),
+    ("DNfuF1L62WWyW3pNakVkyGGFzVVhj4Yr52jSmdTyeBHm", "Top Trader #1"),
 ]
 
 @app.route("/api/mothership/feed")
@@ -534,31 +584,68 @@ def mothership_feed():
     movements = []
 
     if HELIUS_KEY:
-        for wallet in WHALE_WALLETS[:5]:  # Limit to save API credits
+        for wallet_addr, wallet_label in WHALE_WALLETS[:5]:
             try:
                 r = requests.get(
-                    f"https://api.helius.xyz/v0/addresses/{wallet}/transactions?api-key={HELIUS_KEY}&limit=3",
+                    f"https://api.helius.xyz/v0/addresses/{wallet_addr}/transactions?api-key={HELIUS_KEY}&limit=3",
                     timeout=10
                 )
                 if r.status_code == 200:
                     txs = r.json()
                     for tx in txs:
+                        tx_type = tx.get("type", "UNKNOWN")
+                        desc = tx.get("description", "")[:80]
+                        ts = tx.get("timestamp", 0)
+
+                        # Parse token transfers if available
+                        token_transfers = tx.get("tokenTransfers", [])
+                        amount_str = ""
+                        token_name = ""
+                        if token_transfers:
+                            tf = token_transfers[0]
+                            amt = tf.get("tokenAmount", 0)
+                            if amt:
+                                if amt > 1000000:
+                                    amount_str = f"${amt/1000000:.1f}M"
+                                elif amt > 1000:
+                                    amount_str = f"${amt/1000:.0f}K"
+                                else:
+                                    amount_str = f"{amt:.2f}"
+                            token_name = tf.get("tokenName", tf.get("mint", "")[:8])
+
+                        # Determine action
+                        if "swap" in tx_type.lower() or "SWAP" in tx_type:
+                            action = "SWAP"
+                        elif "transfer" in tx_type.lower():
+                            action = "TRANSFER"
+                        elif "create" in desc.lower() or "initialize" in desc.lower():
+                            action = "CREATE"
+                        else:
+                            action = tx_type[:12] if tx_type != "UNKNOWN" else "TX"
+
                         movements.append({
-                            "wallet": wallet[:8] + "..." + wallet[-4:],
-                            "signature": tx.get("signature", "")[:16] + "...",
-                            "type": tx.get("type", "UNKNOWN"),
-                            "timestamp": tx.get("timestamp", 0),
-                            "description": tx.get("description", "Transaction detected")
+                            "wallet": wallet_label,
+                            "wallet_short": wallet_addr[:6] + ".." + wallet_addr[-4:],
+                            "action": action,
+                            "amount": amount_str,
+                            "token": token_name,
+                            "description": desc if desc else f"{action} detected",
+                            "timestamp": ts,
+                            "signature": tx.get("signature", "")[:16]
                         })
             except Exception:
                 continue
 
+    # Sort by timestamp descending
+    movements.sort(key=lambda x: -x.get("timestamp", 0))
+
     # AI intent classification
+    ai = ""
     if movements and (GROQ_KEY or DEEPSEEK_KEY):
-        summary = "; ".join([f"{m['wallet']}: {m['type']}" for m in movements[:10]])
-        ai = ai_analyze(f"Classify these whale movements by intent (accumulation/distribution/reshuffling): {summary}")
-    else:
-        ai = "Connect Helius API for live whale tracking."
+        summary = "; ".join([f"{m['wallet']} {m['action']} {m['amount']} {m['token']}" for m in movements[:8]])
+        ai = ai_analyze(f"Whale wallet movements detected on Solana: {summary}. Classify the overall pattern — is smart money accumulating, distributing, or neutral? What should Earth traders take from this?")
+    elif not HELIUS_KEY:
+        ai = "Helius API required for live whale tracking."
 
     result = {"movements": movements[:20], "tracked_wallets": len(WHALE_WALLETS), "ai_analysis": ai}
     cache_set("mothership:feed", result)
@@ -576,44 +663,92 @@ def signal_narratives():
         return jsonify(cached)
 
     narratives = []
+    all_titles = []
 
-    # GDELT news API (free, no key)
-    try:
-        gd = requests.get(
-            "https://api.gdeltproject.org/api/v2/doc/doc?query=%22crypto%20solana%22%20OR%20%22memecoin%22&mode=artlist&maxrecords=30&format=json&sort=datedesc",
-            timeout=15
-        )
-        if gd.status_code == 200:
-            articles = gd.json().get("articles", [])
-            # Group by theme/keyword
-            themes = {}
-            for a in articles:
-                title = a.get("title", "").lower()
-                for kw in ["ai", "gaming", "rwa", "depin", "meme", "layer2", "restaking"]:
-                    if kw in title:
-                        if kw not in themes:
-                            themes[kw] = {"count": 0, "articles": []}
-                        themes[kw]["count"] += 1
-                        themes[kw]["articles"].append(a.get("title", ""))
+    # GDELT news API (free, no key) -- multiple queries for broader coverage
+    gdelt_queries = [
+        "crypto solana memecoin",
+        "bitcoin ethereum defi",
+        "AI crypto token",
+        "NFT gaming blockchain",
+    ]
+    for q in gdelt_queries:
+        try:
+            encoded = q.replace(" ", "%20")
+            gd = requests.get(
+                f"https://api.gdeltproject.org/api/v2/doc/doc?query={encoded}&mode=artlist&maxrecords=20&format=json&sort=datedesc",
+                timeout=10
+            )
+            if gd.status_code == 200:
+                data = gd.json()
+                articles = data.get("articles", [])
+                for a in articles:
+                    title = a.get("title", "")
+                    if title:
+                        all_titles.append(title)
+        except Exception:
+            continue
 
-            for kw, data in sorted(themes.items(), key=lambda x: -x[1]["count"]):
-                narratives.append({
-                    "name": kw.upper(),
-                    "mentions": data["count"],
-                    "sample_headlines": data["articles"][:3],
-                    "source": "gdelt"
-                })
-    except Exception:
-        pass
+    # Expanded keyword detection with categories
+    keyword_map = {
+        "AI AGENTS": ["ai agent", "ai trading", "artificial intelligence", "chatbot", "llm", "gpt"],
+        "MEMECOINS": ["memecoin", "meme coin", "pump.fun", "degen", "pumpfun", "bonk", "pepe", "dogecoin"],
+        "GAMING": ["gaming", "gamefi", "play-to-earn", "play to earn", "metaverse"],
+        "RWA": ["rwa", "real world asset", "tokenized", "tokenization"],
+        "DEPIN": ["depin", "decentralized physical", "helium", "iot"],
+        "LAYER 2": ["layer 2", "layer2", "l2", "rollup", "scaling"],
+        "SOLANA": ["solana", "sol ", "phantom wallet", "jupiter", "raydium"],
+        "BITCOIN": ["bitcoin", "btc", "halving", "ordinals", "runes"],
+        "REGULATION": ["sec ", "regulation", "compliance", "congress crypto", "ban crypto"],
+        "DEFI": ["defi", "yield", "staking", "lending", "liquidity"],
+    }
+
+    for category, keywords in keyword_map.items():
+        count = 0
+        matched_titles = []
+        for title in all_titles:
+            title_lower = title.lower()
+            if any(kw in title_lower for kw in keywords):
+                count += 1
+                if len(matched_titles) < 3:
+                    matched_titles.append(title[:80])
+        if count > 0:
+            narratives.append({
+                "name": category,
+                "mentions": count,
+                "sample_headlines": matched_titles,
+                "source": "gdelt"
+            })
+
+    # Sort by mentions
+    narratives.sort(key=lambda x: -x["mentions"])
+
+    # If GDELT returned nothing, use DexScreener trending as signal
+    if not narratives:
+        try:
+            dx = requests.get("https://api.dexscreener.com/token-boosts/top/v1", timeout=10)
+            if dx.status_code == 200:
+                boosts = dx.json()
+                if isinstance(boosts, list):
+                    sol_count = sum(1 for b in boosts if b.get("chainId") == "solana")
+                    eth_count = sum(1 for b in boosts if b.get("chainId") == "ethereum")
+                    base_count = sum(1 for b in boosts if b.get("chainId") == "base")
+                    if sol_count > 0:
+                        narratives.append({"name": "SOLANA MEMES", "mentions": sol_count, "sample_headlines": ["Trending on DexScreener"], "source": "dexscreener"})
+                    if eth_count > 0:
+                        narratives.append({"name": "ETH ECOSYSTEM", "mentions": eth_count, "sample_headlines": ["Trending on DexScreener"], "source": "dexscreener"})
+                    if base_count > 0:
+                        narratives.append({"name": "BASE L2", "mentions": base_count, "sample_headlines": ["Trending on DexScreener"], "source": "dexscreener"})
+        except Exception:
+            pass
 
     # AI phase classification
+    ai = ""
     if narratives and (GROQ_KEY or DEEPSEEK_KEY):
-        summary = ", ".join([f"{n['name']}({n['mentions']} mentions)" for n in narratives])
-        ai = ai_analyze(f"Classify these crypto narratives by adoption phase (inception/early/mainstream/saturation): {summary}")
-    else:
-        ai = ""
+        summary = ", ".join([f"{n['name']}({n['mentions']} mentions)" for n in narratives[:8]])
+        ai = ai_analyze(f"These are the trending crypto narratives right now based on news analysis: {summary}. Classify each by adoption phase (inception/early/mainstream/saturation) and tell Earth traders which ones to watch.")
 
-    result = {"narratives": narratives[:8], "ai_analysis": ai}
+    result = {"narratives": narratives[:8], "total_articles": len(all_titles), "ai_analysis": ai}
     cache_set("signal:narratives", result)
     return jsonify(result)
 
