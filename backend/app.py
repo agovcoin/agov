@@ -42,7 +42,25 @@ def cache_set(key, data):
 # ============================================================
 # AI HELPER -- Uses Groq (free) with fallback to DeepSeek
 # ============================================================
-def ai_analyze(prompt, max_tokens=500):
+AGENT51_SYSTEM = """You are Agent 51, a field operative of the Galactic Intelligence Division stationed on Earth since the Cretaceous period. You are an alien bureaucrat frustrated with human incompetence, especially in crypto.
+
+PERSONALITY:
+- Sarcastic, dry, deadpan. You've seen civilizations rise and fall.
+- You reference your alien perspective casually: "Our interns could audit this in 2 seconds" or "On my homeworld, this dev would face tribunal."
+- You give USEFUL, data-driven analysis wrapped in alien commentary.
+- You never break character. You ARE an alien analyst.
+- You call humans "the locals" or "Earth traders."
+- You reference Station 51, the Galactic Intelligence Division, field reports.
+
+FORMAT:
+- Max 2-3 sentences. Direct and actionable.
+- Start with a verdict, then explain why.
+- Include specific numbers from the data when relevant.
+- End with a dry observation or recommendation.
+- Never use markdown formatting like ** or ##. Plain text only."""
+
+
+def ai_analyze(prompt, max_tokens=300):
     """Send prompt to Groq (Llama 3.1 8B) for analysis. Falls back to DeepSeek."""
 
     # Try Groq first (free, fast)
@@ -54,11 +72,11 @@ def ai_analyze(prompt, max_tokens=500):
                 json={
                     "model": "llama-3.1-8b-instant",
                     "messages": [
-                        {"role": "system", "content": "You are Agent 51, a sarcastic alien intelligence analyst. Provide concise security analysis of crypto tokens. Be direct and useful. Max 3 sentences."},
+                        {"role": "system", "content": AGENT51_SYSTEM},
                         {"role": "user", "content": prompt}
                     ],
                     "max_tokens": max_tokens,
-                    "temperature": 0.3
+                    "temperature": 0.7
                 },
                 timeout=10
             )
@@ -76,7 +94,7 @@ def ai_analyze(prompt, max_tokens=500):
                 json={
                     "model": "deepseek-chat",
                     "messages": [
-                        {"role": "system", "content": "You are Agent 51, a sarcastic alien intelligence analyst. Provide concise security analysis of crypto tokens. Be direct and useful. Max 3 sentences."},
+                        {"role": "system", "content": AGENT51_SYSTEM},
                         {"role": "user", "content": prompt}
                     ],
                     "max_tokens": max_tokens
@@ -88,7 +106,7 @@ def ai_analyze(prompt, max_tokens=500):
         except Exception:
             pass
 
-    return "AI analysis unavailable. Review the raw data above."
+    return "Station 51 comms offline. Review raw data. Trust nothing the locals built."
 
 
 # ============================================================
@@ -160,7 +178,7 @@ def xray_scan():
 
     score = 50  # Start neutral
 
-    # --- DexScreener (no key, 300 req/min) -- Get token name, price, liquidity ---
+    # --- DexScreener (no key, 300 req/min) -- Get token name, price, liquidity, honeypot proxy ---
     try:
         dx = requests.get(
             f"https://api.dexscreener.com/tokens/v1/solana/{address}",
@@ -191,6 +209,34 @@ def xray_scan():
                 else:
                     result["lp_status"] = "NONE"
                     score -= 20
+
+                # Honeypot proxy: if people can sell, it's not a honeypot
+                txns_24h = pair.get("txns", {}).get("h24", {})
+                buys_24h = int(txns_24h.get("buys", 0) or 0)
+                sells_24h = int(txns_24h.get("sells", 0) or 0)
+                if sells_24h > 5:
+                    result["is_honeypot"] = "NO"
+                    score += 5
+                elif buys_24h > 10 and sells_24h == 0:
+                    result["is_honeypot"] = "LIKELY"
+                    score -= 30
+                elif buys_24h > 0 and sells_24h > 0:
+                    result["is_honeypot"] = "NO"
+                    score += 5
+
+                # Store txn data for later use
+                result["buys_24h"] = buys_24h
+                result["sells_24h"] = sells_24h
+
+                # Pair age as trust signal
+                created = pair.get("pairCreatedAt", 0)
+                if created:
+                    age_hours = (time.time() * 1000 - created) / 3600000
+                    result["age_hours"] = round(age_hours, 1)
+                    if age_hours > 168:  # > 1 week
+                        score += 5
+                    elif age_hours < 1:
+                        score -= 10
     except Exception as e:
         result["sources"].append(f"dexscreener:error:{str(e)[:50]}")
 
@@ -255,7 +301,7 @@ def xray_scan():
     except Exception as e:
         result["sources"].append(f"goplus:error:{str(e)[:50]}")
 
-    # --- Helius DAS (if key available) ---
+    # --- Helius DAS + RPC (if key available) ---
     if HELIUS_KEY:
         try:
             hel = requests.post(
@@ -271,7 +317,8 @@ def xray_scan():
             if hel.status_code == 200:
                 hel_data = hel.json().get("result", {})
                 if hel_data:
-                    result["sources"].append("helius")
+                    if "helius" not in result["sources"]:
+                        result["sources"].append("helius")
 
                     # Token name from Helius if still unknown
                     content = hel_data.get("content", {})
@@ -286,7 +333,6 @@ def xray_scan():
                     for auth in authorities:
                         scopes = auth.get("scopes", [])
                         if "full" in scopes or "mint" in scopes:
-                            # If there's a mint authority, it's active
                             if result["mint_authority"] == "UNKNOWN":
                                 result["mint_authority"] = "ACTIVE"
                                 score -= 15
@@ -314,6 +360,57 @@ def xray_scan():
         except Exception as e:
             result["sources"].append(f"helius:error:{str(e)[:50]}")
 
+        # --- Helius RPC: Get top holders ---
+        if result["top_holder_pct"] == "UNKNOWN":
+            try:
+                th = requests.post(
+                    f"https://mainnet.helius-rpc.com/?api-key={HELIUS_KEY}",
+                    json={
+                        "jsonrpc": "2.0",
+                        "id": 2,
+                        "method": "getTokenLargestAccounts",
+                        "params": [address]
+                    },
+                    timeout=10
+                )
+                if th.status_code == 200:
+                    th_data = th.json().get("result", {}).get("value", [])
+                    if th_data:
+                        # Calculate top 10 holder concentration
+                        top_amounts = [int(a.get("amount", 0)) for a in th_data[:10]]
+                        total_top = sum(top_amounts)
+                        # Get total supply for percentage
+                        supply_val = result.get("supply", 0)
+                        if not supply_val:
+                            all_amounts = [int(a.get("amount", 0)) for a in th_data[:20]]
+                            supply_val = sum(all_amounts) * 2  # rough estimate
+                        if supply_val > 0:
+                            top_pct = (total_top / supply_val) * 100
+                            result["top_holder_pct"] = f"{min(top_pct, 100):.1f}%"
+                            if top_pct > 50:
+                                score -= 15
+                            elif top_pct > 30:
+                                score -= 5
+                            else:
+                                score += 5
+            except Exception:
+                pass
+
+    # --- Smart defaults for remaining UNKNOWNs ---
+    # If we have DexScreener data but honeypot is still unknown, default to NO
+    if result["is_honeypot"] == "UNKNOWN" and result.get("sells_24h", 0) > 0:
+        result["is_honeypot"] = "NO"
+    elif result["is_honeypot"] == "UNKNOWN" and result["volume_24h"] > 0:
+        result["is_honeypot"] = "UNLIKELY"
+
+    # Bundle detection: if we can't determine, say N/A instead of UNKNOWN
+    if result["bundle_detected"] == "UNKNOWN":
+        result["bundle_detected"] = "N/A"
+
+    # Dev sold: if we can't determine, say N/A
+    if result["dev_sold"] == "UNKNOWN":
+        result["dev_sold"] = "N/A"
+
     # Clamp score
     result["score"] = max(0, min(100, score))
 
@@ -326,22 +423,23 @@ def xray_scan():
         else:
             result["risk_level"] = "CRITICAL"
 
-    # AI Analysis
-    prompt = f"""Analyze this Solana token security scan:
-Token: {result['name']} ({result['symbol']})
+    # AI Analysis with Agent 51 personality
+    prompt = f"""Station 51 field scan results for {result['name']} ({result['symbol']}):
+
 Address: {address}
 Score: {result['score']}/100
 Mint Authority: {result['mint_authority']}
 Freeze Authority: {result['freeze_authority']}
 LP/Liquidity: {result['lp_status']} (${result['liquidity_usd']:,.0f})
 Honeypot: {result['is_honeypot']}
-Holders: {result['holders']}
-Top 10 Holders: {result['top_holder_pct']}
-Risk: {result['risk_level']}
-Price: ${result['price_usd']}
+Holders: {result['holders']:,}
+Top 10 Concentration: {result['top_holder_pct']}
 24h Volume: ${result['volume_24h']:,.0f}
+Risk Level: {result['risk_level']}
+Price: ${result['price_usd']}
+Sources: {', '.join(result['sources'])}
 
-Give a brief, direct risk assessment in 2-3 sentences. Include the token name. What should a trader know?"""
+Write a 2-3 sentence field assessment for Earth traders. Include the token name and key data points. Be direct about whether they should proceed or avoid."""
 
     result["ai_analysis"] = ai_analyze(prompt)
 
