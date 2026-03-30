@@ -309,7 +309,8 @@ details div{padding:9px 11px;font:14px/1.6 'VT323';color:var(--dim)}
   .mx{padding:0 10px}
   /* Hero grid stacks on mobile */
   .hero-grid{grid-template-columns:1fr!important;gap:10px}
-  .hero-grid .radar{margin:0 auto}
+  .hero-grid>div:first-child{display:flex;justify-content:center}
+  .hero-grid>div:first-child img{width:100px!important;height:100px!important}
   .hero-grid>div:last-child{display:none}
   /* Feature cards stack */
   .feat-cards{grid-template-columns:1fr!important}
@@ -415,28 +416,18 @@ SYSTEM ONLINE ◈ STATION 51 OPERATIONAL ◈ SIGNAL PROBE FEED ◈ 9 TOOLS ONLIN
 </div>
 </div>
 
-<!-- HERO ROW: Radar | Title+Scanner | VU meters -->
-<div class="hero-grid" style="display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:28px;margin-bottom:16px">
+<!-- HERO ROW: Logo | Title+Scanner | Radar+VU -->
+<div class="hero-grid" style="display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:20px;margin-bottom:16px">
 
-<!-- Left: Radar -->
-<div class="radar" style="width:158px;height:158px;flex-shrink:0">
-<div class="radar-sw"></div>
-<div class="blip blip-g" style="top:28%;left:58%"></div>
-<div class="blip blip-g" style="top:52%;left:22%;animation-delay:.5s"></div>
-<div class="blip blip-r" style="top:68%;left:68%;animation-delay:1.2s"></div>
-<div class="blip blip-a" style="top:18%;left:38%;animation-delay:.8s"></div>
-<div class="blip blip-g" style="top:72%;left:35%;animation-delay:1.8s"></div>
-<div class="blip blip-a" style="top:40%;left:75%;animation-delay:2.4s"></div>
+<!-- Left: Project Logo -->
+<div style="flex-shrink:0;text-align:center">
+<img src="logoagov.png" alt="$AGOV" style="width:140px;height:140px;border-radius:50%;border:2px solid rgba(0,255,65,.15);box-shadow:0 0 30px rgba(0,255,65,.08),0 0 60px rgba(0,255,65,.03);animation:float 4s ease-in-out infinite">
 </div>
 
 <!-- Center: Title + typewriter + scanner -->
 <div style="text-align:center;min-width:0">
-<!-- Alien inscription above logo -->
 <div class="ax ax-dim" style="margin-bottom:6px;font-size:15px">SYSTEM ONLINE</div>
-<div style="display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:5px">
-  <div style="width:24px;height:24px;border-radius:50%;border:2px solid var(--g);display:flex;align-items:center;justify-content:center;box-shadow:0 0 12px rgba(0,255,65,.18);animation:float 3s ease-in-out infinite;flex-shrink:0"><div style="width:10px;height:5px;background:var(--g);border-radius:5px 5px 0 0"></div></div>
-  <h1 style="font:900 2rem/1 'Orbitron';color:var(--g);letter-spacing:4px;text-shadow:0 0 20px rgba(0,255,65,.14)">$AGOV</h1>
-</div>
+<h1 style="font:900 2rem/1 'Orbitron';color:var(--g);letter-spacing:4px;text-shadow:0 0 20px rgba(0,255,65,.14);margin-bottom:5px">$AGOV</h1>
 <p style="font:10px/1 'Silkscreen';color:var(--g2);letter-spacing:3px;margin-bottom:8px">PUMP.FUN INTELLIGENCE PLATFORM</p>
 <div style="min-height:24px;display:flex;align-items:center;justify-content:center;margin-bottom:12px">
   <span id="twText" style="font:17px/1 'VT323';color:var(--t);letter-spacing:2px"></span>
@@ -461,12 +452,21 @@ SYSTEM ONLINE ◈ STATION 51 OPERATIONAL ◈ SIGNAL PROBE FEED ◈ 9 TOOLS ONLIN
 </div></div>
 </div>
 
-<!-- Right: VU meters -->
-<div style="display:flex;gap:5px;align-items:flex-end;flex-shrink:0">
-<div style="text-align:center"><div class="vg"><div class="vg-f" style="height:100%;background:var(--g)"></div></div><div style="font:8px 'VT323';color:var(--dim);margin-top:3px">SYS</div></div>
-<div style="text-align:center"><div class="vg"><div class="vg-f" style="height:90%;background:var(--g2)"></div></div><div style="font:8px 'VT323';color:var(--dim);margin-top:3px">NET</div></div>
-<div style="text-align:center"><div class="vg"><div class="vg-f" style="height:15%;background:var(--am)"></div></div><div style="font:8px 'VT323';color:var(--dim);margin-top:3px">WRP</div></div>
-<div style="text-align:center"><div class="vg"><div class="vg-f" style="height:0%;background:var(--red)"></div></div><div style="font:8px 'VT323';color:var(--dim);margin-top:3px">GOV</div></div>
+<!-- Right: Mini Radar + VU meters -->
+<div style="display:flex;flex-direction:column;align-items:center;gap:8px;flex-shrink:0">
+<div class="radar" style="width:90px;height:90px">
+<div class="radar-sw"></div>
+<div class="blip blip-g" style="top:28%;left:58%"></div>
+<div class="blip blip-g" style="top:52%;left:22%;animation-delay:.5s"></div>
+<div class="blip blip-r" style="top:68%;left:68%;animation-delay:1.2s"></div>
+<div class="blip blip-a" style="top:18%;left:38%;animation-delay:.8s"></div>
+</div>
+<div style="display:flex;gap:4px;align-items:flex-end">
+<div style="text-align:center"><div class="vg" style="height:40px;width:8px"><div class="vg-f" style="height:100%;background:var(--g)"></div></div><div style="font:7px 'VT323';color:var(--dim);margin-top:2px">SYS</div></div>
+<div style="text-align:center"><div class="vg" style="height:40px;width:8px"><div class="vg-f" style="height:90%;background:var(--g2)"></div></div><div style="font:7px 'VT323';color:var(--dim);margin-top:2px">NET</div></div>
+<div style="text-align:center"><div class="vg" style="height:40px;width:8px"><div class="vg-f" style="height:15%;background:var(--am)"></div></div><div style="font:7px 'VT323';color:var(--dim);margin-top:2px">WRP</div></div>
+<div style="text-align:center"><div class="vg" style="height:40px;width:8px"><div class="vg-f" style="height:0%;background:var(--red)"></div></div><div style="font:7px 'VT323';color:var(--dim);margin-top:2px">GOV</div></div>
+</div>
 </div>
 
 </div><!-- end hero grid -->
