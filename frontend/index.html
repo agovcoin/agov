@@ -695,8 +695,9 @@ function showResult(d,r,ring,sc,v,g,ai){
   if(d.score>70)v.innerHTML=nm+'<span style="color:var(--g)">LOW RISK</span>';
   else if(d.score>40)v.innerHTML=nm+'<span style="color:var(--am)">MEDIUM</span>';
   else v.innerHTML=nm+'<span style="color:var(--red)">CRITICAL</span>';
-  if(g){const cl=x=>String(x).includes('REVOKED')||String(x).includes('BURNED')||String(x).includes('DEEP')||x==='NO'?'v-ok':(String(x).includes('ACTIVE')||String(x).includes('YES')||String(x).includes('UNLOCKED')||String(x).includes('NONE')||String(x).includes('LOW')?'v-bad':'v-mid');
-    g.innerHTML=[['MINT',d.mint_authority],['FREEZE',d.freeze_authority],['LP',d.lp_status],['HONEYPOT',d.is_honeypot],['BUNDLE',d.bundle_detected||'N/A'],['HOLDERS',d.holders],['TOP 10',d.top_holder_pct],['RISK',d.risk_level]].map(([l,x])=>`<div class="cl"><div class="cl-l">${l}</div><div class="cl-v ${cl(x)}">${x}</div></div>`).join('')}
+  if(g){const cl=x=>{const s=String(x).toUpperCase();if(s.includes('REVOKED')||s.includes('BURNED')||s.includes('DEEP')||s==='NO'||s==='OK')return 'v-ok';if(s.includes('ACTIVE')||s==='YES'||s.includes('LIKELY')||s==='NONE'||s==='CRITICAL')return 'v-bad';if(s==='N/A'||s==='UNKNOWN'||s.includes('MEDIUM')||s==='LOW'||s==='UNLIKELY')return 'v-mid';return ''};
+    const holders=d.holders?Number(d.holders).toLocaleString():0;
+    g.innerHTML=[['MINT',d.mint_authority],['FREEZE',d.freeze_authority],['LP',d.lp_status],['HONEYPOT',d.is_honeypot],['BUNDLE',d.bundle_detected||'N/A'],['HOLDERS',holders],['TOP 10',d.top_holder_pct],['RISK',d.risk_level]].map(([l,x])=>`<div class="cl"><div class="cl-l">${l}</div><div class="cl-v ${cl(x)}">${x}</div></div>`).join('')}
   if(ai)ai.innerHTML='<div class="ai-l">AGENT 51</div>'+(d.ai_analysis||'Analysis unavailable.');
 }
 
