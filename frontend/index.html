@@ -603,7 +603,7 @@ SYSTEM ONLINE ◈ STATION 51 OPERATIONAL ◈ SIGNAL PROBE FEED ◈ 9 TOOLS ONLIN
 <div style="font:9px 'Silkscreen';color:var(--am);letter-spacing:2px;margin-bottom:4px">TRACKERS</div>
 <p style="font:15px/1.5 'VT323';color:var(--t)"><span style="color:var(--am)">MOTHERSHIP</span> — Monitors 247 whale wallets in real-time. AI-predicted intent on every movement.<br><br>
 <span style="color:var(--am)">GRADUATION TRACKER</span> — Dashboard of tokens approaching the ~$69K graduation threshold. When they graduate, WARP DRIVE creates their perp market.<br><br>
-<span style="color:var(--am)">SIGNAL INTERCEPT</span> — Detects emerging narratives before they trend across social platforms.</p>
+<span style="color:var(--am)">SIGNAL INTERCEPT</span> — Real-time chain dominance radar. Tracks which blockchains are heating up and where smart money is flowing.</p>
 </div>
 <div style="padding:10px;border:1px solid var(--bz);border-radius:4px">
 <div style="font:9px 'Silkscreen';color:var(--red);letter-spacing:2px;margin-bottom:4px">FORENSICS</div>
@@ -758,7 +758,7 @@ SYSTEM ONLINE ◈ STATION 51 OPERATIONAL ◈ SIGNAL PROBE FEED ◈ 9 TOOLS ONLIN
 <div class="tv-h">
   <div style="display:flex;align-items:center;gap:8px"><h2 style="color:var(--am)">SIGNAL INTERCEPT</h2><span class="bdg bdg-on">LIVE</span></div>
   <div class="ax ax-dim" style="font-size:10px;margin-top:4px">NARRATIVE DETECTION ◈ TREND ANALYSIS</div>
-  <p>Scans global news sources in real-time to detect emerging crypto narratives (AI agents, memecoins, RWA, DePIN, regulation, etc.). Agent 51 classifies each by adoption phase.</p>
+  <p>Real-time chain dominance radar. Tracks which blockchains are heating up based on DexScreener boost activity, trending tokens, and market flow. Shows hot Solana tokens and Agent 51 market sentiment analysis.</p>
 </div>
 <div class="tv-b" id="sigB"></div></div>
 
@@ -1219,19 +1219,21 @@ async function loadSignal(){
     if(r.ok){const data=await r.json();
       if(data.narratives&&data.narratives.length>0){
         s.innerHTML='';
-        // Source indicator
-        const src=data.gdelt_status==='ok'?'GDELT + DexScreener':'DexScreener (GDELT offline)';
-        s.innerHTML+=`<div style="font:11px 'VT323';color:var(--dim);margin-bottom:6px">SOURCE: ${src} · ${data.total_articles||0} articles scanned</div>`;
-        const colors=['var(--g)','var(--cy)','var(--am)','var(--pu)','var(--red)','var(--g2)'];
+        s.innerHTML+=`<div style="font:11px 'VT323';color:var(--dim);margin-bottom:6px">SOURCE: DexScreener · ${data.total_tracked||0} tokens tracked</div>`;
+        const colors=['var(--g)','var(--cy)','var(--am)','var(--pu)','var(--red)','var(--g2)','var(--w)','var(--am)'];
         data.narratives.forEach((n,i)=>{
           const c=colors[i%colors.length];
-          const headlines=n.sample_headlines&&n.sample_headlines[0]&&n.sample_headlines[0]!=='Trending on DexScreener'?`<div style="font:11px 'VT323';color:var(--dim);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${n.sample_headlines[0]}</div>`:'';
-          s.innerHTML+=`<div style="padding:5px 0;border-bottom:1px solid rgba(0,255,65,.03)"><div style="display:flex;align-items:center;gap:6px"><span style="font:600 9px 'Orbitron';color:${c};width:80px">${n.name}</span><div class="hg" style="flex:1"><div class="hg-f" style="width:${Math.min(100,n.mentions*5)}%;background:${c}"></div></div><span style="font:12px 'VT323';color:var(--dim);width:24px;text-align:right">${n.mentions}</span></div>${headlines}</div>`});
+          const pct=n.pct||Math.min(100,n.mentions*3);
+          s.innerHTML+=`<div style="display:flex;align-items:center;gap:6px;padding:5px 0;border-bottom:1px solid rgba(0,255,65,.03)"><span style="font:600 9px 'Orbitron';color:${c};width:70px">${n.name}</span><div class="hg" style="flex:1"><div class="hg-f" style="width:${pct}%;background:${c}"></div></div><span style="font:12px 'VT323';color:var(--w);width:28px;text-align:right">${n.mentions}</span><span style="font:11px 'VT323';color:var(--dim);width:28px;text-align:right">${pct}%</span></div>`});
+        // Hot tokens
+        if(data.hot_tokens&&data.hot_tokens.length>0){
+          s.innerHTML+=`<div style="font:10px 'Silkscreen';color:var(--am);letter-spacing:2px;margin-top:8px;margin-bottom:4px">HOT ON SOLANA</div>`;
+          data.hot_tokens.forEach(t=>{
+            s.innerHTML+=`<div style="display:flex;gap:6px;padding:3px 0;font:13px 'VT323'"><span style="color:var(--dim)">${t.address}</span><span style="color:var(--t);flex:1">${t.description}</span></div>`})}
         if(data.ai_analysis)s.innerHTML+=`<div class="ai" style="margin-top:6px"><div class="ai-l">AGENT 51</div>${data.ai_analysis}</div>`;
         return}}
   }catch(e){console.log('Signal fallback:',e)}
-  // Mock fallback
-  [{n:'AI AGENTS',c:'var(--g)',p:68},{n:'BITCOIN',c:'var(--cy)',p:55},{n:'MEMECOINS',c:'var(--am)',p:82},{n:'REGULATION',c:'var(--pu)',p:15},{n:'DEFI',c:'var(--red)',p:42}].forEach(n=>{s.innerHTML+=`<div style="display:flex;align-items:center;gap:6px;padding:5px 0;border-bottom:1px solid rgba(0,255,65,.03)"><span style="font:600 9px 'Orbitron';color:${n.c};width:80px">${n.n}</span><div class="hg" style="flex:1"><div class="hg-f" style="width:${n.p}%;background:${n.c}"></div></div><span style="font:12px 'VT323';color:var(--dim);width:24px;text-align:right">${n.p}%</span></div>`});
+  [{n:'SOLANA',c:'var(--g)',p:80},{n:'ETHEREUM',c:'var(--cy)',p:35},{n:'BASE',c:'var(--am)',p:25},{n:'BSC',c:'var(--pu)',p:10},{n:'ARBITRUM',c:'var(--red)',p:5}].forEach(n=>{s.innerHTML+=`<div style="display:flex;align-items:center;gap:6px;padding:5px 0;border-bottom:1px solid rgba(0,255,65,.03)"><span style="font:600 9px 'Orbitron';color:${n.c};width:70px">${n.n}</span><div class="hg" style="flex:1"><div class="hg-f" style="width:${n.p}%;background:${n.c}"></div></div><span style="font:12px 'VT323';color:var(--dim);width:28px;text-align:right">${n.p}%</span></div>`});
 }
 setTimeout(loadSignal,100);
 
@@ -1315,4 +1317,3 @@ document.querySelectorAll('.red').forEach(el=>{el.addEventListener('mouseenter',
 </script>
 </body>
 </html>
-
