@@ -1032,11 +1032,24 @@ function showT(id,btn){document.querySelectorAll('.tv').forEach(v=>v.classList.r
 
 // XRAY -- Real API with mock fallback
 const API='https://agov-backend.onrender.com';
+
+// Fetch with timeout (8 seconds default) — prevents hanging when backend is asleep
+async function fetchT(url,opts={},ms=8000){
+  const c=new AbortController();const t=setTimeout(()=>c.abort(),ms);
+  try{const r=await fetch(url,{...opts,signal:c.signal});clearTimeout(t);return r}
+  catch(e){clearTimeout(t);throw e}
+}
+
+// Silent wake-up ping — starts backend boot immediately so tools load faster
+fetch(API+'/api/health').catch(()=>{});
+// Retry all feeds 20s after page load (backend should be awake by then)
+setTimeout(()=>{loadProbe();loadMothership();initG();loadAutopsy();loadSignal()},20000);
+
 const mocks=[{score:84,mint_authority:'REVOKED',freeze_authority:'REVOKED',lp_status:'BURNED',bundle_detected:'NO',dev_sold:'NO',holders:347,top_holder_pct:'4.2%',risk_level:'LOW',ai_analysis:'All checks pass. Mint/freeze revoked. LP burned. 347 holders. Station 51: LOW RISK.'},{score:31,mint_authority:'ACTIVE',freeze_authority:'REVOKED',lp_status:'UNLOCKED',bundle_detected:'YES(3)',dev_sold:'YES(42%)',holders:28,top_holder_pct:'23.1%',risk_level:'CRITICAL',ai_analysis:'Mint ACTIVE. LP unlocked. Bundled. Dev dumped 42%. Station 51: RUG 89%.'},{score:62,mint_authority:'REVOKED',freeze_authority:'ACTIVE',lp_status:'BURNED',bundle_detected:'NO',dev_sold:'NO',holders:143,top_holder_pct:'8.7%',risk_level:'MEDIUM',ai_analysis:'Freeze active. LP burned. Station 51: CAUTION.'}];
 
 async function realScan(address){
   try{
-    const r=await fetch(API+'/api/xray/scan',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({address})});
+    const r=await fetchT(API+'/api/xray/scan',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({address})},15000);
     if(r.ok)return await r.json();
   }catch(e){console.log('API fallback:',e)}
   return null;
@@ -1099,7 +1112,7 @@ let pc=0,pt=0;
 async function loadProbe(){
   const f=document.getElementById('pFeed');if(!f)return;
   try{
-    const r=await fetch(API+'/api/probe/feed');
+    const r=await fetchT(API+'/api/probe/feed');
     if(r.ok){const data=await r.json();
       if(data.tokens&&data.tokens.length>0){
         f.innerHTML='';
@@ -1126,7 +1139,7 @@ setTimeout(loadProbe,4000);setInterval(loadProbe,30000);
 async function loadMothership(){
   const f=document.getElementById('wFeed');if(!f)return;
   try{
-    const r=await fetch(API+'/api/mothership/feed');
+    const r=await fetchT(API+'/api/mothership/feed');
     if(r.ok){const data=await r.json();
       if(data.movements&&data.movements.length>0){
         f.innerHTML='';
@@ -1155,7 +1168,7 @@ setTimeout(loadMothership,4500);setInterval(loadMothership,60000);
 async function initG(){
   const f=document.getElementById('gFeed');if(!f)return;
   try{
-    const r=await fetch(API+'/api/graduation/feed');
+    const r=await fetchT(API+'/api/graduation/feed');
     if(r.ok){const data=await r.json();
       if(data.tokens&&data.tokens.length>0){
         data.tokens.forEach(t=>{
@@ -1178,7 +1191,7 @@ setTimeout(initG,4000);
 async function loadAutopsy(){
   const f=document.getElementById('aFeed');if(!f)return;
   try{
-    const r=await fetch(API+'/api/autopsy/feed');
+    const r=await fetchT(API+'/api/autopsy/feed');
     if(r.ok){const data=await r.json();
       if(data.autopsies&&data.autopsies.length>0){
         f.innerHTML='';
@@ -1202,19 +1215,23 @@ setTimeout(loadAutopsy,5000);
 async function loadSignal(){
   const s=document.getElementById('sigB');if(!s)return;
   try{
-    const r=await fetch(API+'/api/signal/narratives');
+    const r=await fetchT(API+'/api/signal/narratives');
     if(r.ok){const data=await r.json();
       if(data.narratives&&data.narratives.length>0){
         s.innerHTML='';
+        // Source indicator
+        const src=data.gdelt_status==='ok'?'GDELT + DexScreener':'DexScreener (GDELT offline)';
+        s.innerHTML+=`<div style="font:11px 'VT323';color:var(--dim);margin-bottom:6px">SOURCE: ${src} · ${data.total_articles||0} articles scanned</div>`;
         const colors=['var(--g)','var(--cy)','var(--am)','var(--pu)','var(--red)','var(--g2)'];
         data.narratives.forEach((n,i)=>{
           const c=colors[i%colors.length];
-          s.innerHTML+=`<div style="display:flex;align-items:center;gap:6px;padding:5px 0;border-bottom:1px solid rgba(0,255,65,.03)"><span style="font:600 9px 'Orbitron';color:${c};width:75px">${n.name}</span><div class="hg" style="flex:1"><div class="hg-f" style="width:${Math.min(100,n.mentions*10)}%;background:${c}"></div></div><span style="font:12px 'VT323';color:var(--dim);width:24px;text-align:right">${n.mentions}</span></div>`});
+          const headlines=n.sample_headlines&&n.sample_headlines[0]&&n.sample_headlines[0]!=='Trending on DexScreener'?`<div style="font:11px 'VT323';color:var(--dim);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${n.sample_headlines[0]}</div>`:'';
+          s.innerHTML+=`<div style="padding:5px 0;border-bottom:1px solid rgba(0,255,65,.03)"><div style="display:flex;align-items:center;gap:6px"><span style="font:600 9px 'Orbitron';color:${c};width:80px">${n.name}</span><div class="hg" style="flex:1"><div class="hg-f" style="width:${Math.min(100,n.mentions*5)}%;background:${c}"></div></div><span style="font:12px 'VT323';color:var(--dim);width:24px;text-align:right">${n.mentions}</span></div>${headlines}</div>`});
         if(data.ai_analysis)s.innerHTML+=`<div class="ai" style="margin-top:6px"><div class="ai-l">AGENT 51</div>${data.ai_analysis}</div>`;
         return}}
   }catch(e){console.log('Signal fallback:',e)}
   // Mock fallback
-  [{n:'AI GAMING',c:'var(--g)',p:68},{n:'RWA',c:'var(--cy)',p:55},{n:'DEPIN',c:'var(--am)',p:82},{n:'RESTAKING',c:'var(--pu)',p:15},{n:'MEME UTILITY',c:'var(--red)',p:42}].forEach(n=>{s.innerHTML+=`<div style="display:flex;align-items:center;gap:6px;padding:5px 0;border-bottom:1px solid rgba(0,255,65,.03)"><span style="font:600 9px 'Orbitron';color:${n.c};width:75px">${n.n}</span><div class="hg" style="flex:1"><div class="hg-f" style="width:${n.p}%;background:${n.c}"></div></div><span style="font:12px 'VT323';color:var(--dim);width:24px;text-align:right">${n.p}%</span></div>`});
+  [{n:'AI AGENTS',c:'var(--g)',p:68},{n:'BITCOIN',c:'var(--cy)',p:55},{n:'MEMECOINS',c:'var(--am)',p:82},{n:'REGULATION',c:'var(--pu)',p:15},{n:'DEFI',c:'var(--red)',p:42}].forEach(n=>{s.innerHTML+=`<div style="display:flex;align-items:center;gap:6px;padding:5px 0;border-bottom:1px solid rgba(0,255,65,.03)"><span style="font:600 9px 'Orbitron';color:${n.c};width:80px">${n.n}</span><div class="hg" style="flex:1"><div class="hg-f" style="width:${n.p}%;background:${n.c}"></div></div><span style="font:12px 'VT323';color:var(--dim);width:24px;text-align:right">${n.p}%</span></div>`});
 }
 setTimeout(loadSignal,100);
 
@@ -1236,7 +1253,7 @@ async function runH(){
   showLoading(r,'DexScreener volume');
   if(addr.length>30){
     try{
-      const res=await fetch(API+'/api/hologram/analyze',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({address:addr})});
+      const res=await fetchT(API+'/api/hologram/analyze',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({address:addr})});
       if(res.ok){const d=await res.json();
         const a=d.authenticity_score||50,c=a>60?'var(--g)':a>35?'var(--am)':'var(--red)';
         r.innerHTML=`<div style="display:flex;align-items:center;gap:8px;margin:8px 0"><div class="sc-ring" style="border-color:${c}"><div class="sc-n" style="color:${c}">${a}</div><div class="sc-l">AUTH</div></div><div style="font:15px 'VT323'">${a>60?'Organic.':a>35?'Mixed.':'Artificial.'}</div></div><div class="cells" style="grid-template-columns:repeat(4,1fr)"><div class="cl"><div class="cl-l">ORGANIC</div><div class="cl-v" style="color:${c}">${d.organic_pct||a}%</div></div><div class="cl"><div class="cl-l">WASH</div><div class="cl-v v-bad">${d.wash_pct||(100-a)}%</div></div><div class="cl"><div class="cl-l">WALLETS</div><div class="cl-v" style="color:var(--w)">${d.unique_wallets||0}</div></div><div class="cl"><div class="cl-l">VOLUME</div><div class="cl-v" style="color:var(--cy)">$${Number((d.volume_24h||0).toFixed(0)).toLocaleString()}</div></div></div>${d.ai_analysis?'<div class="ai"><div class="ai-l">AGENT 51</div>'+d.ai_analysis+'</div>':''}`;
@@ -1259,7 +1276,7 @@ async function runD(){
   showLoading(r,'Helius transaction history');
   if(addr.length>30){
     try{
-      const res=await fetch(API+'/api/abduction/check',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({address:addr})});
+      const res=await fetchT(API+'/api/abduction/check',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({address:addr})});
       if(res.ok){const d=await res.json();
         const s=d.reputation_score||50,c=s>65?'var(--g)':s>35?'var(--am)':'var(--red)';
         r.innerHTML=`<div style="display:flex;align-items:center;gap:10px;margin-bottom:5px"><div class="sc-ring" style="border-color:${c}"><div class="sc-n" style="color:${c}">${s}</div><div class="sc-l">TRUST</div></div><div><div style="font:15px 'VT323';color:${c}">${addr.slice(0,8)}..${addr.slice(-4)}</div><div style="font:10px 'VT323';color:var(--dim);margin-top:2px">${s>65?'TRUSTED':s>35?'MIXED':'AVOID'}</div></div></div>${[['LAUNCHED',d.tokens_launched||0,'var(--w)'],['GRADUATED',d.tokens_graduated||0,'var(--g)'],['RUGGED',d.tokens_rugged||0,'var(--red)']].map(([a,b,co])=>`<div style="display:flex;gap:8px;padding:3px 0;border-bottom:1px solid rgba(0,255,65,.03);font:14px 'VT323'"><span style="color:var(--dim);width:56px">${a}</span><span style="color:${co}">${b}</span></div>`).join('')}<div class="ai" style="margin-top:6px"><div class="ai-l">AGENT 51</div>${d.ai_analysis||'Analysis unavailable.'}</div>`;
@@ -1283,7 +1300,7 @@ async function runPL(){
   showLoading(r,'Helius swap history');
   if(addr.length>30){
     try{
-      const res=await fetch(API+'/api/debriefing/report',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({wallet:addr})});
+      const res=await fetchT(API+'/api/debriefing/report',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({wallet:addr})});
       if(res.ok){const d=await res.json();
         r.innerHTML=`<div class="cells" style="grid-template-columns:repeat(3,1fr);margin-top:6px"><div class="cl" style="text-align:center;padding:10px"><div style="font:700 14px 'Orbitron';color:var(--w)">${d.total_trades||0}</div><div class="cl-l" style="margin-top:3px">TRADES</div></div><div class="cl" style="text-align:center;padding:10px"><div style="font:700 14px 'Orbitron';color:var(--w)">${d.recent_trades?.length||0}</div><div class="cl-l" style="margin-top:3px">RECENT</div></div><div class="cl" style="text-align:center;padding:10px"><div style="font:700 14px 'Orbitron';color:var(--cy)">SWAP</div><div class="cl-l" style="margin-top:3px">TYPE</div></div></div>${d.ai_analysis?'<div class="ai"><div class="ai-l">AGENT 51</div>'+d.ai_analysis+'</div>':''}`;
         if(btn){btn.disabled=false;btn.textContent='REPORT';}return}
@@ -1298,3 +1315,4 @@ document.querySelectorAll('.red').forEach(el=>{el.addEventListener('mouseenter',
 </script>
 </body>
 </html>
+
