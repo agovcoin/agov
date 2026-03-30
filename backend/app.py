@@ -665,34 +665,33 @@ def signal_narratives():
     narratives = []
     all_titles = []
 
-    # GDELT news API (free, no key) -- secondary source
+    # GDELT news API (free, no key) -- SINGLE query to avoid rate limit (429)
     gdelt_errors = []
-    gdelt_queries = ["cryptocurrency", "solana", "bitcoin", "memecoin", "blockchain"]
-    for q in gdelt_queries:
-        try:
-            gd = requests.get(
-                f"https://api.gdeltproject.org/api/v2/doc/doc?query={q}&mode=artlist&maxrecords=25&format=json&sort=datedesc",
-                timeout=8
-            )
-            if gd.status_code == 200:
-                # Check if response is actually JSON (GDELT sometimes returns HTML)
-                content_type = gd.headers.get("content-type", "")
-                if "json" in content_type:
-                    try:
-                        data = gd.json()
-                        articles = data.get("articles", [])
-                        for a in articles:
-                            title = a.get("title", "")
-                            if title and len(title) > 10:
-                                all_titles.append(title)
-                    except Exception as e:
-                        gdelt_errors.append(f"{q}:parse:{str(e)[:20]}")
-                else:
-                    gdelt_errors.append(f"{q}:not_json:{content_type[:30]}")
+    try:
+        gd = requests.get(
+            "https://api.gdeltproject.org/api/v2/doc/doc?query=cryptocurrency%20OR%20solana%20OR%20bitcoin%20OR%20memecoin%20OR%20blockchain&mode=artlist&maxrecords=75&format=json&sort=datedesc",
+            timeout=10
+        )
+        if gd.status_code == 200:
+            content_type = gd.headers.get("content-type", "")
+            if "json" in content_type:
+                try:
+                    data = gd.json()
+                    articles = data.get("articles", [])
+                    for a in articles:
+                        title = a.get("title", "")
+                        if title and len(title) > 10:
+                            all_titles.append(title)
+                except Exception as e:
+                    gdelt_errors.append(f"parse:{str(e)[:30]}")
             else:
-                gdelt_errors.append(f"{q}:http_{gd.status_code}")
-        except Exception as e:
-            gdelt_errors.append(f"{q}:{str(e)[:30]}")
+                gdelt_errors.append(f"not_json:{content_type[:30]}")
+        elif gd.status_code == 429:
+            gdelt_errors.append("rate_limited")
+        else:
+            gdelt_errors.append(f"http_{gd.status_code}")
+    except Exception as e:
+        gdelt_errors.append(f"error:{str(e)[:30]}")
 
     # DexScreener trending -- PRIMARY source (always works)
     dx_narratives = []
