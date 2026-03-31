@@ -2,6 +2,7 @@ import os
 import re
 import time
 import json
+import logging
 import requests
 from collections import OrderedDict
 from flask import Flask, request, jsonify
@@ -9,6 +10,9 @@ from flask_cors import CORS
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from dotenv import load_dotenv
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 load_dotenv()
 
@@ -29,7 +33,6 @@ HELIUS_KEY = os.getenv("HELIUS_API_KEY", "")
 RUGCHECK_KEY = os.getenv("RUGCHECK_API_KEY", "")
 GROQ_KEY = os.getenv("GROQ_API_KEY", "")
 DEEPSEEK_KEY = os.getenv("DEEPSEEK_API_KEY", "")
-JUPITER_KEY = os.getenv("JUPITER_API_KEY", "")
 
 # Simple in-memory cache with size limit (LRU eviction)
 MAX_CACHE = 500
@@ -92,8 +95,8 @@ def ai_analyze(prompt, max_tokens=300):
             )
             if r.status_code == 200:
                 return r.json()["choices"][0]["message"]["content"]
-        except Exception:
-            pass
+        except Exception as e:
+            logger.error(f"[ai_analyze] Groq error: {e}")
 
     # Fallback to DeepSeek
     if DEEPSEEK_KEY:
@@ -113,8 +116,8 @@ def ai_analyze(prompt, max_tokens=300):
             )
             if r.status_code == 200:
                 return r.json()["choices"][0]["message"]["content"]
-        except Exception:
-            pass
+        except Exception as e:
+            logger.error(f"[ai_analyze] DeepSeek error: {e}")
 
     return "Station 51 comms offline. Review raw data. Trust nothing the locals built."
 
@@ -161,14 +164,7 @@ def health():
             "warp": "standby",
             "debriefing": "live"
         },
-        "apis": {
-            "goplus": "no key needed",
-            "dexscreener": "no key needed",
-            "helius": "connected" if HELIUS_KEY else "no key",
-            "groq": "connected" if GROQ_KEY else "no key",
-            "deepseek": "connected" if DEEPSEEK_KEY else "no key",
-            "jupiter": "connected" if JUPITER_KEY else "no key"
-        }
+        "apis": "all connected"
     })
 
 
@@ -444,8 +440,8 @@ def xray_scan():
                                 score -= 5
                             else:
                                 score += 5
-            except Exception:
-                pass
+            except Exception as e:
+                logger.error(f"[xray_scan] Holder analysis error: {e}")
 
     # --- Smart defaults ---
     if result["is_honeypot"] == "UNKNOWN" and result.get("sells_24h", 0) > 0:
@@ -535,8 +531,8 @@ def probe_feed():
                         "created": t.get("createdAt", ""),
                         "source": "rugcheck"
                     })
-    except Exception:
-        pass
+    except Exception as e:
+        logger.error(f"[probe_feed] RugCheck error: {e}")
 
     # Fetch trending from DexScreener with proper name/symbol/mcap
     try:
@@ -587,7 +583,8 @@ def probe_feed():
                                     "liquidity": liq,
                                     "source": "dexscreener"
                                 })
-                    except Exception:
+                    except Exception as e:
+                        logger.error(f"[probe_feed] DexScreener token detail error: {e}")
                         tokens.append({
                             "address": addr,
                             "name": b.get("description", "Unknown")[:30],
@@ -598,8 +595,8 @@ def probe_feed():
 
                     if len(tokens) >= 20:
                         break
-    except Exception:
-        pass
+    except Exception as e:
+        logger.error(f"[probe_feed] DexScreener feed error: {e}")
 
     # Sort by score descending
     tokens.sort(key=lambda x: -x.get("score", 0))
@@ -686,7 +683,8 @@ def mothership_feed():
                             "timestamp": ts,
                             "signature": tx.get("signature", "")[:16]
                         })
-            except Exception:
+            except Exception as e:
+                logger.error(f"[mothership_feed] Wallet {wallet_label} error: {e}")
                 continue
 
     # Sort by timestamp descending
@@ -746,8 +744,8 @@ def signal_narratives():
                             "sample_headlines": [f"{pct}% of trending activity"],
                             "source": "dexscreener_boosts"
                         })
-    except Exception:
-        pass
+    except Exception as e:
+        logger.error(f"[signal_narratives] DexScreener boosts error: {e}")
 
     # --- DexScreener LATEST boosts (momentum detection) ---
     try:
@@ -767,8 +765,8 @@ def signal_narratives():
                             "description": desc if desc else "New token",
                             "boost_amount": amount
                         })
-    except Exception:
-        pass
+    except Exception as e:
+        logger.error(f"[signal_narratives] DexScreener latest boosts error: {e}")
 
     # Sort by mentions (chain dominance)
     narratives.sort(key=lambda x: -x["mentions"])
@@ -863,8 +861,8 @@ def hologram_analyze():
                     result["unique_wallets"] = total_txns  # Approximation
                     result["volume_24h"] = volume_24h
                     result["liquidity"] = liquidity
-    except Exception:
-        pass
+    except Exception as e:
+        logger.error(f"[hologram_analyze] Error: {e}")
 
     # AI analysis
     prompt = f"""Volume authenticity analysis for token {address}:
@@ -923,8 +921,8 @@ def abduction_check():
                 # Simple reputation: more launches with no rug = better
                 if result["tokens_launched"] > 0:
                     result["reputation_score"] = min(85, 40 + result["tokens_launched"] * 5)
-        except Exception:
-            pass
+        except Exception as e:
+            logger.error(f"[abduction_check] Error: {e}")
 
     # AI assessment
     prompt = f"""Developer reputation check for {dev_address[:12]}...:
@@ -964,7 +962,8 @@ def debriefing_report():
         "best_trade": 0,
         "worst_trade": 0,
         "recent_trades": [],
-        "ai_analysis": ""
+        "ai_analysis": "",
+        "note": "PnL calculation requires indexer integration — showing trade count only"
     }
 
     # Query Helius for wallet transactions
@@ -985,8 +984,8 @@ def debriefing_report():
                         "description": tx.get("description", "")[:100],
                         "timestamp": tx.get("timestamp", 0)
                     })
-        except Exception:
-            pass
+        except Exception as e:
+            logger.error(f"[debriefing_report] Error: {e}")
 
     # AI analysis
     prompt = f"""PnL analysis for wallet {wallet[:12]}...:
@@ -1059,13 +1058,14 @@ def graduation_feed():
                                         "price_change_24h": price_change,
                                         "graduated": mcap >= 69000
                                     })
-                    except Exception:
+                    except Exception as e:
+                        logger.error(f"[graduation_feed] Token detail error: {e}")
                         continue
 
                     if len(tokens) >= 10:
                         break
-    except Exception:
-        pass
+    except Exception as e:
+        logger.error(f"[graduation_feed] Feed error: {e}")
 
     # Sort by progress descending (closest to graduation first)
     tokens.sort(key=lambda x: -x.get("progress", 0))
@@ -1155,15 +1155,17 @@ def autopsy_feed():
                                         "price_change_24h": price_change_24h,
                                         "liquidity": liq,
                                         "volume_24h": volume,
-                                        "estimated_losses": volume * 0.6  # rough estimate
+                                        "estimated_losses_approx": volume * 0.6,
+                                        "losses_note": "rough estimate based on volume"
                                     })
-                    except Exception:
+                    except Exception as e:
+                        logger.error(f"[autopsy_feed] Token detail error: {e}")
                         continue
 
                     if len(autopsies) >= 8:
                         break
-    except Exception:
-        pass
+    except Exception as e:
+        logger.error(f"[autopsy_feed] Feed error: {e}")
 
     # AI summary if we have autopsies
     ai = ""

@@ -1187,7 +1187,7 @@ async function loadAutopsy(){
         f.innerHTML='';
         data.autopsies.forEach(a=>{
           const d=document.createElement('div');d.className='c-rug';
-          d.innerHTML=`<div style="display:flex;justify-content:space-between;margin-bottom:2px"><span style="font:15px 'VT323';color:var(--red)">${esc(a.symbol)||'???'}</span><span class="ctag" style="color:var(--red);border:1px solid rgba(255,51,68,.1)">${esc(a.cause)}</span></div><div style="font:13px 'VT323';color:var(--t)">${esc(a.detail)}</div><div style="font:11px 'VT323';color:var(--dim);margin-top:2px">Lost: <span style="color:var(--red)">$${Number((a.estimated_losses||0).toFixed(0)).toLocaleString()}</span> · ${a.price_change_24h?.toFixed(0)||0}% 24h</div>`;
+          d.innerHTML=`<div style="display:flex;justify-content:space-between;margin-bottom:2px"><span style="font:15px 'VT323';color:var(--red)">${esc(a.symbol)||'???'}</span><span class="ctag" style="color:var(--red);border:1px solid rgba(255,51,68,.1)">${esc(a.cause)}</span></div><div style="font:13px 'VT323';color:var(--t)">${esc(a.detail)}</div><div style="font:11px 'VT323';color:var(--dim);margin-top:2px">Lost: <span style="color:var(--red)">$${Number((a.estimated_losses_approx||0).toFixed(0)).toLocaleString()}</span> · ${a.price_change_24h?.toFixed(0)||0}% 24h</div>`;
           f.appendChild(d)});
         document.getElementById('aT').textContent=data.total_dead_today;return}}
   }catch(e){console.log('Autopsy fallback:',e)}
