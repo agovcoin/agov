@@ -390,7 +390,7 @@ details div{padding:9px 11px;font:14px/1.6 'VT323';color:var(--dim)}
 <!-- ALIEN TICKER -->
 <div class="alien-ticker">
 <div class="alien-ticker-inner ax ax-mid" style="font-size:13px;letter-spacing:6px">
-SYSTEM ONLINE ◈ STATION 51 OPERATIONAL ◈ SIGNAL PROBE FEED ◈ 9 TOOLS ONLINE ◈ WARP DRIVE STANDBY ◈ WARP DRIVE STANDBY ◈ ARINS.STV E 404 ◈ aliens.gov: 404 ◈ VHITE HTISE: STAN TINED ◈ WHITE HOUSE: STAY TUNED ◈ SYSTEM ONLINE ◈
+SYSTEM ONLINE ◈ STATION 51 OPERATIONAL ◈ SIGNAL PROBE FEED ◈ 10 TOOLS ONLINE ◈ WARP DRIVE STANDBY ◈ WARP DRIVE STANDBY ◈ ARINS.STV E 404 ◈ aliens.gov: 404 ◈ VHITE HTISE: STAN TINED ◈ WHITE HOUSE: STAY TUNED ◈ SYSTEM ONLINE ◈
 </div>
 </div>
 
@@ -398,7 +398,7 @@ SYSTEM ONLINE ◈ STATION 51 OPERATIONAL ◈ SIGNAL PROBE FEED ◈ 9 TOOLS ONLIN
 <div class="strip">
 <div class="s-i"><div class="dot dot-g"></div> 10 TOOLS</div>
 <div class="s-i"><div class="dot dot-g"></div> PUMP.FUN SYNC</div>
-<div class="s-i"><div class="dot" style="background:var(--am);box-shadow:0 0 4px var(--am)"></div> <span id="sG">0</span> NEAR GRAD</div>
+<div class="s-i"><div class="dot" style="background:var(--am);box-shadow:0 0 4px var(--am)"></div> <span id="sG2">0</span> NEAR GRAD</div>
 <div class="s-i"><div class="dot" style="background:var(--am);box-shadow:0 0 4px var(--am)"></div> WARP: STANDBY</div>
 <div class="s-i"><div class="dot" style="background:var(--red);box-shadow:0 0 4px var(--red);animation:pulse 2s infinite"></div> aliens.gov: 404</div>
 </div>
@@ -963,6 +963,7 @@ SYSTEM ONLINE ◈ STATION 51 OPERATIONAL ◈ SIGNAL PROBE FEED ◈ 9 TOOLS ONLIN
   function mkStar(){return{x:Math.random()*W,y:Math.random()*H,r:Math.random()*.8+.1,a:Math.random()*.18+.02,da:(Math.random()-.5)*.003,drift:Math.random()*.15-.075}}
   function init(){resize();stars=[];for(let i=0;i<280;i++)stars.push(mkStar())}
   function draw(){
+    if(document.hidden)return requestAnimationFrame(draw);
     ctx.clearRect(0,0,W,H);
     stars.forEach(s=>{
       s.a+=s.da;if(s.a<=0.01||s.a>=0.25)s.da*=-1;

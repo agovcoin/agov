@@ -34,10 +34,14 @@ RUGCHECK_KEY = os.getenv("RUGCHECK_API_KEY", "")
 GROQ_KEY = os.getenv("GROQ_API_KEY", "")
 DEEPSEEK_KEY = os.getenv("DEEPSEEK_API_KEY", "")
 
-# Simple in-memory cache with size limit (LRU eviction)
-MAX_CACHE = 500
-_cache = OrderedDict()
+# Thresholds and constants
+GRADUATION_THRESHOLD = 69000  # Pump.fun graduation mcap in USD
+INITIAL_SCORE = 50  # Starting safety score for xray scan
 CACHE_TTL = 300  # 5 minutes
+MAX_CACHE = 500  # Max cache entries before LRU eviction
+
+# Simple in-memory cache with size limit (LRU eviction)
+_cache = OrderedDict()
 
 
 def cache_get(key):
@@ -231,7 +235,7 @@ def xray_scan():
         "sources": []
     }
 
-    score = 50  # Start neutral
+    score = INITIAL_SCORE  # Start neutral
 
     # --- DexScreener (works for ALL chains) ---
     try:
@@ -566,7 +570,7 @@ def probe_feed():
                                 sells = int(txns.get("sells", 0) or 0)
 
                                 # Quick score based on liquidity + sells existence
-                                quick_score = 50
+                                quick_score = INITIAL_SCORE
                                 if liq > 10000: quick_score += 15
                                 elif liq > 1000: quick_score += 5
                                 else: quick_score -= 15
@@ -1047,7 +1051,7 @@ def graduation_feed():
                                 # Graduation threshold is ~$69K mcap
                                 # Show tokens between $20K and $80K
                                 if 20000 < mcap < 80000:
-                                    progress = min(100, (mcap / 69000) * 100)
+                                    progress = min(100, (mcap / GRADUATION_THRESHOLD) * 100)
                                     tokens.append({
                                         "address": addr,
                                         "name": name,
@@ -1056,7 +1060,7 @@ def graduation_feed():
                                         "liquidity": liq,
                                         "progress": round(progress, 1),
                                         "price_change_24h": price_change,
-                                        "graduated": mcap >= 69000
+                                        "graduated": mcap >= GRADUATION_THRESHOLD
                                     })
                     except Exception as e:
                         logger.error(f"[graduation_feed] Token detail error: {e}")
