@@ -5,6 +5,7 @@ import json
 import logging
 import requests
 from collections import OrderedDict
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from flask_limiter import Limiter
@@ -54,6 +55,34 @@ def cache_set(key, data):
     _cache[key] = {"data": data, "ts": time.time()}
     if len(_cache) > MAX_CACHE:
         _cache.popitem(last=False)
+
+
+# ============================================================
+# PARALLEL FETCH HELPER
+# ============================================================
+def fetch_token_details(addr, timeout=5):
+    """Fetch token pair data from DexScreener for a single address."""
+    r = requests.get(f"https://api.dexscreener.com/tokens/v1/solana/{addr}", timeout=timeout)
+    if r.status_code == 200:
+        pairs = r.json()
+        if isinstance(pairs, list) and pairs:
+            return pairs[0]
+    return None
+
+
+def fetch_tokens_parallel(addresses, timeout=5, max_workers=5):
+    """Fetch token details for multiple addresses in parallel."""
+    results = {}
+    with ThreadPoolExecutor(max_workers=max_workers) as executor:
+        futures = {executor.submit(fetch_token_details, addr, timeout): addr for addr in addresses}
+        for future in as_completed(futures, timeout=30):
+            addr = futures[future]
+            try:
+                results[addr] = future.result()
+            except Exception as e:
+                logger.error(f"[parallel_fetch] Error fetching {addr[:12]}: {e}")
+                results[addr] = None
+    return results
 
 
 # ============================================================
@@ -538,7 +567,7 @@ def probe_feed():
     except Exception as e:
         logger.error(f"[probe_feed] RugCheck error: {e}")
 
-    # Fetch trending from DexScreener with proper name/symbol/mcap
+    # Fetch trending from DexScreener with proper name/symbol/mcap (parallel)
     try:
         dx = requests.get(
             "https://api.dexscreener.com/token-boosts/latest/v1",
@@ -547,6 +576,8 @@ def probe_feed():
         if dx.status_code == 200:
             boosts = dx.json()
             if isinstance(boosts, list):
+                # Collect addresses to fetch in parallel
+                boost_map = {}
                 for b in boosts[:15]:
                     if b.get("chainId") != "solana":
                         continue
@@ -554,41 +585,40 @@ def probe_feed():
                     if not addr or addr in seen:
                         continue
                     seen.add(addr)
-                    # Get token details from DexScreener pairs
-                    try:
-                        pd = requests.get(f"https://api.dexscreener.com/tokens/v1/solana/{addr}", timeout=5)
-                        if pd.status_code == 200:
-                            pairs = pd.json()
-                            if isinstance(pairs, list) and pairs:
-                                pair = pairs[0]
-                                name = pair.get("baseToken", {}).get("name", "Unknown")
-                                symbol = pair.get("baseToken", {}).get("symbol", "???")
-                                mcap = float(pair.get("marketCap", 0) or pair.get("fdv", 0) or 0)
-                                liq = float(pair.get("liquidity", {}).get("usd", 0) or 0)
-                                txns = pair.get("txns", {}).get("h24", {})
-                                buys = int(txns.get("buys", 0) or 0)
-                                sells = int(txns.get("sells", 0) or 0)
+                    boost_map[addr] = b
 
-                                # Quick score based on liquidity + sells existence
-                                quick_score = INITIAL_SCORE
-                                if liq > 10000: quick_score += 15
-                                elif liq > 1000: quick_score += 5
-                                else: quick_score -= 15
-                                if sells > 5: quick_score += 10  # not honeypot
-                                elif sells == 0 and buys > 10: quick_score -= 20
-                                if buys + sells > 50: quick_score += 10
+                # Fetch all token details in parallel
+                pair_results = fetch_tokens_parallel(list(boost_map.keys()), timeout=5, max_workers=5)
 
-                                tokens.append({
-                                    "address": addr,
-                                    "name": name,
-                                    "symbol": symbol,
-                                    "score": max(0, min(100, quick_score)),
-                                    "mcap": mcap,
-                                    "liquidity": liq,
-                                    "source": "dexscreener"
-                                })
-                    except Exception as e:
-                        logger.error(f"[probe_feed] DexScreener token detail error: {e}")
+                for addr, pair in pair_results.items():
+                    if pair:
+                        name = pair.get("baseToken", {}).get("name", "Unknown")
+                        symbol = pair.get("baseToken", {}).get("symbol", "???")
+                        mcap = float(pair.get("marketCap", 0) or pair.get("fdv", 0) or 0)
+                        liq = float(pair.get("liquidity", {}).get("usd", 0) or 0)
+                        txns = pair.get("txns", {}).get("h24", {})
+                        buys = int(txns.get("buys", 0) or 0)
+                        sells = int(txns.get("sells", 0) or 0)
+
+                        quick_score = INITIAL_SCORE
+                        if liq > 10000: quick_score += 15
+                        elif liq > 1000: quick_score += 5
+                        else: quick_score -= 15
+                        if sells > 5: quick_score += 10
+                        elif sells == 0 and buys > 10: quick_score -= 20
+                        if buys + sells > 50: quick_score += 10
+
+                        tokens.append({
+                            "address": addr,
+                            "name": name,
+                            "symbol": symbol,
+                            "score": max(0, min(100, quick_score)),
+                            "mcap": mcap,
+                            "liquidity": liq,
+                            "source": "dexscreener"
+                        })
+                    else:
+                        b = boost_map[addr]
                         tokens.append({
                             "address": addr,
                             "name": b.get("description", "Unknown")[:30],
@@ -1016,9 +1046,8 @@ def graduation_feed():
 
     tokens = []
 
-    # Use DexScreener to find Solana tokens with mcap near graduation
+    # Use DexScreener to find Solana tokens with mcap near graduation (parallel)
     try:
-        # Search for pump.fun tokens with meaningful volume
         dx = requests.get(
             "https://api.dexscreener.com/token-boosts/top/v1",
             timeout=10
@@ -1026,46 +1055,41 @@ def graduation_feed():
         if dx.status_code == 200:
             boosts = dx.json()
             if isinstance(boosts, list):
+                # Collect Solana addresses
+                addresses = []
                 for b in boosts:
                     if b.get("chainId") != "solana":
                         continue
                     addr = b.get("tokenAddress", "")
-                    if not addr:
-                        continue
-                    # Get pair data for this token
-                    try:
-                        pd = requests.get(
-                            f"https://api.dexscreener.com/tokens/v1/solana/{addr}",
-                            timeout=8
-                        )
-                        if pd.status_code == 200:
-                            pairs = pd.json()
-                            if isinstance(pairs, list) and pairs:
-                                pair = pairs[0]
-                                mcap = float(pair.get("marketCap", 0) or pair.get("fdv", 0) or 0)
-                                liq = float(pair.get("liquidity", {}).get("usd", 0) or 0)
-                                name = pair.get("baseToken", {}).get("name", "Unknown")
-                                symbol = pair.get("baseToken", {}).get("symbol", "???")
-                                price_change = float(pair.get("priceChange", {}).get("h24", 0) or 0)
+                    if addr:
+                        addresses.append(addr)
+                    if len(addresses) >= 15:
+                        break
 
-                                # Graduation threshold is ~$69K mcap
-                                # Show tokens between $20K and $80K
-                                if 20000 < mcap < 80000:
-                                    progress = min(100, (mcap / GRADUATION_THRESHOLD) * 100)
-                                    tokens.append({
-                                        "address": addr,
-                                        "name": name,
-                                        "symbol": symbol,
-                                        "mcap": mcap,
-                                        "liquidity": liq,
-                                        "progress": round(progress, 1),
-                                        "price_change_24h": price_change,
-                                        "graduated": mcap >= GRADUATION_THRESHOLD
-                                    })
-                    except Exception as e:
-                        logger.error(f"[graduation_feed] Token detail error: {e}")
-                        continue
+                # Fetch all in parallel
+                pair_results = fetch_tokens_parallel(addresses, timeout=8, max_workers=5)
 
+                for addr, pair in pair_results.items():
+                    if not pair:
+                        continue
+                    mcap = float(pair.get("marketCap", 0) or pair.get("fdv", 0) or 0)
+                    liq = float(pair.get("liquidity", {}).get("usd", 0) or 0)
+                    name = pair.get("baseToken", {}).get("name", "Unknown")
+                    symbol = pair.get("baseToken", {}).get("symbol", "???")
+                    price_change = float(pair.get("priceChange", {}).get("h24", 0) or 0)
+
+                    if 20000 < mcap < 80000:
+                        progress = min(100, (mcap / GRADUATION_THRESHOLD) * 100)
+                        tokens.append({
+                            "address": addr,
+                            "name": name,
+                            "symbol": symbol,
+                            "mcap": mcap,
+                            "liquidity": liq,
+                            "progress": round(progress, 1),
+                            "price_change_24h": price_change,
+                            "graduated": mcap >= GRADUATION_THRESHOLD
+                        })
                     if len(tokens) >= 10:
                         break
     except Exception as e:
@@ -1096,9 +1120,8 @@ def autopsy_feed():
 
     autopsies = []
 
-    # Use DexScreener to find tokens with massive price drops
+    # Use DexScreener to find tokens with massive price drops (parallel)
     try:
-        # Get recently boosted tokens and check for crashes
         dx = requests.get(
             "https://api.dexscreener.com/token-boosts/latest/v1",
             timeout=10
@@ -1106,66 +1129,63 @@ def autopsy_feed():
         if dx.status_code == 200:
             boosts = dx.json()
             if isinstance(boosts, list):
+                # Collect Solana addresses
+                addresses = []
                 for b in boosts:
                     if b.get("chainId") != "solana":
                         continue
                     addr = b.get("tokenAddress", "")
-                    if not addr:
+                    if addr:
+                        addresses.append(addr)
+                    if len(addresses) >= 15:
+                        break
+
+                # Fetch all in parallel
+                pair_results = fetch_tokens_parallel(addresses, timeout=8, max_workers=5)
+
+                for addr, pair in pair_results.items():
+                    if not pair:
                         continue
-                    try:
-                        pd = requests.get(
-                            f"https://api.dexscreener.com/tokens/v1/solana/{addr}",
-                            timeout=8
-                        )
-                        if pd.status_code == 200:
-                            pairs = pd.json()
-                            if isinstance(pairs, list) and pairs:
-                                pair = pairs[0]
-                                price_change_24h = float(pair.get("priceChange", {}).get("h24", 0) or 0)
-                                price_change_1h = float(pair.get("priceChange", {}).get("h1", 0) or 0)
-                                liq = float(pair.get("liquidity", {}).get("usd", 0) or 0)
-                                volume = float(pair.get("volume", {}).get("h24", 0) or 0)
-                                name = pair.get("baseToken", {}).get("name", "Unknown")
-                                symbol = pair.get("baseToken", {}).get("symbol", "???")
-                                txns = pair.get("txns", {}).get("h24", {})
-                                buys = int(txns.get("buys", 0) or 0)
-                                sells = int(txns.get("sells", 0) or 0)
+                    price_change_24h = float(pair.get("priceChange", {}).get("h24", 0) or 0)
+                    price_change_1h = float(pair.get("priceChange", {}).get("h1", 0) or 0)
+                    liq = float(pair.get("liquidity", {}).get("usd", 0) or 0)
+                    volume = float(pair.get("volume", {}).get("h24", 0) or 0)
+                    name = pair.get("baseToken", {}).get("name", "Unknown")
+                    symbol = pair.get("baseToken", {}).get("symbol", "???")
+                    txns = pair.get("txns", {}).get("h24", {})
+                    buys = int(txns.get("buys", 0) or 0)
+                    sells = int(txns.get("sells", 0) or 0)
 
-                                # Dead token criteria: >70% drop in 24h or near-zero liquidity
-                                if price_change_24h < -70 or (liq < 500 and volume > 1000):
-                                    # Determine cause of death
-                                    if liq < 100:
-                                        cause = "LP REMOVED"
-                                        detail = f"Liquidity drained to ${liq:.0f}. Classic rug."
-                                    elif sells > buys * 3:
-                                        cause = "INSIDER DUMP"
-                                        detail = f"Sell/buy ratio: {sells}/{buys}. Coordinated exit."
-                                    elif price_change_1h < -50:
-                                        cause = "FLASH CRASH"
-                                        detail = f"Dropped {price_change_1h:.0f}% in 1 hour."
-                                    elif volume < 100:
-                                        cause = "ABANDONED"
-                                        detail = "Near-zero volume. Project dead."
-                                    else:
-                                        cause = "COLLAPSE"
-                                        detail = f"Down {price_change_24h:.0f}% in 24h."
+                    # Dead token criteria: >70% drop in 24h or near-zero liquidity
+                    if price_change_24h < -70 or (liq < 500 and volume > 1000):
+                        if liq < 100:
+                            cause = "LP REMOVED"
+                            detail = f"Liquidity drained to ${liq:.0f}. Classic rug."
+                        elif sells > buys * 3:
+                            cause = "INSIDER DUMP"
+                            detail = f"Sell/buy ratio: {sells}/{buys}. Coordinated exit."
+                        elif price_change_1h < -50:
+                            cause = "FLASH CRASH"
+                            detail = f"Dropped {price_change_1h:.0f}% in 1 hour."
+                        elif volume < 100:
+                            cause = "ABANDONED"
+                            detail = "Near-zero volume. Project dead."
+                        else:
+                            cause = "COLLAPSE"
+                            detail = f"Down {price_change_24h:.0f}% in 24h."
 
-                                    autopsies.append({
-                                        "address": addr,
-                                        "name": name,
-                                        "symbol": symbol,
-                                        "cause": cause,
-                                        "detail": detail,
-                                        "price_change_24h": price_change_24h,
-                                        "liquidity": liq,
-                                        "volume_24h": volume,
-                                        "estimated_losses_approx": volume * 0.6,
-                                        "losses_note": "rough estimate based on volume"
-                                    })
-                    except Exception as e:
-                        logger.error(f"[autopsy_feed] Token detail error: {e}")
-                        continue
-
+                        autopsies.append({
+                            "address": addr,
+                            "name": name,
+                            "symbol": symbol,
+                            "cause": cause,
+                            "detail": detail,
+                            "price_change_24h": price_change_24h,
+                            "liquidity": liq,
+                            "volume_24h": volume,
+                            "estimated_losses_approx": volume * 0.6,
+                            "losses_note": "rough estimate based on volume"
+                        })
                     if len(autopsies) >= 8:
                         break
     except Exception as e:

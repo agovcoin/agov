@@ -15,8 +15,6 @@ services:
         sync: false
       - key: RUGCHECK_API_KEY
         sync: false
-      - key: JUPITER_API_KEY
-        sync: false
       - key: GROQ_API_KEY
         sync: false
       - key: DEEPSEEK_API_KEY
@@ -37,6 +35,21 @@ services:
       - path: /*
         name: Cache-Control
         value: public, max-age=300
+      - path: /*
+        name: X-Content-Type-Options
+        value: nosniff
+      - path: /*
+        name: X-Frame-Options
+        value: DENY
+      - path: /*
+        name: X-XSS-Protection
+        value: 1; mode=block
+      - path: /*
+        name: Strict-Transport-Security
+        value: max-age=31536000; includeSubDomains
+      - path: /*
+        name: Content-Security-Policy
+        value: "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self' https://agov-backend.onrender.com"
 
 databases:
   - name: agov-db
