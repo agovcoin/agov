@@ -6,6 +6,7 @@ from unittest.mock import patch, MagicMock
 from collections import OrderedDict
 
 # Import app components
+import app as app_module
 from app import (
     app, validate_address, cache_get, cache_set, _cache,
     CACHE_TTL, MAX_CACHE, INITIAL_SCORE, GRADUATION_THRESHOLD,
@@ -144,6 +145,34 @@ class TestHealthEndpoint:
         data = json.loads(r.data)
         assert "xray" in data["tools"]
         assert len(data["tools"]) == 10
+
+
+# ============================================================
+# STATS ENDPOINT
+# ============================================================
+class TestStats:
+    def test_stats_returns_200(self, client):
+        r = client.get("/api/stats")
+        assert r.status_code == 200
+
+    def test_stats_returns_total_scans(self, client):
+        r = client.get("/api/stats")
+        data = json.loads(r.data)
+        assert "total_scans" in data
+        assert isinstance(data["total_scans"], int)
+
+    @patch("app.requests.get")
+    def test_scan_increments_counter(self, mock_get, client):
+        app_module._scan_count = 0
+        mock_resp = MagicMock()
+        mock_resp.status_code = 200
+        mock_resp.json.return_value = [{"baseToken": {"name": "T", "symbol": "T"}, "marketCap": 1000, "liquidity": {"usd": 500}, "volume": {"h24": 100}, "txns": {"h24": {"buys": 5, "sells": 2}}, "priceChange": {"h24": 1}}]
+        mock_get.return_value = mock_resp
+
+        client.post("/api/xray/scan", json={"address": "DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263", "chain": "solana"})
+        r = client.get("/api/stats")
+        data = json.loads(r.data)
+        assert data["total_scans"] >= 1
 
 
 # ============================================================
