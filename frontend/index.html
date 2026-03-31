@@ -338,16 +338,12 @@ details div{padding:9px 11px;font:14px/1.6 'VT323';color:var(--dim)}
 </head>
 <body>
 
-<!-- GOV -->
-<div id="gov" onclick="skip()">
-<div class="g-h"><div class="g-seal">US</div><div><h1>U.S. Department of Homeland Security</h1><p>Cybersecurity and Infrastructure Security Agency</p></div></div>
-<div class="g-b"><p style="font:15px monospace;color:#1a4480;padding:8px 20px;background:#edf2f7;border:1px solid #d0dae5;border-radius:3px;display:inline-block;margin-bottom:16px">https://aliens.gov</p><h2>404</h2><h3>Page Not Found</h3><p>The page you are looking for might have been removed, had its name changed, or is temporarily unavailable.</p><p style="font:italic 13px serif;color:#1a4480;margin-top:20px">"Stay tuned!" — White House, March 19, 2026</p></div>
-<div class="g-f"><p>An official website of the United States government</p></div>
-</div>
+<!-- GOV overlay (disabled) -->
+<div id="gov" style="display:none"></div>
 
 <canvas id="starCanvas" style="position:fixed;inset:0;z-index:0;pointer-events:none"></canvas>
 
-<div id="site" style="opacity:0;transition:opacity .6s">
+<div id="site" style="opacity:1">
 
 <!-- NAV -->
 <nav>
@@ -999,9 +995,8 @@ SYSTEM ONLINE ◈ STATION 51 OPERATIONAL ◈ SIGNAL PROBE FEED ◈ 10 TOOLS ONLI
   init();draw();
 })();
 
-// Gov
-let sk=false;function skip(){if(sk)return;sk=true;document.getElementById('gov').classList.add('die');setTimeout(()=>{document.getElementById('gov').style.display='none';document.getElementById('site').style.opacity='1';boot()},1600)}
-setTimeout(skip,3000);
+// Gov overlay disabled — boot immediately
+boot();
 
 // Countdown
 function upCD(){const L=new Date('2026-03-18T00:00:00Z'),df=Date.now()-L;
