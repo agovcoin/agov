@@ -44,6 +44,9 @@ MAX_CACHE = 500  # Max cache entries before LRU eviction
 # Simple in-memory cache with size limit (LRU eviction)
 _cache = OrderedDict()
 
+# Global scan counter (in-memory, resets on redeploy)
+_scan_count = 0
+
 
 def cache_get(key):
     if key in _cache and time.time() - _cache[key]["ts"] < CACHE_TTL:
@@ -199,6 +202,14 @@ def health():
         },
         "apis": "all connected"
     })
+
+
+# ============================================================
+# STATS
+# ============================================================
+@app.route("/api/stats")
+def stats():
+    return jsonify({"total_scans": _scan_count})
 
 
 # ============================================================
@@ -522,6 +533,9 @@ Sources: {', '.join(result['sources'])}
 Write a 2-3 sentence field assessment for Earth traders. Include the token name, chain, and key data points."""
 
     result["ai_analysis"] = ai_analyze(prompt)
+
+    global _scan_count
+    _scan_count += 1
 
     cache_set(f"xray:{chain}:{address}", result)
     return jsonify(result)

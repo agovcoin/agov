@@ -423,8 +423,10 @@ SYSTEM ONLINE ◈ STATION 51 OPERATIONAL ◈ SIGNAL PROBE FEED ◈ 10 TOOLS ONLI
 <!-- HERO ROW: Logo + Title centered -->
 <div class="hero-grid" style="display:flex;flex-direction:column;align-items:center;gap:8px;margin-bottom:10px">
 
+<!-- Collapsible hero top (hides during scan) -->
+<div id="heroTop">
 <!-- Logo + Title side by side -->
-<div style="display:flex;align-items:center;gap:16px">
+<div style="display:flex;align-items:center;justify-content:center;gap:16px">
 <!-- Logo with effects -->
 <div style="position:relative;width:140px;height:140px;display:flex;align-items:center;justify-content:center;flex-shrink:0">
 <!-- X-Files orbs -->
@@ -444,12 +446,13 @@ SYSTEM ONLINE ◈ STATION 51 OPERATIONAL ◈ SIGNAL PROBE FEED ◈ 10 TOOLS ONLI
 </div>
 
 <!-- Subtitle -->
-<p style="font:10px/1 'Silkscreen';color:var(--g2);letter-spacing:3px;text-align:center">PUMP.FUN INTELLIGENCE PLATFORM</p>
+<p style="font:10px/1 'Silkscreen';color:var(--g2);letter-spacing:3px;text-align:center;margin-top:8px">PUMP.FUN INTELLIGENCE PLATFORM</p>
 
 <!-- Typewriter -->
-<div style="min-height:24px;display:flex;align-items:center;justify-content:center">
+<div style="min-height:24px;display:flex;align-items:center;justify-content:center;margin-top:8px">
   <span id="twText" style="font:17px/1 'VT323';color:var(--t);letter-spacing:2px"></span>
   <span id="twCursor" style="font:17px/1 'VT323';color:var(--g);animation:blink 1s infinite">▊</span>
+</div>
 </div>
 
 <!-- Scanner -->
@@ -1007,11 +1010,11 @@ function boot(){
 }
 
 // Nav
-function nav(id,btn){document.querySelectorAll('section').forEach(s=>s.classList.remove('active'));document.getElementById('s-'+id).classList.add('active');document.querySelectorAll('.nb').forEach(b=>b.classList.remove('on'));if(btn)btn.classList.add('on');window.scrollTo({top:0,behavior:'instant'})}
+function nav(id,btn){document.querySelectorAll('section').forEach(s=>s.classList.remove('active'));document.getElementById('s-'+id).classList.add('active');document.querySelectorAll('.nb').forEach(b=>b.classList.remove('on'));if(btn)btn.classList.add('on');const ht=document.getElementById('heroTop');if(ht)ht.style.display='';window.scrollTo({top:0,behavior:'instant'})}
 
 // Hamburger menu
 function toggleMob(){const m=document.getElementById('mobMenu');const h=document.getElementById('hamBtn');m.classList.toggle('open');h.classList.toggle('open')}
-function navMob(id){document.getElementById('mobMenu').classList.remove('open');document.getElementById('hamBtn').classList.remove('open');document.querySelectorAll('section').forEach(s=>s.classList.remove('active'));document.getElementById('s-'+id).classList.add('active');window.scrollTo({top:0,behavior:'instant'})}
+function navMob(id){document.getElementById('mobMenu').classList.remove('open');document.getElementById('hamBtn').classList.remove('open');document.querySelectorAll('section').forEach(s=>s.classList.remove('active'));document.getElementById('s-'+id).classList.add('active');const ht=document.getElementById('heroTop');if(ht)ht.style.display='';window.scrollTo({top:0,behavior:'instant'})}
 document.addEventListener('keydown',e=>{if(e.key==='Escape'){document.getElementById('mobMenu').classList.remove('open');document.getElementById('hamBtn').classList.remove('open')}});
 
 // Typewriter
@@ -1074,6 +1077,7 @@ function isValidSolanaAddr(s){if(!s||s.length<32||s.length>44)return false;retur
 function showError(el,msg){el.style.display='block';el.innerHTML=`<div style="padding:10px;border:1px solid rgba(255,51,68,.15);border-radius:3px;background:rgba(255,51,68,.03)"><span style="font:14px 'VT323';color:var(--red)">> ERROR: ${msg}</span><br><span style="font:13px 'VT323';color:var(--dim)">Solana addresses are 32-44 characters (letters + numbers, no spaces).<br>Example: DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263</span></div>`}
 
 let scanCount = 0;
+fetch(API+'/api/stats').then(r=>r.json()).then(d=>{scanCount=d.total_scans||0;const m=document.getElementById('mS');if(m)m.textContent=scanCount}).catch(()=>{});
 async function scanFn(p,r,ring,sc,v,g,ai,btn,input,chainSel){
   const addr=input?input.value.trim():'';
   const chain=chainSel?chainSel.value:'solana';
@@ -1081,6 +1085,7 @@ async function scanFn(p,r,ring,sc,v,g,ai,btn,input,chainSel){
   if(chain==='solana'&&!isValidSolanaAddr(addr)){showError(p,'Invalid Solana address.');return}
   if(chain!=='solana'&&(addr.length<10||!/^0x/i.test(addr))){showError(p,'Invalid EVM address. Must start with 0x.');return}
   btn.disabled=true;btn.textContent='SCANNING...';r.style.display='none';p.style.display='block';p.innerHTML='';
+  const ht=document.getElementById('heroTop');if(ht)ht.style.display='none';
   const chainLabel=chainSel?chainSel.options[chainSel.selectedIndex].text:'SOL';
   const st=[`> scanning on ${chainLabel}...`,'> connecting to Station 51...','> querying DexScreener...','> querying GoPlus Security...',chain==='solana'?'> querying Helius DAS...':'> checking contract owner...','> holder distribution scan...','> honeypot detection...','> Agent 51 analyzing...'];
   let i=0;let done=false;
@@ -1100,7 +1105,7 @@ async function scanFn(p,r,ring,sc,v,g,ai,btn,input,chainSel){
   if(!d){d=mocks[Math.floor(Math.random()*3)];p.innerHTML+='<span style="color:var(--am)">> no live data — showing demo scan</span><br>'}
   else{p.innerHTML+='<span style="color:var(--g);font-weight:bold">> ✓ LIVE DATA RECEIVED</span><br>'}
   p.scrollTop=9999;
-  setTimeout(()=>{btn.disabled=false;btn.textContent='SCAN';p.style.display='none';showResult(d,r,ring,sc,v,g,ai);scanCount++;const mSel=document.getElementById('mS');if(mSel)mSel.textContent=scanCount},600);
+  setTimeout(()=>{btn.disabled=false;btn.textContent='SCAN';p.style.display='none';showResult(d,r,ring,sc,v,g,ai);fetch(API+'/api/stats').then(r=>r.json()).then(d=>{const m=document.getElementById('mS');if(m)m.textContent=d.total_scans||0}).catch(()=>{})},600);
 }
 
 function runHS(){scanFn(document.getElementById('heroProg'),document.getElementById('heroRes'),document.getElementById('heroRing'),document.getElementById('heroSc'),document.getElementById('heroV'),null,null,document.getElementById('heroBtn'),document.getElementById('heroIn'),document.getElementById('heroChain'))}
