@@ -366,11 +366,11 @@ details div{padding:9px 11px;font:14px/1.6 'VT323';color:var(--dim)}
 <button class="nb" onclick="nav('faq',this)">FAQ</button>
 <button class="nb" onclick="nav('buy',this)">BUY $AGOV</button>
 </div>
-<div class="n-status" id="navStatus">
-  <div class="n-si"><div class="dot dot-g"></div>10 TOOLS</div>
-  <div class="n-si"><div class="dot" style="background:var(--am);box-shadow:0 0 4px var(--am)"></div><span id="sG">0</span>&nbsp;GRAD</div>
-  <div class="n-si"><div class="dot" style="background:var(--am);box-shadow:0 0 4px var(--am)"></div>WARP:STBY</div>
-  <div class="n-si"><div class="dot" style="background:var(--red);box-shadow:0 0 4px var(--red);animation:pulse 2s infinite"></div>gov:404</div>
+<div class="n-status" id="navSocial" style="display:flex;align-items:center;gap:6px">
+  <a href="https://x.com/AgovCoin" target="_blank" style="font:10px 'Silkscreen';color:var(--dim);padding:4px 8px;border:1px solid var(--bz3);border-radius:3px;text-decoration:none;transition:color .2s,border-color .2s" onmouseover="this.style.color='var(--g)';this.style.borderColor='var(--g)'" onmouseout="this.style.color='var(--dim)';this.style.borderColor='var(--bz3)'">X</a>
+  <a href="https://t.me/agovcoin" target="_blank" style="font:10px 'Silkscreen';color:var(--dim);padding:4px 8px;border:1px solid var(--bz3);border-radius:3px;text-decoration:none;transition:color .2s,border-color .2s" onmouseover="this.style.color='var(--cy)';this.style.borderColor='var(--cy)'" onmouseout="this.style.color='var(--dim)';this.style.borderColor='var(--bz3)'">TG</a>
+  <a href="https://discord.gg/agovcoin" target="_blank" style="font:10px 'Silkscreen';color:var(--dim);padding:4px 8px;border:1px solid var(--bz3);border-radius:3px;text-decoration:none;transition:color .2s,border-color .2s" onmouseover="this.style.color='var(--pu)';this.style.borderColor='var(--pu)'" onmouseout="this.style.color='var(--dim)';this.style.borderColor='var(--bz3)'">DISCORD</a>
+  <button id="walletBtn" onclick="connectWallet()" style="font:10px 'Silkscreen';color:var(--g);padding:4px 10px;border:1px solid var(--g);border-radius:3px;background:transparent;cursor:pointer;letter-spacing:1px">CONNECT WALLET</button>
 </div>
 <div class="ham" id="hamBtn" onclick="toggleMob()">
   <span></span><span></span><span></span>
@@ -389,6 +389,12 @@ details div{padding:9px 11px;font:14px/1.6 'VT323';color:var(--dim)}
   <button class="nb" onclick="navMob('verify')">VERIFY</button>
   <button class="nb" onclick="navMob('faq')">FAQ</button>
   <button class="nb" onclick="navMob('buy')" style="color:var(--g);border-color:rgba(0,255,65,.2)">BUY $AGOV</button>
+  <button class="nb" onclick="connectWallet()" id="walletBtnMob" style="color:var(--g);border-color:rgba(0,255,65,.2)">CONNECT WALLET</button>
+  <div style="display:flex;gap:8px;margin-top:10px">
+    <a href="https://x.com/AgovCoin" target="_blank" class="nb" style="text-decoration:none;padding:8px 16px">X</a>
+    <a href="https://t.me/agovcoin" target="_blank" class="nb" style="text-decoration:none;padding:8px 16px">TG</a>
+    <a href="https://discord.gg/agovcoin" target="_blank" class="nb" style="text-decoration:none;padding:8px 16px">DISCORD</a>
+  </div>
   <p style="font:10px 'Silkscreen';color:var(--dim);letter-spacing:3px;margin-top:10px">STATION 51 — OPERATIONAL</p>
 </div>
 
@@ -1031,11 +1037,127 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'){document.getElement
   }
   setTimeout(tick,1200);
 })();
-function showT(id,btn){document.querySelectorAll('.tv').forEach(v=>v.classList.remove('on'));document.querySelectorAll('.tb').forEach(b=>b.classList.remove('on'));const tv=document.getElementById('tv-'+id);if(tv)tv.classList.add('on');if(btn)btn.classList.add('on');else document.querySelectorAll('.tb').forEach(b=>{if(b.textContent.toLowerCase().includes(id.slice(0,4)))b.classList.add('on')})}
+function showT(id,btn){document.querySelectorAll('.tv').forEach(v=>v.classList.remove('on'));document.querySelectorAll('.tb').forEach(b=>b.classList.remove('on'));const tv=document.getElementById('tv-'+id);if(tv)tv.classList.add('on');if(btn)btn.classList.add('on');else document.querySelectorAll('.tb').forEach(b=>{if(b.textContent.toLowerCase().includes(id.slice(0,4)))b.classList.add('on')});if(connectedWallet)updateToolAccess()}
 
 // XRAY -- Real API with mock fallback
 const API='https://agov-backend.onrender.com';
 function esc(s){if(!s)return '';const d=document.createElement('div');d.textContent=String(s);return d.innerHTML}
+
+// === WALLET & ACCESS CONFIG ===
+const AGOV_MINT = 'PENDING_CONTRACT_ADDRESS'; // TODO: reemplazar con CA real después de crear token
+const ADMIN_WALLETS = ['PENDING_ADMIN_WALLET']; // TODO: agregar wallet del owner
+const TIERS = {
+  CIVILIAN: 0,
+  INVESTIGATOR: 10000,
+  FIELD_AGENT: 100000,
+  COMMANDER: 500000
+};
+const TOOL_ACCESS = {
+  'xray': 'CIVILIAN',
+  'probe': 'INVESTIGATOR',
+  'holo': 'FIELD_AGENT',
+  'mother': 'FIELD_AGENT',
+  'grad': 'INVESTIGATOR',
+  'signal': 'FIELD_AGENT',
+  'dev': 'INVESTIGATOR',
+  'autopsy': 'CIVILIAN',
+  'warp': 'COMMANDER',
+  'debrief': 'CIVILIAN'
+};
+
+let connectedWallet = null;
+let walletBalance = 0;
+let userTier = 'CIVILIAN';
+
+async function connectWallet() {
+  const btn = document.getElementById('walletBtn');
+  if (!window.solana || !window.solana.isPhantom) {
+    window.open('https://phantom.app/', '_blank');
+    return;
+  }
+  try {
+    const resp = await window.solana.connect();
+    connectedWallet = resp.publicKey.toString();
+    const short = connectedWallet.slice(0,4) + '..' + connectedWallet.slice(-4);
+    if(btn) btn.textContent = short;
+    const btnMob = document.getElementById('walletBtnMob');
+    if(btnMob) btnMob.textContent = short;
+    if(btn) btn.style.color = 'var(--g)';
+    if (ADMIN_WALLETS.includes(connectedWallet)) {
+      userTier = 'COMMANDER';
+      walletBalance = 999999;
+      if(btn) btn.textContent += ' ★';
+      updateToolAccess();
+      return;
+    }
+    await checkBalance();
+    updateToolAccess();
+  } catch (err) {
+    console.log('Wallet connection rejected:', err);
+  }
+}
+
+async function checkBalance() {
+  if (!connectedWallet || AGOV_MINT === 'PENDING_CONTRACT_ADDRESS') {
+    walletBalance = 0;
+    userTier = 'CIVILIAN';
+    return;
+  }
+  try {
+    const r = await fetchT('https://api.helius.xyz/v0/addresses/' + connectedWallet + '/balances?api-key=PUBLIC', 8000);
+    if (r.ok) {
+      const data = await r.json();
+      const agov = data.tokens?.find(t => t.mint === AGOV_MINT);
+      walletBalance = agov ? (agov.amount / Math.pow(10, agov.decimals || 6)) : 0;
+    }
+  } catch(e) {
+    walletBalance = 0;
+  }
+  if (walletBalance >= TIERS.COMMANDER) userTier = 'COMMANDER';
+  else if (walletBalance >= TIERS.FIELD_AGENT) userTier = 'FIELD_AGENT';
+  else if (walletBalance >= TIERS.INVESTIGATOR) userTier = 'INVESTIGATOR';
+  else userTier = 'CIVILIAN';
+}
+
+function getTierLevel(tierName) {
+  const levels = { CIVILIAN: 0, INVESTIGATOR: 1, FIELD_AGENT: 2, COMMANDER: 3 };
+  return levels[tierName] || 0;
+}
+
+function updateToolAccess() {
+  const userLevel = getTierLevel(userTier);
+  Object.entries(TOOL_ACCESS).forEach(([toolId, requiredTier]) => {
+    const requiredLevel = getTierLevel(requiredTier);
+    const toolEl = document.getElementById('tv-' + toolId);
+    if (!toolEl) return;
+    const toolBody = toolEl.querySelector('.tv-b');
+    if (!toolBody) return;
+    const existingLock = toolBody.querySelector('.tool-lock');
+    if (existingLock) existingLock.remove();
+    if (userLevel < requiredLevel) {
+      const lock = document.createElement('div');
+      lock.className = 'tool-lock';
+      lock.style.cssText = 'position:relative;padding:20px;text-align:center;background:rgba(0,0,0,.4);border:1px dashed var(--bz3);border-radius:4px;margin-top:8px';
+      const tierNames = { INVESTIGATOR: '10,000 $AGOV', FIELD_AGENT: '100,000 $AGOV', COMMANDER: '500,000 $AGOV' };
+      const required = tierNames[requiredTier] || requiredTier;
+      lock.innerHTML = '<div style="font:600 11px \'Orbitron\';color:var(--am);letter-spacing:2px;margin-bottom:6px">ACCESS RESTRICTED</div>' +
+        '<div style="font:14px \'VT323\';color:var(--dim)">This tool requires <span style="color:var(--am)">' + esc(required) + '</span></div>' +
+        '<div style="font:13px \'VT323\';color:var(--dim);margin-top:4px">Your balance: <span style="color:var(--g)">' + walletBalance.toLocaleString() + ' $AGOV</span> (' + userTier + ')</div>' +
+        (!connectedWallet ? '<button class="b3 b3-g" style="margin-top:8px;padding:6px 14px;font-size:11px" onclick="connectWallet()">CONNECT WALLET</button>' : '<button class="b3 b3-am" style="margin-top:8px;padding:6px 14px;font-size:11px" onclick="nav(\'buy\',document.querySelectorAll(\'.nb\')[8])">GET $AGOV</button>');
+      Array.from(toolBody.children).forEach(child => {
+        if (!child.classList.contains('tool-lock')) child.style.display = 'none';
+      });
+      toolBody.appendChild(lock);
+    } else {
+      Array.from(toolBody.children).forEach(child => { child.style.display = ''; });
+    }
+  });
+  const btn = document.getElementById('walletBtn');
+  if (connectedWallet && btn) {
+    const tierColors = { CIVILIAN: 'var(--dim)', INVESTIGATOR: 'var(--am)', FIELD_AGENT: 'var(--cy)', COMMANDER: 'var(--g)' };
+    btn.style.borderColor = tierColors[userTier] || 'var(--g)';
+  }
+}
 
 // Fetch with timeout (8 seconds default) — prevents hanging when backend is asleep
 async function fetchT(url,opts={},ms=8000){
@@ -1328,6 +1450,23 @@ async function runPL(){
 
 // Redacted
 document.querySelectorAll('.red').forEach(el=>{el.addEventListener('mouseenter',()=>el.style.filter='blur(0)');el.addEventListener('mouseleave',()=>el.style.filter='blur(4px)')});
+
+// Initial access check
+updateToolAccess();
+
+// Auto-reconnect Phantom if previously connected
+if (window.solana && window.solana.isPhantom) {
+  window.solana.connect({ onlyIfTrusted: true }).then(resp => {
+    connectedWallet = resp.publicKey.toString();
+    const short = connectedWallet.slice(0,4) + '..' + connectedWallet.slice(-4);
+    const wb = document.getElementById('walletBtn');
+    if(wb) wb.textContent = short;
+    const wbm = document.getElementById('walletBtnMob');
+    if(wbm) wbm.textContent = short;
+    if (ADMIN_WALLETS.includes(connectedWallet)) { userTier = 'COMMANDER'; walletBalance = 999999; updateToolAccess(); }
+    else { checkBalance().then(() => updateToolAccess()); }
+  }).catch(() => {});
+}
 </script>
 </body>
 </html>
