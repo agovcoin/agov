@@ -1,19 +1,26 @@
 import os
+import re
 import time
 import json
 import requests
+from collections import OrderedDict
 from flask import Flask, request, jsonify
 from flask_cors import CORS
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
 from dotenv import load_dotenv
 
 load_dotenv()
 
 app = Flask(__name__)
 CORS(app, origins=[
-    os.getenv("FRONTEND_URL", "*"),
-    "http://localhost:*",
-    "https://*.onrender.com"
+    "https://agovcoin.xyz",
+    "https://www.agovcoin.xyz",
+    "https://agov-portal.onrender.com",
+    "http://localhost:3000",
+    "http://localhost:5000",
 ])
+limiter = Limiter(get_remote_address, app=app, default_limits=["30 per minute"])
 
 # ============================================================
 # CONFIG
@@ -24,8 +31,9 @@ GROQ_KEY = os.getenv("GROQ_API_KEY", "")
 DEEPSEEK_KEY = os.getenv("DEEPSEEK_API_KEY", "")
 JUPITER_KEY = os.getenv("JUPITER_API_KEY", "")
 
-# Simple in-memory cache (key -> {data, timestamp})
-_cache = {}
+# Simple in-memory cache with size limit (LRU eviction)
+MAX_CACHE = 500
+_cache = OrderedDict()
 CACHE_TTL = 300  # 5 minutes
 
 
@@ -37,6 +45,8 @@ def cache_get(key):
 
 def cache_set(key, data):
     _cache[key] = {"data": data, "ts": time.time()}
+    if len(_cache) > MAX_CACHE:
+        _cache.popitem(last=False)
 
 
 # ============================================================
@@ -110,6 +120,28 @@ def ai_analyze(prompt, max_tokens=300):
 
 
 # ============================================================
+# SECURITY HEADERS
+# ============================================================
+@app.after_request
+def security_headers(response):
+    response.headers['X-Content-Type-Options'] = 'nosniff'
+    response.headers['X-Frame-Options'] = 'DENY'
+    response.headers['X-XSS-Protection'] = '1; mode=block'
+    response.headers['Strict-Transport-Security'] = 'max-age=31536000; includeSubDomains'
+    return response
+
+
+# ============================================================
+# ADDRESS VALIDATION
+# ============================================================
+def validate_address(address, chain):
+    if chain == "solana":
+        return bool(re.match(r'^[1-9A-HJ-NP-Za-km-z]{32,44}$', address))
+    else:
+        return bool(re.match(r'^0x[0-9a-fA-F]{40}$', address))
+
+
+# ============================================================
 # HEALTH CHECK
 # ============================================================
 @app.route("/api/health")
@@ -157,6 +189,7 @@ CHAINS = {
 }
 
 @app.route("/api/xray/scan", methods=["POST"])
+@limiter.limit("10 per minute")
 def xray_scan():
     data = request.get_json() or {}
     address = data.get("address", "").strip()
@@ -167,6 +200,10 @@ def xray_scan():
     # Validate chain
     if chain not in CHAINS:
         return jsonify({"error": f"Unsupported chain. Use: {', '.join(CHAINS.keys())}"}), 400
+
+    # Validate address format
+    if not validate_address(address, chain):
+        return jsonify({"error": "Invalid address format"}), 400
 
     chain_cfg = CHAINS[chain]
 
@@ -465,6 +502,7 @@ Write a 2-3 sentence field assessment for Earth traders. Include the token name,
 # TOOL 2: THE PROBE -- Smart Launch Filter
 # ============================================================
 @app.route("/api/probe/feed")
+@limiter.limit("20 per minute")
 def probe_feed():
     """Returns recently launched tokens that pass quality filters."""
     cached = cache_get("probe:feed")
@@ -589,6 +627,7 @@ WHALE_WALLETS = [
 ]
 
 @app.route("/api/mothership/feed")
+@limiter.limit("20 per minute")
 def mothership_feed():
     """Track whale wallet movements."""
     cached = cache_get("mothership:feed")
@@ -670,6 +709,7 @@ def mothership_feed():
 # TOOL 4: SIGNAL INTERCEPT -- Narrative Radar
 # ============================================================
 @app.route("/api/signal/narratives")
+@limiter.limit("20 per minute")
 def signal_narratives():
     """Detect trending crypto narratives from DexScreener market data."""
     cached = cache_get("signal:narratives")
@@ -761,6 +801,7 @@ Classify market sentiment. Which chains are heating up? Where is smart money flo
 # TOOL 5: HOLOGRAM DETECTOR -- Volume Authenticity
 # ============================================================
 @app.route("/api/hologram/analyze", methods=["POST"])
+@limiter.limit("10 per minute")
 def hologram_analyze():
     data = request.get_json() or {}
     address = data.get("address", "").strip()
@@ -844,6 +885,7 @@ Is this volume real or artificial? Brief assessment."""
 # TOOL 6: ABDUCTION REPORT -- Dev Reputation
 # ============================================================
 @app.route("/api/abduction/check", methods=["POST"])
+@limiter.limit("10 per minute")
 def abduction_check():
     data = request.get_json() or {}
     dev_address = data.get("address", "").strip()
@@ -903,6 +945,7 @@ Brief assessment of this developer's track record."""
 # TOOL 7: DEBRIEFING -- PnL Tracker
 # ============================================================
 @app.route("/api/debriefing/report", methods=["POST"])
+@limiter.limit("10 per minute")
 def debriefing_report():
     data = request.get_json() or {}
     wallet = data.get("wallet", "").strip()
@@ -961,6 +1004,7 @@ Analyze the trading pattern and provide brief performance insights."""
 # TOOL 8: GRADUATION TRACKER -- PumpSwap Migration Monitor
 # ============================================================
 @app.route("/api/graduation/feed")
+@limiter.limit("20 per minute")
 def graduation_feed():
     """Tokens approaching $69K graduation threshold on Pump.fun."""
     cached = cache_get("graduation:feed")
@@ -1039,6 +1083,7 @@ def graduation_feed():
 # TOOL 9: RUG AUTOPSY -- Post-Mortem Forensics
 # ============================================================
 @app.route("/api/autopsy/feed")
+@limiter.limit("20 per minute")
 def autopsy_feed():
     """Feed of recently dead/rugged tokens with cause analysis."""
     cached = cache_get("autopsy:feed")
@@ -1140,4 +1185,4 @@ def autopsy_feed():
 # ============================================================
 if __name__ == "__main__":
     port = int(os.getenv("PORT", 5000))
-    app.run(host="0.0.0.0", port=port, debug=True)
+    app.run(host="0.0.0.0", port=port, debug=os.getenv("FLASK_DEBUG", "false").lower() == "true")

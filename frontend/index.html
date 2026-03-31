@@ -1022,6 +1022,7 @@ function showT(id,btn){document.querySelectorAll('.tv').forEach(v=>v.classList.r
 
 // XRAY -- Real API with mock fallback
 const API='https://agov-backend.onrender.com';
+function esc(s){if(!s)return '';const d=document.createElement('div');d.textContent=String(s);return d.innerHTML}
 
 // Fetch with timeout (8 seconds default) — prevents hanging when backend is asleep
 async function fetchT(url,opts={},ms=8000){
@@ -1050,14 +1051,14 @@ function showResult(d,r,ring,sc,v,g,ai){
   sc.textContent=d.score;
   const c=d.score>70?'var(--g)':d.score>40?'var(--am)':'var(--red)';
   ring.style.borderColor=c;sc.style.color=c;
-  const nm=d.name&&d.name!=='UNKNOWN'?`<span style="color:var(--w)">${d.name} (${d.symbol})</span>${d.chain_label?' <span style="font:10px Orbitron;color:var(--cy);border:1px solid rgba(0,221,204,.15);padding:1px 4px;border-radius:2px">'+d.chain_label+'</span>':''} — `:'';
+  const nm=d.name&&d.name!=='UNKNOWN'?`<span style="color:var(--w)">${esc(d.name)} (${esc(d.symbol)})</span>${d.chain_label?' <span style="font:10px Orbitron;color:var(--cy);border:1px solid rgba(0,221,204,.15);padding:1px 4px;border-radius:2px">'+esc(d.chain_label)+'</span>':''} — `:'';
   if(d.score>70)v.innerHTML=nm+'<span style="color:var(--g)">LOW RISK</span>';
   else if(d.score>40)v.innerHTML=nm+'<span style="color:var(--am)">MEDIUM</span>';
   else v.innerHTML=nm+'<span style="color:var(--red)">CRITICAL</span>';
   if(g){const cl=x=>{const s=String(x).toUpperCase();if(s.includes('REVOKED')||s.includes('BURNED')||s.includes('DEEP')||s==='NO'||s==='OK')return 'v-ok';if(s.includes('ACTIVE')||s==='YES'||s.includes('LIKELY')||s==='NONE'||s==='CRITICAL')return 'v-bad';if(s==='N/A'||s==='UNKNOWN'||s.includes('MEDIUM')||s==='LOW'||s==='UNLIKELY')return 'v-mid';return ''};
     const holders=d.holders?Number(d.holders).toLocaleString():0;
-    g.innerHTML=[['MINT',d.mint_authority],['FREEZE',d.freeze_authority],['LP',d.lp_status],['HONEYPOT',d.is_honeypot],['BUNDLE',d.bundle_detected||'N/A'],['HOLDERS',holders],['TOP 10',d.top_holder_pct],['RISK',d.risk_level]].map(([l,x])=>`<div class="cl"><div class="cl-l">${l}</div><div class="cl-v ${cl(x)}">${x}</div></div>`).join('')}
-  if(ai)ai.innerHTML='<div class="ai-l">AGENT 51</div>'+(d.ai_analysis||'Analysis unavailable.');
+    g.innerHTML=[['MINT',d.mint_authority],['FREEZE',d.freeze_authority],['LP',d.lp_status],['HONEYPOT',d.is_honeypot],['BUNDLE',d.bundle_detected||'N/A'],['HOLDERS',holders],['TOP 10',d.top_holder_pct],['RISK',d.risk_level]].map(([l,x])=>`<div class="cl"><div class="cl-l">${esc(l)}</div><div class="cl-v ${cl(x)}">${esc(x)}</div></div>`).join('')}
+  if(ai)ai.innerHTML='<div class="ai-l">AGENT 51</div>'+esc(d.ai_analysis||'Analysis unavailable.');
 }
 
 // Input validation
@@ -1112,7 +1113,7 @@ async function loadProbe(){
           const statusColor=sc>=50?'var(--g)':'var(--red)';
           const mcap=t.mcap?`$${(t.mcap/1000).toFixed(0)}K`:'';
           const e=document.createElement('div');e.className='fi';
-          e.innerHTML=`<span style="font:600 10px 'Orbitron';color:${scColor};width:24px">${sc}</span><span style="color:${statusColor};width:28px;font:11px 'VT323'">${status}</span><span style="flex:1"><b style="color:var(--w)">${t.symbol||'???'}</b> <span style="color:var(--dim)">${t.name&&t.name.length<20?t.name:''}</span></span><span style="font:11px 'VT323';color:var(--dim)">${mcap}</span>`;
+          e.innerHTML=`<span style="font:600 10px 'Orbitron';color:${scColor};width:24px">${sc}</span><span style="color:${statusColor};width:28px;font:11px 'VT323'">${status}</span><span style="flex:1"><b style="color:var(--w)">${esc(t.symbol)||'???'}</b> <span style="color:var(--dim)">${t.name&&t.name.length<20?esc(t.name):''}</span></span><span style="font:11px 'VT323';color:var(--dim)">${mcap}</span>`;
           f.appendChild(e)});
         document.getElementById('pC').textContent=data.passed||0;
         document.getElementById('pT').textContent=data.rejected||0;return}}
@@ -1135,14 +1136,14 @@ async function loadMothership(){
         data.movements.slice(0,12).forEach(m=>{
           const actionColor=m.action==='SWAP'?'var(--cy)':m.action==='TRANSFER'?'var(--am)':'var(--dim)';
           const e=document.createElement('div');e.className='fi';
-          e.innerHTML=`<span style="color:var(--cy);width:72px;font:12px 'VT323'">${m.wallet||'Unknown'}</span><span style="color:${actionColor};width:48px;font:11px 'VT323'">${m.action||'TX'}</span><span style="flex:1;font:13px 'VT323';color:var(--t)">${m.token?'<b style="color:var(--w)">'+m.token+'</b> ':''} ${m.amount||''}</span>`;
+          e.innerHTML=`<span style="color:var(--cy);width:72px;font:12px 'VT323'">${esc(m.wallet)||'Unknown'}</span><span style="color:${actionColor};width:48px;font:11px 'VT323'">${esc(m.action)||'TX'}</span><span style="flex:1;font:13px 'VT323';color:var(--t)">${m.token?'<b style="color:var(--w)">'+esc(m.token)+'</b> ':''} ${esc(m.amount)||''}</span>`;
           f.appendChild(e)});
         document.getElementById('wM').textContent=data.movements.length;
         // Show AI analysis (remove old one first to prevent duplicates)
         const oldAi=f.parentNode.querySelector('.ai');if(oldAi)oldAi.remove();
         if(data.ai_analysis){
           const aiDiv=document.createElement('div');aiDiv.className='ai';aiDiv.style.marginTop='6px';
-          aiDiv.innerHTML='<div class="ai-l">AGENT 51</div>'+data.ai_analysis;
+          aiDiv.innerHTML='<div class="ai-l">AGENT 51</div>'+esc(data.ai_analysis);
           f.parentNode.appendChild(aiDiv)}
         return}}
   }catch(e){console.log('Mothership fallback:',e)}
@@ -1163,7 +1164,7 @@ async function initG(){
         data.tokens.forEach(t=>{
           const d=document.createElement('div');d.className='grad-r';
           const p=t.progress||0;
-          d.innerHTML=`<span style="font:600 10px 'Orbitron';color:var(--w);width:56px">${t.symbol||'???'}</span><span style="font:12px 'VT323';color:var(--dim);width:32px">$${(t.mcap/1000).toFixed(0)}K</span><div class="grad-b"><div class="grad-f" style="width:${p}%"></div></div><span style="font:700 10px 'Orbitron';color:${p>=95?'var(--g)':'var(--am)'};width:30px;text-align:right">${p>=100?'GRAD!':Math.floor(p)+'%'}</span>`;
+          d.innerHTML=`<span style="font:600 10px 'Orbitron';color:var(--w);width:56px">${esc(t.symbol)||'???'}</span><span style="font:12px 'VT323';color:var(--dim);width:32px">$${(t.mcap/1000).toFixed(0)}K</span><div class="grad-b"><div class="grad-f" style="width:${p}%"></div></div><span style="font:700 10px 'Orbitron';color:${p>=95?'var(--g)':'var(--am)'};width:30px;text-align:right">${p>=100?'GRAD!':Math.floor(p)+'%'}</span>`;
           f.appendChild(d)});
         document.getElementById('gN').textContent=data.tokens.length;
         document.getElementById('sG').textContent=data.near_graduation||0;
@@ -1186,7 +1187,7 @@ async function loadAutopsy(){
         f.innerHTML='';
         data.autopsies.forEach(a=>{
           const d=document.createElement('div');d.className='c-rug';
-          d.innerHTML=`<div style="display:flex;justify-content:space-between;margin-bottom:2px"><span style="font:15px 'VT323';color:var(--red)">${a.symbol||'???'}</span><span class="ctag" style="color:var(--red);border:1px solid rgba(255,51,68,.1)">${a.cause}</span></div><div style="font:13px 'VT323';color:var(--t)">${a.detail}</div><div style="font:11px 'VT323';color:var(--dim);margin-top:2px">Lost: <span style="color:var(--red)">$${Number((a.estimated_losses||0).toFixed(0)).toLocaleString()}</span> · ${a.price_change_24h?.toFixed(0)||0}% 24h</div>`;
+          d.innerHTML=`<div style="display:flex;justify-content:space-between;margin-bottom:2px"><span style="font:15px 'VT323';color:var(--red)">${esc(a.symbol)||'???'}</span><span class="ctag" style="color:var(--red);border:1px solid rgba(255,51,68,.1)">${esc(a.cause)}</span></div><div style="font:13px 'VT323';color:var(--t)">${esc(a.detail)}</div><div style="font:11px 'VT323';color:var(--dim);margin-top:2px">Lost: <span style="color:var(--red)">$${Number((a.estimated_losses||0).toFixed(0)).toLocaleString()}</span> · ${a.price_change_24h?.toFixed(0)||0}% 24h</div>`;
           f.appendChild(d)});
         document.getElementById('aT').textContent=data.total_dead_today;return}}
   }catch(e){console.log('Autopsy fallback:',e)}
@@ -1213,13 +1214,13 @@ async function loadSignal(){
         data.narratives.forEach((n,i)=>{
           const c=colors[i%colors.length];
           const pct=n.pct||Math.min(100,n.mentions*3);
-          s.innerHTML+=`<div style="display:flex;align-items:center;gap:6px;padding:5px 0;border-bottom:1px solid rgba(0,255,65,.03)"><span style="font:600 9px 'Orbitron';color:${c};width:70px">${n.name}</span><div class="hg" style="flex:1"><div class="hg-f" style="width:${pct}%;background:${c}"></div></div><span style="font:12px 'VT323';color:var(--w);width:28px;text-align:right">${n.mentions}</span><span style="font:11px 'VT323';color:var(--dim);width:28px;text-align:right">${pct}%</span></div>`});
+          s.innerHTML+=`<div style="display:flex;align-items:center;gap:6px;padding:5px 0;border-bottom:1px solid rgba(0,255,65,.03)"><span style="font:600 9px 'Orbitron';color:${c};width:70px">${esc(n.name)}</span><div class="hg" style="flex:1"><div class="hg-f" style="width:${pct}%;background:${c}"></div></div><span style="font:12px 'VT323';color:var(--w);width:28px;text-align:right">${n.mentions}</span><span style="font:11px 'VT323';color:var(--dim);width:28px;text-align:right">${pct}%</span></div>`});
         // Hot tokens
         if(data.hot_tokens&&data.hot_tokens.length>0){
           s.innerHTML+=`<div style="font:10px 'Silkscreen';color:var(--am);letter-spacing:2px;margin-top:8px;margin-bottom:4px">HOT ON SOLANA</div>`;
           data.hot_tokens.forEach(t=>{
-            s.innerHTML+=`<div style="display:flex;gap:6px;padding:3px 0;font:13px 'VT323'"><span style="color:var(--dim)">${t.address}</span><span style="color:var(--t);flex:1">${t.description}</span></div>`})}
-        if(data.ai_analysis)s.innerHTML+=`<div class="ai" style="margin-top:6px"><div class="ai-l">AGENT 51</div>${data.ai_analysis}</div>`;
+            s.innerHTML+=`<div style="display:flex;gap:6px;padding:3px 0;font:13px 'VT323'"><span style="color:var(--dim)">${esc(t.address)}</span><span style="color:var(--t);flex:1">${esc(t.description)}</span></div>`})}
+        if(data.ai_analysis)s.innerHTML+=`<div class="ai" style="margin-top:6px"><div class="ai-l">AGENT 51</div>${esc(data.ai_analysis)}</div>`;
         return}}
   }catch(e){console.log('Signal fallback:',e)}
   [{n:'SOLANA',c:'var(--g)',p:80},{n:'ETHEREUM',c:'var(--cy)',p:35},{n:'BASE',c:'var(--am)',p:25},{n:'BSC',c:'var(--pu)',p:10},{n:'ARBITRUM',c:'var(--red)',p:5}].forEach(n=>{s.innerHTML+=`<div style="display:flex;align-items:center;gap:6px;padding:5px 0;border-bottom:1px solid rgba(0,255,65,.03)"><span style="font:600 9px 'Orbitron';color:${n.c};width:70px">${n.n}</span><div class="hg" style="flex:1"><div class="hg-f" style="width:${n.p}%;background:${n.c}"></div></div><span style="font:12px 'VT323';color:var(--dim);width:28px;text-align:right">${n.p}%</span></div>`});
@@ -1247,7 +1248,7 @@ async function runH(){
       const res=await fetchT(API+'/api/hologram/analyze',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({address:addr})});
       if(res.ok){const d=await res.json();
         const a=d.authenticity_score||50,c=a>60?'var(--g)':a>35?'var(--am)':'var(--red)';
-        r.innerHTML=`<div style="display:flex;align-items:center;gap:8px;margin:8px 0"><div class="sc-ring" style="border-color:${c}"><div class="sc-n" style="color:${c}">${a}</div><div class="sc-l">AUTH</div></div><div style="font:15px 'VT323'">${a>60?'Organic.':a>35?'Mixed.':'Artificial.'}</div></div><div class="cells" style="grid-template-columns:repeat(4,1fr)"><div class="cl"><div class="cl-l">ORGANIC</div><div class="cl-v" style="color:${c}">${d.organic_pct||a}%</div></div><div class="cl"><div class="cl-l">WASH</div><div class="cl-v v-bad">${d.wash_pct||(100-a)}%</div></div><div class="cl"><div class="cl-l">WALLETS</div><div class="cl-v" style="color:var(--w)">${d.unique_wallets||0}</div></div><div class="cl"><div class="cl-l">VOLUME</div><div class="cl-v" style="color:var(--cy)">$${Number((d.volume_24h||0).toFixed(0)).toLocaleString()}</div></div></div>${d.ai_analysis?'<div class="ai"><div class="ai-l">AGENT 51</div>'+d.ai_analysis+'</div>':''}`;
+        r.innerHTML=`<div style="display:flex;align-items:center;gap:8px;margin:8px 0"><div class="sc-ring" style="border-color:${c}"><div class="sc-n" style="color:${c}">${a}</div><div class="sc-l">AUTH</div></div><div style="font:15px 'VT323'">${a>60?'Organic.':a>35?'Mixed.':'Artificial.'}</div></div><div class="cells" style="grid-template-columns:repeat(4,1fr)"><div class="cl"><div class="cl-l">ORGANIC</div><div class="cl-v" style="color:${c}">${d.organic_pct||a}%</div></div><div class="cl"><div class="cl-l">WASH</div><div class="cl-v v-bad">${d.wash_pct||(100-a)}%</div></div><div class="cl"><div class="cl-l">WALLETS</div><div class="cl-v" style="color:var(--w)">${d.unique_wallets||0}</div></div><div class="cl"><div class="cl-l">VOLUME</div><div class="cl-v" style="color:var(--cy)">$${Number((d.volume_24h||0).toFixed(0)).toLocaleString()}</div></div></div>${d.ai_analysis?'<div class="ai"><div class="ai-l">AGENT 51</div>'+esc(d.ai_analysis)+'</div>':''}`;
         if(btn){btn.disabled=false;btn.textContent='ANALYZE';}return}
     }catch(e){console.log('Hologram fallback:',e)}
   }
@@ -1270,7 +1271,7 @@ async function runD(){
       const res=await fetchT(API+'/api/abduction/check',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({address:addr})});
       if(res.ok){const d=await res.json();
         const s=d.reputation_score||50,c=s>65?'var(--g)':s>35?'var(--am)':'var(--red)';
-        r.innerHTML=`<div style="display:flex;align-items:center;gap:10px;margin-bottom:5px"><div class="sc-ring" style="border-color:${c}"><div class="sc-n" style="color:${c}">${s}</div><div class="sc-l">TRUST</div></div><div><div style="font:15px 'VT323';color:${c}">${addr.slice(0,8)}..${addr.slice(-4)}</div><div style="font:10px 'VT323';color:var(--dim);margin-top:2px">${s>65?'TRUSTED':s>35?'MIXED':'AVOID'}</div></div></div>${[['LAUNCHED',d.tokens_launched||0,'var(--w)'],['GRADUATED',d.tokens_graduated||0,'var(--g)'],['RUGGED',d.tokens_rugged||0,'var(--red)']].map(([a,b,co])=>`<div style="display:flex;gap:8px;padding:3px 0;border-bottom:1px solid rgba(0,255,65,.03);font:14px 'VT323'"><span style="color:var(--dim);width:56px">${a}</span><span style="color:${co}">${b}</span></div>`).join('')}<div class="ai" style="margin-top:6px"><div class="ai-l">AGENT 51</div>${d.ai_analysis||'Analysis unavailable.'}</div>`;
+        r.innerHTML=`<div style="display:flex;align-items:center;gap:10px;margin-bottom:5px"><div class="sc-ring" style="border-color:${c}"><div class="sc-n" style="color:${c}">${s}</div><div class="sc-l">TRUST</div></div><div><div style="font:15px 'VT323';color:${c}">${addr.slice(0,8)}..${addr.slice(-4)}</div><div style="font:10px 'VT323';color:var(--dim);margin-top:2px">${s>65?'TRUSTED':s>35?'MIXED':'AVOID'}</div></div></div>${[['LAUNCHED',d.tokens_launched||0,'var(--w)'],['GRADUATED',d.tokens_graduated||0,'var(--g)'],['RUGGED',d.tokens_rugged||0,'var(--red)']].map(([a,b,co])=>`<div style="display:flex;gap:8px;padding:3px 0;border-bottom:1px solid rgba(0,255,65,.03);font:14px 'VT323'"><span style="color:var(--dim);width:56px">${a}</span><span style="color:${co}">${b}</span></div>`).join('')}<div class="ai" style="margin-top:6px"><div class="ai-l">AGENT 51</div>${esc(d.ai_analysis||'Analysis unavailable.')}</div>`;
         if(btn){btn.disabled=false;btn.textContent='CHECK';}return}
     }catch(e){console.log('Abduction fallback:',e)}
   }
@@ -1293,7 +1294,7 @@ async function runPL(){
     try{
       const res=await fetchT(API+'/api/debriefing/report',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({wallet:addr})});
       if(res.ok){const d=await res.json();
-        r.innerHTML=`<div class="cells" style="grid-template-columns:repeat(3,1fr);margin-top:6px"><div class="cl" style="text-align:center;padding:10px"><div style="font:700 14px 'Orbitron';color:var(--w)">${d.total_trades||0}</div><div class="cl-l" style="margin-top:3px">TRADES</div></div><div class="cl" style="text-align:center;padding:10px"><div style="font:700 14px 'Orbitron';color:var(--w)">${d.recent_trades?.length||0}</div><div class="cl-l" style="margin-top:3px">RECENT</div></div><div class="cl" style="text-align:center;padding:10px"><div style="font:700 14px 'Orbitron';color:var(--cy)">SWAP</div><div class="cl-l" style="margin-top:3px">TYPE</div></div></div>${d.ai_analysis?'<div class="ai"><div class="ai-l">AGENT 51</div>'+d.ai_analysis+'</div>':''}`;
+        r.innerHTML=`<div class="cells" style="grid-template-columns:repeat(3,1fr);margin-top:6px"><div class="cl" style="text-align:center;padding:10px"><div style="font:700 14px 'Orbitron';color:var(--w)">${d.total_trades||0}</div><div class="cl-l" style="margin-top:3px">TRADES</div></div><div class="cl" style="text-align:center;padding:10px"><div style="font:700 14px 'Orbitron';color:var(--w)">${d.recent_trades?.length||0}</div><div class="cl-l" style="margin-top:3px">RECENT</div></div><div class="cl" style="text-align:center;padding:10px"><div style="font:700 14px 'Orbitron';color:var(--cy)">SWAP</div><div class="cl-l" style="margin-top:3px">TYPE</div></div></div>${d.ai_analysis?'<div class="ai"><div class="ai-l">AGENT 51</div>'+esc(d.ai_analysis)+'</div>':''}`;
         if(btn){btn.disabled=false;btn.textContent='REPORT';}return}
     }catch(e){console.log('Debriefing fallback:',e)}
   }
