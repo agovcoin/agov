@@ -71,10 +71,10 @@ body::before{content:'';position:fixed;top:0;left:0;right:0;height:300px;z-index
 @keyframes blink{50%{opacity:0}}
 @keyframes alienScroll{from{transform:translateX(0)}to{transform:translateX(-50%)}}
 @keyframes glitch{0%,90%,100%{transform:none;filter:none}92%{transform:translate(-2px,1px);filter:hue-rotate(90deg)}94%{transform:translate(2px,-1px);filter:brightness(1.5)}96%{transform:translate(-1px,-2px) skewX(1deg);filter:hue-rotate(-60deg) saturate(2)}98%{transform:translate(1px,2px);filter:brightness(.8)}}
-@keyframes glitchOut{0%{opacity:1;transform:none;filter:none}20%{transform:translate(-3px,2px) skewX(2deg);filter:hue-rotate(90deg) brightness(1.5)}40%{transform:translate(4px,-2px) skewX(-3deg);filter:hue-rotate(-60deg) saturate(3)}60%{transform:translate(-2px,3px) skewX(1deg);filter:brightness(.4) hue-rotate(180deg)}80%{transform:translate(3px,-1px) skewX(-2deg);filter:brightness(2) saturate(0)}100%{opacity:0;transform:translate(0) skewX(0);filter:brightness(0)}}
-@keyframes glitchIn{0%{opacity:0;filter:brightness(0)}20%{opacity:.3;transform:translate(3px,-2px) skewX(-2deg);filter:hue-rotate(90deg) brightness(2)}50%{opacity:.6;transform:translate(-2px,1px) skewX(1deg);filter:hue-rotate(-60deg)}80%{opacity:.9;transform:translate(1px,-1px);filter:brightness(1.2)}100%{opacity:1;transform:none;filter:none}}
-.glitch-out{animation:glitchOut .4s ease forwards!important}
-.glitch-in{animation:glitchIn .4s ease forwards!important}
+@keyframes glitchOut{0%{filter:none;opacity:1}15%{filter:hue-rotate(90deg);transform:skewX(2deg)}30%{filter:invert(1);transform:skewX(-3deg)}50%{filter:saturate(5) hue-rotate(120deg);transform:translate(3px,-2px)}75%{filter:hue-rotate(-90deg);opacity:.3}100%{opacity:0;filter:brightness(0)}}
+@keyframes glitchIn{0%{opacity:0;filter:brightness(0)}25%{opacity:.3;filter:hue-rotate(90deg)}50%{filter:invert(1) saturate(3);transform:skewX(2deg)}75%{filter:hue-rotate(-60deg);opacity:.8}100%{opacity:1;filter:none;transform:none}}
+.glitch-out{animation:glitchOut .5s ease forwards!important}
+.glitch-in{animation:glitchIn .5s ease forwards!important}
 @keyframes orbFloat1{0%,100%{transform:translate(0,0);opacity:.6}25%{transform:translate(15px,-20px);opacity:1}50%{transform:translate(-10px,-35px);opacity:.3}75%{transform:translate(20px,-10px);opacity:.8}}
 @keyframes orbFloat2{0%,100%{transform:translate(0,0);opacity:.4}25%{transform:translate(-20px,15px);opacity:.9}50%{transform:translate(15px,25px);opacity:.2}75%{transform:translate(-25px,-5px);opacity:.7}}
 @keyframes orbFloat3{0%,100%{transform:translate(0,0);opacity:.5}33%{transform:translate(25px,-15px);opacity:1}66%{transform:translate(-15px,20px);opacity:.1}}
@@ -1088,8 +1088,8 @@ async function scanFn(p,r,ring,sc,v,g,ai,btn,input,chainSel){
   if(chain!=='solana'&&(addr.length<10||!/^0x/i.test(addr))){showError(p,'Invalid EVM address. Must start with 0x.');return}
   btn.disabled=true;btn.textContent='SCANNING...';r.style.display='none';p.style.display='block';p.innerHTML='';
   const hc=document.getElementById('heroCards');const hm=document.getElementById('heroMetrics');
-  if(hc){hc.classList.add('glitch-out');setTimeout(()=>{hc.style.display='none';hc.classList.remove('glitch-out')},400)}
-  if(hm){hm.classList.add('glitch-out');setTimeout(()=>{hm.style.display='none';hm.classList.remove('glitch-out')},400)}
+  if(hc){hc.classList.add('glitch-out');setTimeout(()=>{hc.style.display='none';hc.classList.remove('glitch-out')},500)}
+  if(hm){hm.classList.add('glitch-out');setTimeout(()=>{hm.style.display='none';hm.classList.remove('glitch-out')},500)}
   const chainLabel=chainSel?chainSel.options[chainSel.selectedIndex].text:'SOL';
   const st=[`> scanning on ${chainLabel}...`,'> connecting to Station 51...','> querying DexScreener...','> querying GoPlus Security...',chain==='solana'?'> querying Helius DAS...':'> checking contract owner...','> holder distribution scan...','> honeypot detection...','> Agent 51 analyzing...'];
   let i=0;let done=false;
@@ -1114,8 +1114,8 @@ async function scanFn(p,r,ring,sc,v,g,ai,btn,input,chainSel){
 
 function heroRestore(){
   const hc=document.getElementById('heroCards');const hm=document.getElementById('heroMetrics');const hb=document.getElementById('heroBack');const hr=document.getElementById('heroRes');
-  if(hc){hc.style.display='';hc.classList.add('glitch-in');setTimeout(()=>hc.classList.remove('glitch-in'),400)}
-  if(hm){hm.style.display='';hm.classList.add('glitch-in');setTimeout(()=>hm.classList.remove('glitch-in'),400)}
+  if(hc){hc.style.display='grid';hc.classList.add('glitch-in');setTimeout(()=>hc.classList.remove('glitch-in'),500)}
+  if(hm){hm.style.display='flex';hm.classList.add('glitch-in');setTimeout(()=>hm.classList.remove('glitch-in'),500)}
   if(hb)hb.style.display='none';if(hr)hr.style.display='none';
 }
 function runHS(){scanFn(document.getElementById('heroProg'),document.getElementById('heroRes'),document.getElementById('heroRing'),document.getElementById('heroSc'),document.getElementById('heroV'),null,null,document.getElementById('heroBtn'),document.getElementById('heroIn'),document.getElementById('heroChain'))}
